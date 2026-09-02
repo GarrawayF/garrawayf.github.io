@@ -4,6 +4,8 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  schedule:
+    - cron: "17,47 * * * *"
 
 permissions:
   contents: read
@@ -30,12 +32,27 @@ jobs:
           ref: sites-source
           path: site
 
+      - name: Checkout current social feed
+        uses: actions/checkout@v4
+        with:
+          repository: MDL20241119/GarrawayFapp.github.io
+          ref: main
+          path: published
+          sparse-checkout: |
+            data
+            images/instagram
+          sparse-checkout-cone-mode: false
+
       - name: Prepare root-path build
         shell: bash
         run: |
-          mkdir -p site/vendor
+          mkdir -p site/vendor site/public/data site/public/images
           cp deployment/vendor/shadcn-tailwind-4.13.0.css site/vendor/
           cp deployment/next.config.mjs site/next.config.mjs
+          cp -R published/data/. site/public/data/
+          if [ -d published/images/instagram ]; then
+            cp -R published/images/instagram site/public/images/
+          fi
 
       - name: Set up Node.js
         uses: actions/setup-node@v4

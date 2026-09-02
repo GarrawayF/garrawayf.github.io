@@ -67,6 +67,9 @@ jobs:
           npm ci
           npm run build
 
+      - name: Add preopen notice
+        run: node deployment/scripts/inject-preopen.mjs site/out
+
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
         with:

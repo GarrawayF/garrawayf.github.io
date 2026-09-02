@@ -8,7 +8,7 @@ on:
     - cron: "17,47 * * * *"
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -20,17 +20,41 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout deployment repository
+      - name: Checkout Garraway F repository
         uses: actions/checkout@v4
         with:
           path: deployment
 
-      - name: Checkout website source
+      - name: Check whether source has been imported
+        id: source
+        shell: bash
+        run: |
+          if [ -f deployment/package.json ]; then
+            echo "import_required=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "import_required=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout legacy source snapshot
+        if: steps.source.outputs.import_required == 'true'
         uses: actions/checkout@v4
         with:
           repository: MDL20241119/GarrawayFapp.github.io
           ref: sites-source
-          path: site
+          path: legacy-source
+
+      - name: Import an independent source copy
+        if: steps.source.outputs.import_required == 'true'
+        shell: bash
+        run: |
+          node deployment/scripts/apply-preopen-source.mjs legacy-source
+          rsync -a             --exclude='.git'             --exclude='.github'             --exclude='README.md'             --exclude='next.config.mjs'             --exclude='scripts'             --exclude='vendor'             legacy-source/ deployment/
+          cd deployment
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app public package.json package-lock.json postcss.config.mjs eslint.config.mjs tsconfig.json
+          git commit -m "Import independent Garraway F website source"
+          git push origin HEAD:main
 
       - name: Checkout current social feed
         uses: actions/checkout@v4
@@ -46,9 +70,10 @@ jobs:
       - name: Prepare root-path build
         shell: bash
         run: |
-          mkdir -p site/vendor site/public/data site/public/images
-          cp deployment/vendor/shadcn-tailwind-4.13.0.css site/vendor/
-          cp deployment/next.config.mjs site/next.config.mjs
+          mkdir -p site
+          rsync -a             --exclude='.git'             --exclude='.github'             --exclude='.next'             --exclude='node_modules'             --exclude='out'             deployment/ site/
+          node deployment/scripts/apply-preopen-source.mjs site
+          mkdir -p site/public/data site/public/images
           cp -R published/data/. site/public/data/
           if [ -d published/images/instagram ]; then
             cp -R published/images/instagram site/public/images/
@@ -57,18 +82,21 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22.13.0
           cache: npm
           cache-dependency-path: site/package-lock.json
 
+      - name: Install dependencies
+        working-directory: site
+        run: npm ci
+
+      - name: Check website
+        working-directory: site
+        run: npm run lint
+
       - name: Build website
         working-directory: site
-        run: |
-          npm ci
-          npm run build
-
-      - name: Add preopen notice
-        run: node deployment/scripts/inject-preopen.mjs site/out
+        run: npm run build
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

@@ -37,7 +37,7 @@ async function fetchJson(url: string, signal?: AbortSignal) {
   return response.json();
 }
 
-function resolveMediaUrl(...candidates: unknown[]) {
+function resolveMediaUrl(version: unknown, ...candidates: unknown[]) {
   const value = candidates.find(
     (candidate): candidate is string =>
       typeof candidate === "string" && candidate.trim().length > 0,
@@ -51,7 +51,10 @@ function resolveMediaUrl(...candidates: unknown[]) {
 
   if (value.startsWith("data:")) return "";
 
-  return withBasePath(`/${value.replace(/^\.?\/+/, "")}`);
+  const localUrl = withBasePath(`/${value.replace(/^\.?\/+/, "")}`);
+  return typeof version === "string" && /^[a-f0-9]{8,64}$/i.test(version)
+    ? `${localUrl}?v=${version}`
+    : localUrl;
 }
 
 export async function loadSocialData(signal?: AbortSignal) {
@@ -72,6 +75,7 @@ export async function loadSocialData(signal?: AbortSignal) {
         ? instagram.posts
             .map((post: Record<string, unknown>) => {
               const mediaUrl = resolveMediaUrl(
+                post.image_version,
                 post.media_url,
                 post.image,
                 post.thumbnail_url,

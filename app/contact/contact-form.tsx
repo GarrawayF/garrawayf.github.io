@@ -4,8 +4,6 @@ import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { CONTACT_EMAILS } from "../site-links";
 
-const CONTACT_FORM_CC_EMAIL = "2019garrawayf@gmail.com";
-
 const contactOptions = [
   ["co-creation", "共創・プロジェクト相談"],
   ["event", "イベント開催相談"],
@@ -42,13 +40,14 @@ export default function ContactForm({ initialType = "co-creation" }: { initialTy
       `会社・団体名: ${String(data.get("organization") || "")}`,
       `メールアドレス: ${String(data.get("email") || "")}`,
       `電話番号: ${String(data.get("phone") || "")}`,
+      "プライバシーポリシー: 2026年9月2日制定版を確認し、取扱いに同意",
       "",
       "ご相談内容:",
       String(data.get("inquiry") || ""),
     ].join("\n");
-    const mailto = `mailto:${CONTACT_EMAILS[0]}?cc=${encodeURIComponent(CONTACT_FORM_CC_EMAIL)}&subject=${encodeURIComponent("Garraway Fへのお問い合わせ")}&body=${encodeURIComponent(body)}`;
+    const mailto = `mailto:${CONTACT_EMAILS[0]}?subject=${encodeURIComponent("Garraway Fへのお問い合わせ")}&body=${encodeURIComponent(body)}`;
 
-    setMessage("メールアプリを開きました。内容を確認して送信してください。");
+    setMessage(`メールアプリを開いています。開かない場合は${CONTACT_EMAILS[0]}へ直接お送りください。`);
     window.location.href = mailto;
   };
 
@@ -104,7 +103,7 @@ export default function ContactForm({ initialType = "co-creation" }: { initialTy
               name="inquiry"
               rows={8}
               minLength={20}
-              maxLength={4000}
+              maxLength={1000}
               placeholder="背景、実現したいこと、最初に試したいことなどをご記入ください。"
               required
             />
@@ -113,7 +112,7 @@ export default function ContactForm({ initialType = "co-creation" }: { initialTy
           <label className="contactFormConsent contactFormWide">
             <input name="consent" type="checkbox" value="yes" required />
             <span>
-              <Link href="/privacy">プライバシーポリシー</Link>を確認し、問い合わせ情報の取扱いに同意します。
+              <Link href="/privacy" target="_blank" rel="noreferrer">プライバシーポリシー</Link>を確認し、問い合わせ情報の取扱いに同意します。
             </span>
           </label>
 

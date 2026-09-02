@@ -157,7 +157,7 @@ export default function EventsLive() {
               width="500"
               height="360"
               loading="lazy"
-              allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+              referrerPolicy="no-referrer"
             />
             <a href={SITE_LINKS.facebookEvents} target="_blank" rel="noreferrer">FACEBOOK EVENTS <b>↗</b></a>
           </aside>

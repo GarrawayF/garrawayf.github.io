@@ -6,7 +6,7 @@ import { SITE_LINKS } from "../site-links";
 
 export const metadata: Metadata = {
   title: "イベント情報｜Garraway F",
-  description: "Garraway Fで開催されるイベントと、Instagram・Facebookから届く最新情報をご案内します。",
+  description: "Garraway Fで開催されるイベントと、公式Instagram・Facebookの情報をご案内します。",
 };
 
 export default function EventsPage() {

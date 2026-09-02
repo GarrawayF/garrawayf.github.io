@@ -107,7 +107,7 @@ const spaces = [
     title: "KITCHEN & DINING",
     mode: "食事・交流",
     body: "食事や休憩をきっかけに、自然な交流が生まれる。",
-    image: withBasePath("/images/floor-monozukuri-lab.webp"),
+    image: withBasePath("/images/floor-kitchen-dining.webp"),
     position: "center",
   },
   {
@@ -191,11 +191,21 @@ export default function Home() {
 
         <div className="heroVisual">
           <div className="heroPhotoFrame">
-            <img
-              src={withBasePath("/images/hero-community.jpg")}
-              alt="Garraway Fで対話する人々"
-              fetchPriority="high"
-            />
+            <picture>
+              <source
+                type="image/webp"
+                srcSet={`${withBasePath("/images/hero-community-800.webp")} 800w, ${withBasePath("/images/hero-community-1440.webp")} 1440w`}
+                sizes="(max-width: 680px) 100vw, 52vw"
+              />
+              <img
+                src={withBasePath("/images/hero-community.jpg")}
+                alt="Garraway Fで対話する人々"
+                width="2200"
+                height="1467"
+                fetchPriority="high"
+                decoding="async"
+              />
+            </picture>
           </div>
           <div className="heroSticker heroStickerOne">OPEN TO<br /><b>EVERYONE!</b></div>
           <div className="heroSticker heroStickerTwo">FUKUOKA<br /><b>TENJIN</b></div>
@@ -473,7 +483,7 @@ export default function Home() {
             title="Garraway F Google Map"
             src="https://www.google.com/maps?q=%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E4%BB%8A%E6%B3%891%E4%B8%81%E7%9B%AE19%E7%95%AA22%E5%8F%B7&output=embed"
             loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
+            referrerPolicy="no-referrer"
           />
           <span>FUKUOKA / 33.587°N</span>
         </div>

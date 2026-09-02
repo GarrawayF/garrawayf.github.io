@@ -114,7 +114,7 @@ img { display: block; width: 100%; }
 .mobileMenu nav a { padding: 13px 10px; border-bottom: 1px solid var(--line); font: 700 11px/1 "Archivo", sans-serif; letter-spacing: .08em; }
 .mobileMenu nav a:last-child { border-bottom: 0; }
 a:focus-visible, summary:focus-visible {
-  outline: 3px solid var(--yellow);
+  outline: 3px solid var(--ink);
   outline-offset: 4px;
 }
 
@@ -197,6 +197,7 @@ a:focus-visible, summary:focus-visible {
   box-shadow: 12px 12px 0 var(--pink), 15px 15px 0 var(--ink);
   transform: rotate(1.5deg);
 }
+.heroPhotoFrame picture { display: block; height: 100%; }
 .heroPhotoFrame img { height: 100%; object-fit: cover; filter: saturate(.92) contrast(1.03); }
 .heroPhotoFrame::after { content: ""; position: absolute; inset: 0; box-shadow: inset 0 0 0 1px rgba(255,255,255,.25); }
 .heroF {
@@ -1805,7 +1806,7 @@ a:focus-visible, summary:focus-visible {
   .accessCopy h2 { margin: 36px 0 30px; }
   .accessCopy > a { margin-top: 30px; }
   .mapWrap,
-  .mapWrap iframe { min-height: 350px; height: 350px; }
+  .mapWrap iframe { min-height: 470px; height: 470px; }
 
   .consultationGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -4490,6 +4491,9 @@ a:focus-visible, summary:focus-visible {
 }
 
 @media (min-width: 961px) and (max-width: 1179px) {
+  .floorHead h2,
+  .joinHead h2 { white-space: normal; }
+
   .socialLiveGrid {
     grid-template-columns: 1fr;
     gap: 42px;
@@ -4497,7 +4501,6 @@ a:focus-visible, summary:focus-visible {
   .socialPanel { height: auto; }
   .instagramMedia { min-height: 300px; }
 }
-
 
 /* PREOPEN_NOTICE_START */
 .preopenNotice {
@@ -4509,7 +4512,7 @@ a:focus-visible, summary:focus-visible {
   border: 2px solid var(--ink);
   border-radius: 999px;
   background: var(--pink);
-  color: white;
+  color: var(--ink);
   box-shadow: 4px 4px 0 var(--ink);
   font-size: 14px;
   font-weight: 900;

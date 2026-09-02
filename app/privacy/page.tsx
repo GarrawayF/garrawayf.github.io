@@ -63,9 +63,9 @@ export default function PrivacyPage() {
           <span className="privacySectionNo">01</span>
           <div>
             <h2>個人情報の取扱い</h2>
-            <p>お問い合わせで取得する氏名、連絡先、内容等は、回答・連絡およびGarraway Fの運営に必要な範囲で利用し、必要に応じてトヨタ自動車株式会社へ報告します。株式会社Serendipityは、同社の指示と運営委託契約に従って取り扱います。</p>
+            <p>本サイトで取得する氏名、連絡先、問い合わせ内容等は、トヨタ自動車株式会社がGarraway Fに関する回答・連絡・運営のために利用し、株式会社Serendipityが委託先として、同社の指示および運営委託契約に従い取り扱います。</p>
             <p className="privacyCallout">入力内容は本サイトのサーバーには保存されません。送信時に利用者のメールアプリから公式窓口へ送信されます。</p>
-            <p>受信したメールは対応に必要な期間のみ保管し、不要となった後に削除します。</p>
+            <p>受信したメールは対応完了後、法令・契約上保存が必要なものを除き、速やかに削除します。</p>
           </div>
         </section>
 
@@ -73,7 +73,7 @@ export default function PrivacyPage() {
           <span className="privacySectionNo">02</span>
           <div>
             <h2>Cookie・外部送信</h2>
-            <p>本サイトは独自のアクセス解析や広告配信を行いません。サイト配信や外部コンテンツの表示に伴い、IPアドレス、端末・ブラウザ情報、Cookie等が各サービス提供者へ送信されることがあります。</p>
+            <p>本サイトは独自のアクセス解析や広告配信を行いません。サイト配信、Google Fonts・Google マップおよびFacebookコンテンツの表示に伴い、IPアドレス、端末・ブラウザ情報、Cookie等が各サービス提供者へ送信されることがあります。Instagram等の外部リンクを開いた場合は、移動先サービスの方針が適用されます。</p>
             <p>
               {externalTransmissions.map((item, index) => (
                 <span key={item.service}>

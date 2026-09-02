@@ -9,6 +9,20 @@ const VERIFIED_EVENT_LINKS: Record<string, string> = {
   "2026-08-08": "https://fb.me/e/94pcUtb5A",
 };
 
+function allowExternalUrl(value: unknown, allowedHosts: string[]) {
+  if (typeof value !== "string" || !value.trim()) return "";
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "https:") return "";
+    const host = url.hostname.toLowerCase();
+    return allowedHosts.some((allowed) => host === allowed || host.endsWith(`.${allowed}`))
+      ? url.toString()
+      : "";
+  } catch {
+    return "";
+  }
+}
+
 async function fetchJson(url: string, signal?: AbortSignal) {
   // GitHub Pages and intermediary CDNs can keep a previous JSON response even
   // after the feed workflow has committed newer data. A five-minute bucket
@@ -29,9 +43,13 @@ function resolveMediaUrl(...candidates: unknown[]) {
       typeof candidate === "string" && candidate.trim().length > 0,
   );
 
-  if (!value || /^(?:https?:)?\/\//i.test(value) || value.startsWith("data:")) {
-    return value || "";
+  if (!value) return "";
+
+  if (/^(?:https?:)?\/\//i.test(value)) {
+    return allowExternalUrl(value, ["cdninstagram.com", "fbcdn.net"]);
   }
+
+  if (value.startsWith("data:")) return "";
 
   return withBasePath(`/${value.replace(/^\.?\/+/, "")}`);
 }
@@ -52,14 +70,22 @@ export async function loadSocialData(signal?: AbortSignal) {
       ...instagram,
       posts: Array.isArray(instagram?.posts)
         ? instagram.posts
-            .map((post: Record<string, unknown>) => ({
-              ...post,
-              media_url: resolveMediaUrl(
+            .map((post: Record<string, unknown>) => {
+              const mediaUrl = resolveMediaUrl(
                 post.media_url,
                 post.image,
                 post.thumbnail_url,
-              ),
-            }))
+              );
+              return {
+                ...post,
+                media_url: mediaUrl,
+                image: mediaUrl,
+                thumbnail_url: mediaUrl,
+                permalink:
+                  allowExternalUrl(post.permalink, ["instagram.com"]) ||
+                  "https://www.instagram.com/garrawayf_lounge/",
+              };
+            })
             .filter((post: Record<string, unknown>) => {
               if (post.is_story !== true) return true;
               const timestamp = Date.parse(
@@ -81,7 +107,10 @@ export async function loadSocialData(signal?: AbortSignal) {
             const date = typeof event.date === "string" ? event.date : "";
             return {
               ...event,
-              url: VERIFIED_EVENT_LINKS[date] || event.url,
+              url:
+                VERIFIED_EVENT_LINKS[date] ||
+                allowExternalUrl(event.url, ["facebook.com", "fb.me"]) ||
+                "https://www.facebook.com/garrawayf/events",
             };
           })
         : [],

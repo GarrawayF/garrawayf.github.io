@@ -121,14 +121,14 @@ export default function SocialLive() {
         <p className="sectionTag">06 / SOCIAL LIVE</p>
         <h2>ここで生まれる、<br />挑戦の熱量。</h2>
         <p className="socialLead">
-          Garraway Fで起きていることを、InstagramとFacebookから直接お届けします。
+          Garraway F公式SNSの投稿とイベント情報を掲載しています。
         </p>
       </header>
 
       <div className="socialLiveGrid">
         <article className="socialPanel instagramPanel">
           <a className="socialPanelHead" href={SITE_LINKS.instagram} target="_blank" rel="noreferrer" aria-label="Garraway FのInstagramを開く">
-            <div><span>LIVE FEED</span><h3>Instagram</h3></div>
+            <div><span>OFFICIAL POSTS</span><h3>Instagram</h3></div>
             <b>↗</b>
           </a>
           <div className="socialPanelBody instagramPanelBody">

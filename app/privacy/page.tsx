@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CONTACT_EMAILS, SITE_LINKS } from "../site-links";
 import { SubpageFooter, SubpageHeader } from "../subpage-chrome";
+import Phrase from "../phrase";
 
 export const metadata: Metadata = {
   title: "プライバシーポリシー｜Garraway F",
@@ -35,7 +36,7 @@ export default function PrivacyPage() {
       <section className="subpageHero privacyPageHero">
         <div>
           <p><span /> PRIVACY &amp; DATA</p>
-          <h1>大切な情報を、<br /><em>誠実に扱う。</em></h1>
+          <h1><Phrase parts={["大切な", "情報を、"]} /><br /><em><Phrase parts={["誠実に", "扱う。"]} /></em></h1>
         </div>
         <aside>
           <strong>POLICY</strong>
@@ -47,7 +48,7 @@ export default function PrivacyPage() {
       <article className="privacyDocument" id="policy">
         <header className="privacyDocumentHead">
           <p>制定日：2026年9月2日</p>
-          <h2>プライバシーポリシー</h2>
+          <h2><Phrase parts={["プライバシー", "ポリシー"]} /></h2>
           <p>
             Garraway Fの運営主体はトヨタ自動車株式会社です。株式会社Serendipityは、
             運営委託契約に基づき、本サイトの運用と問い合わせ対応を行います。
@@ -72,7 +73,7 @@ export default function PrivacyPage() {
         <section>
           <span className="privacySectionNo">02</span>
           <div>
-            <h2>Cookie・外部送信</h2>
+            <h2><Phrase parts={["Cookie・", "外部送信"]} /></h2>
             <p>本サイトは独自のアクセス解析や広告配信を行いません。サイト配信、Google Fonts・Google マップおよびFacebookコンテンツの表示に伴い、IPアドレス、端末・ブラウザ情報、Cookie等が各サービス提供者へ送信されることがあります。Instagram等の外部リンクを開いた場合は、移動先サービスの方針が適用されます。</p>
             <p>
               {externalTransmissions.map((item, index) => (

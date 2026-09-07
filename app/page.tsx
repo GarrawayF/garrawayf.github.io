@@ -3,6 +3,7 @@ import Link from "next/link";
 import { withBasePath } from "./base-path";
 import { SITE_LINKS } from "./site-links";
 import MobileMenu from "./mobile-menu";
+import Phrase from "./phrase";
 
 const stats = [
   { value: "24,000", label: "COMMUNITY MEMBERS", ja: "コミュニティ会員" },
@@ -15,6 +16,7 @@ const participantTypes = [
     no: "01",
     en: "CHALLENGER",
     title: "挑戦する人",
+    titleParts: ["挑戦する", "人"],
     body: "まだ形になっていない想いを、行動に変えたい人。",
     examples: ["起業家", "社内起案者", "学生チーム", "地域プレイヤー"],
     tone: "blue",
@@ -23,6 +25,7 @@ const participantTypes = [
     no: "02",
     en: "ISSUE OWNER",
     title: "課題の当事者",
+    titleParts: ["課題の", "当事者"],
     body: "現場にある痛みや願いを、自分の言葉で語れる人。",
     examples: ["地域住民", "商店主", "医療・福祉の現場職員", "地域事業者"],
     tone: "pink",
@@ -31,6 +34,7 @@ const participantTypes = [
     no: "03",
     en: "ASSET HOLDER",
     title: "技術アセットの保有者",
+    titleParts: ["技術", "アセット", "の保有者"],
     body: "技術、知見、場所、ネットワークを、解決の力としてひらく人。",
     examples: ["AI・センサー企業", "大学・研究機関", "データ保有者", "施設運営者"],
     tone: "yellow",
@@ -48,18 +52,21 @@ const people = [
   {
     role: "BUSINESS PRODUCER",
     title: "ビジネスプロデューサー",
+    titleParts: ["ビジネス", "プロデューサー"],
     body: "想いをプロジェクトへ変え、挑戦が動き出す仕組みをつくります。",
     image: withBasePath("/images/people/img_engineer_01-pc.webp"),
   },
   {
     role: "OKAMI",
     title: "女将",
+    titleParts: ["女将"],
     body: "初めて来た日からつながりが生まれる、心地よい場と共創の循環を育てます。",
     image: withBasePath("/images/people/img_engineer_02-pc.webp"),
   },
   {
     role: "CONCIERGE",
     title: "コンシェルジュ",
+    titleParts: ["コンシェルジュ"],
     body: "一人ひとりの想いに寄り添い、人・課題・機会をつなぎます。",
     image: withBasePath("/images/people/img_engineer_03-pc.webp"),
   },
@@ -175,9 +182,9 @@ export default function Home() {
         <div className="heroCopy">
           <p className="eyebrow"><span /> SOCIAL IMPLEMENTATION LIVING LAB</p>
           <h1 id="hero-title">
-            問いが、<br />
-            仲間と出会い、<br />
-            <em>挑戦になる。</em>
+            <Phrase parts={["問いが、"]} /><br />
+            <Phrase parts={["仲間と", "出会い、"]} /><br />
+            <em><Phrase parts={["挑戦になる。"]} /></em>
           </h1>
           <p className="heroLead">
             挑戦する人、課題の当事者、技術やアセットを持つ仲間が出会い、
@@ -241,7 +248,7 @@ export default function Home() {
         <div className="aboutGrid">
           <div className="aboutTitle">
             <p>対話で終わらず、<br />実践へ進む。</p>
-            <h2>社会課題に挑戦する<br /><em>仲間づくりの場。</em></h2>
+            <h2><Phrase parts={["社会課題に", "挑戦する"]} /><br /><em><Phrase parts={["仲間づくりの", "場。"]} /></em></h2>
           </div>
           <div className="aboutBody">
             <p className="aboutLead">
@@ -273,7 +280,7 @@ export default function Home() {
               <div className="stepTop"><span>{step.no} / 03</span><b>{step.en}</b></div>
               <div className="stepMark" aria-hidden="true">{step.en.slice(0, 1)}</div>
               <div className="stepContent">
-                <h3>{step.title}</h3>
+                <h3><Phrase parts={step.titleParts} /></h3>
                 <p>{step.body}</p>
               </div>
               <div className="stepExamples">
@@ -348,7 +355,7 @@ export default function Home() {
       <section className="peopleSection" id="people">
         <header className="sectionIntro light">
           <div className="sectionKicker">04 <span /> CULTURAL ENGINEERS</div>
-          <h2>人が、人をつなぐ。</h2>
+          <h2><Phrase parts={["人が、", "人を", "つなぐ。"]} /></h2>
           <p>仕組みだけでは場は動かない。想いを聴き、関係をつなぎ、一歩目を一緒につくる人がいます。</p>
         </header>
         <div className="peopleGrid">
@@ -360,7 +367,7 @@ export default function Home() {
               </div>
               <div className="personCopy">
                 <small>{person.role}</small>
-                <h3>{person.title}</h3>
+                <h3><Phrase parts={person.titleParts} /></h3>
                 <p>{person.body}</p>
               </div>
             </article>
@@ -397,7 +404,7 @@ export default function Home() {
       <section className="floorSection" id="floor">
         <header className="floorHead">
           <div className="sectionKicker">07 <span /> FLOOR / TENJIN CLASS 3F</div>
-          <h2>偶然が生まれる、<br /><em>150席の実験室。</em></h2>
+          <h2><Phrase parts={["偶然が", "生まれる、"]} /><br /><em><Phrase parts={["150席の", "実験室。"]} /></em></h2>
           <p>集中する、話す、つくる、食べる。目的の違う空間がひとつの街のようにつながっています。</p>
         </header>
         <div className="floorIndexLabel" aria-hidden="true">
@@ -423,7 +430,7 @@ export default function Home() {
         <div className="floorMap">
           <div>
             <span>GARRAWAY F / FLOOR SYSTEM</span>
-            <h3>歩けば、誰かと出会う。</h3>
+            <h3><Phrase parts={["歩けば、", "誰かと", "出会う。"]} /></h3>
             <p>空間を横断するSerendipity Streetが、すべての場所と人をつなぎます。</p>
           </div>
           <img
@@ -437,7 +444,7 @@ export default function Home() {
       <section className="joinSection" id="join">
         <header className="joinHead">
           <div className="sectionKicker">08 <span /> JOIN THE COMMUNITY</div>
-          <h2>参加は、<br /><em>かんたん3ステップ。</em></h2>
+          <h2><Phrase parts={["参加は、"]} /><br /><em><Phrase parts={["かんたん", "3ステップ。"]} /></em></h2>
           <p>つながりを求める方なら、どなたでも無料です。</p>
         </header>
         <p className="joinRoute" aria-label="LINE登録からチェックイン、対話へ">
@@ -511,7 +518,7 @@ export default function Home() {
           <div className="sectionKicker">10 <span /> START A CONVERSATION</div>
           <div className="consultationTitle">
             <span>CONTACT FORM / STEP 01</span>
-            <h2 id="consultation-title">まず、<br /><em>相談を選ぶ。</em></h2>
+            <h2 id="consultation-title"><Phrase parts={["まず、"]} /><br /><em><Phrase parts={["相談を", "選ぶ。"]} /></em></h2>
           </div>
           <div className="consultationIntro">
             <strong>4つの入口から、<br />一番近いものを。</strong>
@@ -563,7 +570,7 @@ export default function Home() {
 
       <section className="closing">
         <span>LET&apos;S MAKE IT HAPPEN.</span>
-        <h2>やりましょうよ！</h2>
+        <h2><Phrase parts={["やりましょうよ！"]} /></h2>
         <p>偶然の出会いを、次の挑戦へ。</p>
         <a href={SITE_LINKS.line} target="_blank" rel="noreferrer">
           <span>公式LINEから参加する</span><b>↗</b>
@@ -590,4 +597,3 @@ export default function Home() {
     </main>
   );
 }
-

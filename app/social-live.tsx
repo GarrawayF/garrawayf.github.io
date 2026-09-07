@@ -7,6 +7,7 @@ import { withBasePath } from "./base-path";
 import { loadSocialData } from "./social-data";
 import { formatEventDate, getEventState, sortEvents } from "./event-schedule";
 import { useEventClock } from "./use-event-clock";
+import Phrase from "./phrase";
 
 type InstagramPost = {
   id?: string;
@@ -125,7 +126,7 @@ export default function SocialLive() {
     <section className="socialLiveSection" id="news">
       <header className="socialLiveHead">
         <p className="sectionTag">06 / SOCIAL LIVE</p>
-        <h2>ここで生まれる、<br />挑戦の熱量。</h2>
+        <h2><Phrase parts={["ここで", "生まれる、"]} /><br /><Phrase parts={["挑戦の", "熱量。"]} /></h2>
         <p className="socialLead">
           Garraway F公式SNSの投稿とイベント情報を掲載しています。
         </p>
@@ -257,4 +258,3 @@ export default function SocialLive() {
     </section>
   );
 }
-

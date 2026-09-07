@@ -4628,4 +4628,47 @@ a:focus-visible, summary:focus-visible {
   .contactPage .contactPrinciples { padding: 48px 18px 56px; }
   .eventIndexRow > .eventEndedSticker,
   .facebookEvent > .eventEndedSticker { right: 18px; font-size: 16px; padding: 8px 16px; }
+
+  /* On phones, only wrap display copy at deliberate phrase boundaries. */
+  .hero h1,
+  .aboutTitle h2,
+  .participantHead h2,
+  .impactHead h2,
+  .sectionIntro h2,
+  .socialLiveHead h2,
+  .floorHead h2,
+  .joinHead h2,
+  .accessCopy h2,
+  .consultationTitle h2,
+  .closing h2,
+  .subpageHero h1,
+  .eventIndexHead h2,
+  .eventInstagramSection h2,
+  .subpageClosing h2,
+  .contactFormHead h2,
+  .contactPrinciples h2,
+  .contactVisitCta h2,
+  .privacyDocumentHead h2,
+  .privacyDocument > section h2 {
+    line-break: strict;
+    word-break: normal;
+    overflow-wrap: normal;
+    text-wrap: balance;
+  }
+  .labStep h3,
+  .personCopy h3,
+  .spaceCard h3,
+  .floorMap h3,
+  .joinStepBody h3,
+  .consultationCardCopy > strong,
+  .eventIndexCopy h3,
+  .facebookEvent h4 {
+    line-break: strict;
+    word-break: normal;
+    overflow-wrap: normal;
+    text-wrap: pretty;
+  }
+  .labStep h3 { font-size: clamp(54px, 17vw, 68px); }
+  .labStep:nth-child(3) h3 { font-size: clamp(47px, 14.5vw, 54px); }
+  .closing h2 { font-size: clamp(34px, 10.5vw, 46px); }
 }

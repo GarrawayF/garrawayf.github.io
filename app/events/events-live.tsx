@@ -5,6 +5,7 @@ import { SITE_LINKS } from "../site-links";
 import { loadSocialData } from "../social-data";
 import { formatEventDate, getEventState, sortEvents } from "../event-schedule";
 import { useEventClock } from "../use-event-clock";
+import Phrase from "../phrase";
 
 type EventItem = {
   id?: string;
@@ -123,7 +124,7 @@ export default function EventsLive() {
       <section className="eventIndexSection" aria-labelledby="event-index-title">
         <header className="eventIndexHead">
           <p className="sectionTag">EVENT INFORMATION</p>
-          <h2 id="event-index-title">次の出会いを、<br />見つける。</h2>
+          <h2 id="event-index-title"><Phrase parts={["次の", "出会いを、"]} /><br /><Phrase parts={["見つける。"]} /></h2>
           <p>
             まず日付とタイトルを確認。気になる企画は「DETAIL」から公式情報へ進めます。
           </p>
@@ -164,7 +165,7 @@ export default function EventsLive() {
       <section className="eventInstagramSection" aria-labelledby="event-instagram-title">
         <header>
           <p className="sectionTag">LIVE FROM THE LAB</p>
-          <h2 id="event-instagram-title">現場の熱量は、<br />Instagramから。</h2>
+          <h2 id="event-instagram-title"><Phrase parts={["現場の", "熱量は、"]} /><br /><Phrase parts={["Instagram", "から。"]} /></h2>
           <a href={SITE_LINKS.instagram} target="_blank" rel="noreferrer">@garrawayf_lounge ↗</a>
         </header>
         <div className="eventInstagramGrid" role="region" aria-label="Instagramの投稿。横にスワイプして確認できます" tabIndex={0}>
@@ -195,4 +196,3 @@ export default function EventsLive() {
     </>
   );
 }
-

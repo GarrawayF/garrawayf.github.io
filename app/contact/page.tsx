@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { SubpageFooter, SubpageHeader } from "../subpage-chrome";
 import { SITE_LINKS } from "../site-links";
 import ContactForm from "./contact-form";
+import Phrase from "../phrase";
 
 export const metadata: Metadata = {
   title: "相談・お問い合わせ｜Garraway F",
@@ -35,11 +36,10 @@ export default function ContactPage() {
       </section>
 
       <section className="contactVisitCta">
-        <div><span>JUST VISITING?</span><h2>初めて訪れる方へ。</h2><p>個人での初回来館は、公式LINEから会員登録をお願いします。</p></div>
+        <div><span>JUST VISITING?</span><h2><Phrase parts={["初めて", "訪れる方へ。"]} /></h2><p>個人での初回来館は、公式LINEから会員登録をお願いします。</p></div>
         <a href={SITE_LINKS.line} target="_blank" rel="noreferrer">LINEで参加する <b>↗</b></a>
       </section>
       <SubpageFooter />
     </main>
   );
 }
-

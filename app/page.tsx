@@ -107,7 +107,7 @@ const spaces = [
     title: "KITCHEN & DINING",
     mode: "食事・交流",
     body: "食事や休憩をきっかけに、自然な交流が生まれる。",
-    image: withBasePath("/images/floor-kitchen-dining.webp"),
+    image: withBasePath("/images/floor-monozukuri-lab.webp"),
     position: "center",
   },
   {

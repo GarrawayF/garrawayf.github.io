@@ -5,6 +5,8 @@ import Link from "next/link";
 import { SITE_LINKS } from "./site-links";
 import { withBasePath } from "./base-path";
 import { loadSocialData } from "./social-data";
+import { formatEventDate, getEventState, sortEvents } from "./event-schedule";
+import { useEventClock } from "./use-event-clock";
 
 type InstagramPost = {
   id?: string;
@@ -26,6 +28,8 @@ type FacebookEvent = {
   status?: string;
   name?: string;
   start_time?: string;
+  end_time?: string;
+  description?: string;
   url?: string;
 };
 
@@ -113,7 +117,9 @@ export default function SocialLive() {
   }, []);
 
   const posts = (data?.instagram?.posts ?? []).slice(0, 4);
-  const events = (data?.facebook?.events ?? []).slice(0, 4);
+  const eventItems = data?.facebook?.events;
+  const now = useEventClock(eventItems);
+  const events = sortEvents(eventItems ?? [], now).slice(0, 4);
 
   return (
     <section className="socialLiveSection" id="news">
@@ -210,13 +216,22 @@ export default function SocialLive() {
               </div>
             ) : events.length > 0 ? (
               <div className="facebookEventsList">
-                {events.map((event, index) => (
-                  <a href={event.url || SITE_LINKS.facebookEvents} target="_blank" rel="noreferrer" className="facebookEvent" key={event.id || `${event.date}-${index}`}>
-                    <time>{formatDate(event.date || event.start_time)}</time>
-                    <div><h4>{event.title || event.name || "Garraway F Event"}</h4><p>{event.category || (event.status === "UPCOMING" ? "開催予定" : "開催終了")}</p></div>
-                    <span>↗</span>
-                  </a>
-                ))}
+                {events.map((event, index) => {
+                  const state = getEventState(event, now);
+                  const ended = state === "ended";
+                  return (
+                    <a href={event.url || SITE_LINKS.facebookEvents} target="_blank" rel="noreferrer" className={`facebookEvent ${ended ? "isArchive" : ""}`} key={event.id || `${event.date}-${index}`}>
+                      {ended && <strong className="eventEndedSticker">終了</strong>}
+                      <time>{formatEventDate(event)}</time>
+                      <div>
+                        <h4>{event.title || event.name || "Garraway F Event"}</h4>
+                        <p>{event.category || (state === "upcoming" ? "開催予定" : ended ? "開催終了" : "日程確認中")}</p>
+                        {event.description && <p className="eventDescription">{event.description}</p>}
+                      </div>
+                      <span>↗</span>
+                    </a>
+                  );
+                })}
               </div>
             ) : (
               <a className="facebookEventsFallback" href={SITE_LINKS.facebookEvents} target="_blank" rel="noreferrer">
@@ -242,3 +257,4 @@ export default function SocialLive() {
     </section>
   );
 }
+

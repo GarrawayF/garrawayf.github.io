@@ -11,6 +11,13 @@ const contactOptions = [
   ["other", "その他"],
 ] as const;
 
+const contactGuidance = {
+  "co-creation": "課題・保有アセット・最初に試したいことをご記入ください。",
+  event: "目的・テーマ・対象者・開催希望日をご記入ください。",
+  media: "媒体・目的・希望日時・掲載予定をご記入ください。",
+  other: "ご相談の背景と確認したいことをご記入ください。",
+};
+
 type ContactType = (typeof contactOptions)[number][0];
 
 const isContactType = (value: string): value is ContactType =>
@@ -54,27 +61,18 @@ export default function ContactForm({ initialType = "co-creation" }: { initialTy
   return (
     <section className="contactFormSection" id="contact-form" tabIndex={-1} aria-labelledby="contact-form-title">
       <header className="contactFormHead">
-        <p className="sectionTag">SEND YOUR QUESTION</p>
-        <h2 id="contact-form-title">問いを、<br />聞かせてください。</h2>
+        <h2 id="contact-form-title"><span className="wordUnit">問いを、</span><wbr /><span className="wordUnit">聞かせてください。</span></h2>
         <p>入力後にメールアプリが開きます。内容を確認して送信してください。</p>
       </header>
 
       <div className="contactFormBoard">
-        <aside>
-          <span>DELIVERED TO</span>
-          <strong>01</strong>
-          <div>
-            {CONTACT_EMAILS.map((email) => <a href={`mailto:${email}`} key={email}>{email}</a>)}
-          </div>
-          <p>入力内容はサイトに保存されません。メールアプリで送信すると、公式窓口へ届きます。</p>
-        </aside>
-
         <form className="contactForm" onSubmit={handleSubmit}>
           <label className="contactFormField contactFormWide">
             <span>01 / 相談内容 <b>必須</b></span>
-            <select value={contactType} onChange={(event) => setContactType(event.target.value as ContactType)} required>
+            <select aria-describedby="contact-guidance" value={contactType} onChange={(event) => setContactType(event.target.value as ContactType)} required>
               {contactOptions.map(([value, label]) => <option value={value} key={value}>{label}</option>)}
             </select>
+            <small className="contactGuidance" id="contact-guidance">{contactGuidance[contactType]}</small>
           </label>
 
           <label className="contactFormField">
@@ -125,7 +123,13 @@ export default function ContactForm({ initialType = "co-creation" }: { initialTy
             </p>
           </div>
         </form>
+        <aside className="contactDirectEmail">
+          <span>メールで直接相談する</span>
+          {CONTACT_EMAILS.map((email) => <a href={`mailto:${email}`} key={email}>{email}</a>)}
+          <p>入力内容はサイトに保存されません。</p>
+        </aside>
       </div>
     </section>
   );
 }
+

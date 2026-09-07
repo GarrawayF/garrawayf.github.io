@@ -3,11 +3,15 @@
 import { useEffect, useState } from "react";
 import { SITE_LINKS } from "../site-links";
 import { loadSocialData } from "../social-data";
+import { formatEventDate, getEventState, sortEvents } from "../event-schedule";
+import { useEventClock } from "../use-event-clock";
 
 type EventItem = {
   id?: string;
   date?: string;
   start_time?: string;
+  end_time?: string;
+  description?: string;
   title?: string;
   name?: string;
   category?: string;
@@ -42,27 +46,24 @@ const formatDate = (value?: string) => {
   }).format(date);
 };
 
-const isUpcoming = (event: EventItem) => {
-  if (event.status) return event.status.toUpperCase() === "UPCOMING";
-  const value = event.date || event.start_time;
-  return value ? new Date(value).getTime() >= Date.now() : true;
-};
-
-function EventRow({ event, index }: { event: EventItem; index: number }) {
-  const upcoming = isUpcoming(event);
+function EventRow({ event, index, now }: { event: EventItem; index: number; now: number }) {
+  const state = getEventState(event, now);
+  const ended = state === "ended";
   const eventTitle = event.title || event.name || "Garraway F Event";
   const destination = event.url || SITE_LINKS.facebookEvents;
   const isDirectLink = destination.replace(/\/$/, "") !== SITE_LINKS.facebookEvents.replace(/\/$/, "");
   return (
     <article
-      className={`eventIndexRow ${upcoming ? "isUpcoming" : "isArchive"}`}
+      className={`eventIndexRow ${ended ? "isArchive" : state === "upcoming" ? "isUpcoming" : "isUndated"}`}
     >
+      {ended && <strong className="eventEndedSticker">終了</strong>}
       <span className="eventIndexNo">{String(index + 1).padStart(2, "0")}</span>
-      <time>{formatDate(event.date || event.start_time)}</time>
+      <time>{formatEventDate(event)}</time>
       <div className="eventIndexCopy">
-        <span>{upcoming ? "UPCOMING / 開催予定" : "ARCHIVE / 開催終了"}</span>
+        {!ended && <span>{state === "upcoming" ? "UPCOMING / 開催予定" : "SCHEDULE / 日程確認中"}</span>}
         <h3>{eventTitle}</h3>
         <p>{event.category || "COMMUNITY / CO-CREATION"}</p>
+        {event.description && <p className="eventDescription">{event.description}</p>}
       </div>
       <a
         className="eventIndexLink"
@@ -112,13 +113,9 @@ export default function EventsLive() {
     };
   }, []);
 
-  const events = [...(data?.facebook?.events ?? [])].sort((a, b) => {
-    const upcomingDifference = Number(isUpcoming(b)) - Number(isUpcoming(a));
-    if (upcomingDifference !== 0) return upcomingDifference;
-    const dateA = new Date(a.date || a.start_time || 0).getTime();
-    const dateB = new Date(b.date || b.start_time || 0).getTime();
-    return isUpcoming(a) ? dateA - dateB : dateB - dateA;
-  });
+  const eventItems = data?.facebook?.events;
+  const now = useEventClock(eventItems);
+  const events = sortEvents(eventItems ?? [], now);
   const posts = (data?.instagram?.posts ?? []).slice(0, 4);
 
   return (
@@ -137,7 +134,7 @@ export default function EventsLive() {
             {!data && !failed ? (
               Array.from({ length: 3 }).map((_, index) => <div className="eventIndexSkeleton" key={index} />)
             ) : events.length > 0 ? (
-              events.map((event, index) => <EventRow event={event} index={index} key={event.id || `${event.date}-${index}`} />)
+              events.map((event, index) => <EventRow event={event} index={index} now={now} key={event.id || `${event.date}-${index}`} />)
             ) : (
               <a className="eventEmpty" href={SITE_LINKS.facebookEvents} target="_blank" rel="noreferrer">
                 最新イベントをFacebookで確認する <span>↗</span>
@@ -198,3 +195,4 @@ export default function EventsLive() {
     </>
   );
 }
+

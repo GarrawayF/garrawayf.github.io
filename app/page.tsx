@@ -469,7 +469,7 @@ export default function Home() {
       <section className="accessSection" id="access">
         <div className="accessCopy">
           <div className="sectionKicker">09 <span /> ACCESS</div>
-          <h2>天神の、<br /><em>まちのリビングへ。</em></h2>
+          <h2><span className="wordUnit">天神の、</span><br /><em><span className="wordUnit">まちの</span><wbr /><span className="wordUnit">リビングへ。</span></em></h2>
           <div className="accessDetails">
             <div><span>OPEN</span><b>10:00–20:00</b><small>MON–FRI</small></div>
             <div><span>ADDRESS</span><p>〒810-0021<br />福岡市中央区今泉1丁目19番22号<br /><b>天神CLASS 3階</b></p></div>
@@ -590,3 +590,4 @@ export default function Home() {
     </main>
   );
 }
+

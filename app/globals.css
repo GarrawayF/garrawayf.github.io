@@ -4529,3 +4529,103 @@ a:focus-visible, summary:focus-visible {
   }
 }
 /* PREOPEN_NOTICE_END */
+
+/* Keep Japanese phrases together without forcing the entire heading onto one line. */
+.wordUnit { display: inline-block; white-space: nowrap; }
+
+/* Contact: a short introduction, then the fields. */
+.contactPage .contactPageHero {
+  display: block;
+  min-height: 0;
+  padding: 138px 4.5vw 36px;
+}
+.contactPage .contactPageHero > div > p { margin-bottom: 20px; }
+.contactPage .contactPageHero h1 {
+  max-width: none;
+  font-size: clamp(36px, 4.7vw, 64px);
+  line-height: 1.25;
+  letter-spacing: -.055em;
+}
+.contactPage .contactFormSection {
+  padding: 40px 4.5vw 72px;
+  scroll-margin-top: 100px;
+}
+.contactPage .contactFormHead,
+.contactPage .contactFormBoard { width: min(100%, 980px); margin-inline: auto; }
+.contactPage .contactFormHead { display: block; }
+.contactPage .contactFormHead h2 {
+  font-size: clamp(26px, 3vw, 40px);
+  line-height: 1.4;
+  letter-spacing: -.045em;
+}
+.contactPage .contactFormHead > p:last-child {
+  max-width: none;
+  margin: 12px 0 0;
+  font-size: 16px;
+  line-height: 1.8;
+}
+.contactPage .contactFormBoard { display: block; margin-top: 24px; }
+.contactPage .contactForm { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.contactPage .contactFormField > span { font-size: 14px; line-height: 1.5; }
+.contactPage .contactFormField > span b { font-size: 12px; }
+.contactPage .contactForm input,
+.contactPage .contactForm select,
+.contactPage .contactForm textarea { min-width: 0; font-size: 16px; }
+.contactGuidance { font-size: 14px; line-height: 1.7; }
+.contactPage .contactFormBoard > .contactDirectEmail {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 12px 24px;
+  min-height: 0;
+  padding: 22px 32px;
+  border: 0;
+  border-top: 2px solid var(--ink);
+  background: var(--paper);
+}
+.contactPage .contactDirectEmail > span { font-size: 14px; letter-spacing: 0; }
+.contactPage .contactDirectEmail a { padding-bottom: 3px; font-size: 16px; }
+.contactPage .contactDirectEmail p { flex-basis: 100%; margin: 0; font-size: 14px; }
+.contactPage .contactPrinciples { padding-top: 64px; padding-bottom: 72px; gap: 40px; }
+.contactPage .contactPrinciples h2 { font-size: clamp(28px, 3.4vw, 48px); line-height: 1.4; }
+
+/* Ended-event sticker sits over a reserved strip, keeping all event details legible. */
+.eventIndexRow.isArchive,
+.facebookEvent.isArchive { position: relative; padding-top: 70px; }
+.eventIndexRow > .eventEndedSticker,
+.facebookEvent > .eventEndedSticker {
+  position: absolute;
+  top: 16px;
+  right: 22px;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 20px;
+  border: 2px solid var(--ink);
+  border-radius: 3px;
+  background: var(--yellow);
+  color: var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  font-family: "Noto Sans JP", sans-serif;
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.2;
+  letter-spacing: .12em;
+  transform: rotate(-7deg);
+  pointer-events: none;
+}
+.eventIndexCopy .eventDescription,
+.facebookEvent .eventDescription { font-size: 15px; line-height: 1.75; font-weight: 500; letter-spacing: 0; }
+@media (max-width: 680px) {
+  .contactPage .contactPageHero { padding: 112px 18px 28px; }
+  .contactPage .contactPageHero h1 { font-size: clamp(30px, 8.3vw, 42px); }
+  .contactPage .contactFormSection { padding: 28px 18px 56px; }
+  .contactPage .contactForm { grid-template-columns: minmax(0, 1fr); padding: 22px 18px; }
+  .contactPage .contactFormHead h2 { font-size: clamp(24px, 6.6vw, 32px); }
+  .contactPage .contactFormBoard > .contactDirectEmail { padding: 20px 18px; }
+  .contactPage .contactPrinciples { padding: 48px 18px 56px; }
+  .eventIndexRow > .eventEndedSticker,
+  .facebookEvent > .eventEndedSticker { right: 18px; font-size: 16px; padding: 8px 16px; }
+}

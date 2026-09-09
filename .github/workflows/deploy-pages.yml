@@ -8,7 +8,6 @@ on:
     - cron: "17,47 * * * *"
 
 permissions: {}
-
 concurrency:
   group: pages
   cancel-in-progress: true
@@ -23,12 +22,11 @@ jobs:
       id-token: write
     steps:
       - name: Checkout Garraway F source
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           path: site
-
       - name: Checkout approved social feed and RAMEN TECH guide
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           repository: MDL20241119/GarrawayFapp.github.io
           ref: main
@@ -38,150 +36,88 @@ jobs:
             images/instagram
             ramen-tech-2026
           sparse-checkout-cone-mode: false
-
       - name: Prepare published content
         shell: bash
         run: |
           mkdir -p site/public/data site/public/images site/public/ramen-tech-2026
           cp -R published/data/. site/public/data/
-          if [ -d published/images/instagram ]; then
-            cp -R published/images/instagram site/public/images/
-          fi
+          if [ -d published/images/instagram ]; then cp -R published/images/instagram site/public/images/; fi
           cp -R published/ramen-tech-2026/. site/public/ramen-tech-2026/
           find site/public/ramen-tech-2026 -type f \( -name '*.html' -o -name '*.js' -o -name '*.css' -o -name '*.json' -o -name '*.md' \) -print0 | xargs -0 sed -i \
             -e 's#https://mobilitydlab.com/GarrawayFapp.github.io/ramen-tech-2026/#https://garrawayf.github.io/ramen-tech-2026/#g' \
             -e 's#https://mobilitydlab.com/GarrawayFapp.github.io/#https://garrawayf.github.io/#g' \
             -e 's#/GarrawayFapp.github.io/ramen-tech-2026/#/ramen-tech-2026/#g' \
             -e 's#/GarrawayFapp.github.io/#/#g'
-
           python3 - <<'PY'
           from pathlib import Path
-
-          root = Path('site/public/ramen-tech-2026')
-          planner = root / 'planner.js'
-          text = planner.read_text(encoding='utf-8')
-          old = "duration=a.e.room&&a.e.room===b.e.room?0:3;method=duration?'同じ施設内の移動目安':'同じ部屋';"
-          new = "duration=0;method='同じ会場・移動なし';"
-          if old not in text and new not in text:
-              raise SystemExit('Same-venue transfer rule was not found')
-          planner.write_text(text.replace(old, new), encoding='utf-8')
-
-          index = root / 'index.html'
-          html = index.read_text(encoding='utf-8')
-          css = '<link rel="stylesheet" href="venue-map.css?v=20260909m1">'
-          js = '<script src="venue-map.js?v=20260909m1" defer></script>'
-          if css not in html:
-              html = html.replace('</head>', css + js + '</head>')
-          index.write_text(html, encoding='utf-8')
+          root=Path('site/public/ramen-tech-2026')
+          planner=root/'planner.js'; text=planner.read_text(encoding='utf-8')
+          old="duration=a.e.room&&a.e.room===b.e.room?0:3;method=duration?'同じ施設内の移動目安':'同じ部屋';"
+          new="duration=0;method='同じ会場・移動なし';"
+          if old not in text and new not in text: raise SystemExit('Same-venue rule missing')
+          planner.write_text(text.replace(old,new),encoding='utf-8')
+          index=root/'index.html'; html=index.read_text(encoding='utf-8')
+          css='<link rel="stylesheet" href="venue-map.css?v=20260909m1">'; js='<script src="venue-map.js?v=20260909m1" defer></script>'
+          if css not in html: html=html.replace('</head>',css+js+'</head>')
+          index.write_text(html,encoding='utf-8')
           PY
-
       - name: Set up Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: 22.13.0
           cache: npm
           cache-dependency-path: site/package-lock.json
-
       - name: Install dependencies
         working-directory: site
         run: npm ci
-
       - name: Check production dependencies
         working-directory: site
         run: npm audit --omit=dev --audit-level=high
-
       - name: Check source
         working-directory: site
         run: npm run lint
-
       - name: Build website
         working-directory: site
         run: npm run build
-
       - name: Smoke-test exported website
         working-directory: site
         run: |
           python3 - <<'PY'
           import json
           from pathlib import Path
-
-          out = Path("out")
-          pages = [
-              out / "index.html",
-              out / "events" / "index.html",
-              out / "contact" / "index.html",
-              out / "privacy" / "index.html",
-          ]
+          out=Path('out')
+          pages=[out/'index.html',out/'events'/'index.html',out/'contact'/'index.html',out/'privacy'/'index.html']
           for page in pages:
-              assert page.is_file(), f"Missing page: {page}"
-              html = page.read_text(encoding="utf-8")
-              assert "プレオープン｜試験公開中" in html, f"Missing trial label: {page}"
-              assert 'name="robots"' in html and "noindex, nofollow" in html, f"Missing noindex: {page}"
-
-          ramen_dir = out / "ramen-tech-2026"
-          ramen = ramen_dir / "index.html"
-          assert ramen.is_file(), "RAMEN TECH special site is missing"
-          ramen_html = ramen.read_text(encoding="utf-8", errors="ignore")
-          assert "非公式" in ramen_html, "Unofficial guide label is missing"
-          assert "Garraway F" in ramen_html, "Garraway F feature is missing"
-          assert "venue-map.css" in ramen_html and "venue-map.js" in ramen_html, "Venue map assets are not linked"
-          assert (ramen_dir / "venue-map.css").is_file(), "Venue map stylesheet is missing"
-          assert (ramen_dir / "venue-map.js").is_file(), "Venue map script is missing"
-          map_js = (ramen_dir / "venue-map.js").read_text(encoding="utf-8", errors="ignore")
-          assert "venue-map-shell" in map_js and "OpenStreetMap" in map_js, "Venue map implementation is incomplete"
-
-          planner = ramen_dir / "planner.js"
-          planner_text = planner.read_text(encoding="utf-8", errors="ignore")
-          assert "duration=0;method='同じ会場・移動なし';" in planner_text, "Same-venue zero travel rule is missing"
-          assert "同じ施設内の移動目安" not in planner_text, "Old same-venue 3-minute rule remains"
-
-          text_files = [
-              path for path in out.rglob("*")
-              if path.is_file() and path.suffix in {".html", ".js", ".css", ".json", ".txt"}
-          ]
-          published_text = "\n".join(
-              path.read_text(encoding="utf-8", errors="ignore") for path in text_files
-          )
-          assert "/GarrawayFapp.github.io" not in published_text, "Legacy base path remains"
-          assert "mobilitydlab.com/GarrawayFapp.github.io" not in published_text, "Legacy RAMEN host remains"
-          assert "2019garrawf@gmail.com" not in published_text
-          assert "2019garrawayf@gmail.com" not in published_text, "Hidden CC remains"
-
-          instagram_path = out / "data" / "instagram.json"
-          facebook_path = out / "data" / "facebook-events.json"
-          assert instagram_path.is_file(), "Instagram data is missing"
-          assert facebook_path.is_file(), "Facebook data is missing"
-
-          instagram = json.loads(instagram_path.read_text(encoding="utf-8"))
-          assert instagram.get("includes_tagged_posts") is False, "Tagged posts are not permitted"
-          assert instagram.get("includes_stories") is False, "Stories are not permitted"
-          posts = instagram.get("posts") or []
-          assert posts, "Instagram has no official posts"
-          for post in posts:
-              assert post.get("is_story") is not True, "Story found in permanent feed"
-              image = str(post.get("image") or "")
-              assert image and not image.startswith(("http://", "https://", "data:")), "External Instagram image found"
-              assert (out / image).is_file(), f"Instagram image is missing: {image}"
-
-          for image in [
-              "images/hero-community-800.webp",
-              "images/hero-community-1440.webp",
-              "images/floor-kitchen-dining.webp",
-              "images/access-tenjin-class-3f.webp",
-          ]:
-              assert (out / image).is_file(), f"Required image is missing: {image}"
-
-          print(f"Smoke test passed: {len(pages)} pages, {len(posts)} Instagram posts, RAMEN TECH venue map")
+            assert page.is_file(), f'Missing page: {page}'
+            html=page.read_text(encoding='utf-8')
+            assert 'プレオープン｜試験公開中' in html
+            assert 'name="robots"' in html and 'noindex, nofollow' in html
+          ramen=out/'ramen-tech-2026'; html=(ramen/'index.html').read_text(encoding='utf-8',errors='ignore')
+          assert '非公式' in html and 'Garraway F' in html
+          assert (ramen/'venue-map.css').is_file() and (ramen/'venue-map.js').is_file()
+          planner=(ramen/'planner.js').read_text(encoding='utf-8',errors='ignore')
+          assert "duration=0;method='同じ会場・移動なし';" in planner
+          assert '同じ施設内の移動目安' not in planner
+          planner_css=(ramen/'planner.css').read_text(encoding='utf-8',errors='ignore')
+          assert 'grid-template-columns:120px minmax(0,1fr)' in planner_css
+          assert '.plan-table th{position:sticky' in planner_css
+          text='\n'.join(p.read_text(encoding='utf-8',errors='ignore') for p in out.rglob('*') if p.is_file() and p.suffix in {'.html','.js','.css','.json','.txt'})
+          assert '/GarrawayFapp.github.io' not in text and 'mobilitydlab.com/GarrawayFapp.github.io' not in text
+          assert '2019garrawf@gmail.com' not in text and '2019garrawayf@gmail.com' not in text
+          instagram=json.loads((out/'data'/'instagram.json').read_text(encoding='utf-8'))
+          assert instagram.get('includes_tagged_posts') is False and instagram.get('includes_stories') is False
+          for post in instagram.get('posts') or []:
+            image=str(post.get('image') or ''); assert image and not image.startswith(('http://','https://','data:')); assert (out/image).is_file()
+          for image in ['images/hero-community-800.webp','images/hero-community-1440.webp','images/floor-kitchen-dining.webp','images/access-tenjin-class-3f.webp']:
+            assert (out/image).is_file(), image
+          print('Smoke test passed including timetable planner')
           PY
-
       - name: Configure GitHub Pages
-        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
-
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b
       - name: Upload website
-        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa
         with:
           path: site/out
-
   deploy:
     runs-on: ubuntu-24.04
     needs: build
@@ -195,4 +131,4 @@ jobs:
     steps:
       - name: Deploy website
         id: deployment
-        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e

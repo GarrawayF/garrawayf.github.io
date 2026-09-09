@@ -50,7 +50,9 @@ jobs:
           cp -R published/ramen-tech-2026/. site/public/ramen-tech-2026/
           find site/public/ramen-tech-2026 -type f \( -name '*.html' -o -name '*.js' -o -name '*.css' -o -name '*.json' -o -name '*.md' \) -print0 | xargs -0 sed -i \
             -e 's#https://mobilitydlab.com/GarrawayFapp.github.io/ramen-tech-2026/#https://garrawayf.github.io/ramen-tech-2026/#g' \
-            -e 's#https://mobilitydlab.com/GarrawayFapp.github.io/#https://garrawayf.github.io/#g'
+            -e 's#https://mobilitydlab.com/GarrawayFapp.github.io/#https://garrawayf.github.io/#g' \
+            -e 's#/GarrawayFapp.github.io/ramen-tech-2026/#/ramen-tech-2026/#g' \
+            -e 's#/GarrawayFapp.github.io/#/#g'
 
       - name: Set up Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { withBasePath } from "./base-path";
+import RamenTechSpecial from "./ramen-tech-special";
 
 export const metadata: Metadata = {
   title: "Garraway F｜社会課題に挑戦する、まちのリビングラボ",
@@ -20,6 +21,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="ja">
       <body>
         {children}
+        <RamenTechSpecial />
         <div className="preopenNotice" role="status">
           プレオープン｜試験公開中
         </div>

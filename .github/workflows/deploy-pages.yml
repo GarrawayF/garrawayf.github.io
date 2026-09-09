@@ -56,14 +56,23 @@ jobs:
 
           python3 - <<'PY'
           from pathlib import Path
-          planner = Path('site/public/ramen-tech-2026/planner.js')
+
+          root = Path('site/public/ramen-tech-2026')
+          planner = root / 'planner.js'
           text = planner.read_text(encoding='utf-8')
           old = "duration=a.e.room&&a.e.room===b.e.room?0:3;method=duration?'同じ施設内の移動目安':'同じ部屋';"
           new = "duration=0;method='同じ会場・移動なし';"
           if old not in text and new not in text:
               raise SystemExit('Same-venue transfer rule was not found')
-          text = text.replace(old, new)
-          planner.write_text(text, encoding='utf-8')
+          planner.write_text(text.replace(old, new), encoding='utf-8')
+
+          index = root / 'index.html'
+          html = index.read_text(encoding='utf-8')
+          css = '<link rel="stylesheet" href="venue-map.css?v=20260909m1">'
+          js = '<script src="venue-map.js?v=20260909m1" defer></script>'
+          if css not in html:
+              html = html.replace('</head>', css + js + '</head>')
+          index.write_text(html, encoding='utf-8')
           PY
 
       - name: Set up Node.js
@@ -109,13 +118,19 @@ jobs:
               assert "プレオープン｜試験公開中" in html, f"Missing trial label: {page}"
               assert 'name="robots"' in html and "noindex, nofollow" in html, f"Missing noindex: {page}"
 
-          ramen = out / "ramen-tech-2026" / "index.html"
+          ramen_dir = out / "ramen-tech-2026"
+          ramen = ramen_dir / "index.html"
           assert ramen.is_file(), "RAMEN TECH special site is missing"
           ramen_html = ramen.read_text(encoding="utf-8", errors="ignore")
           assert "非公式" in ramen_html, "Unofficial guide label is missing"
           assert "Garraway F" in ramen_html, "Garraway F feature is missing"
+          assert "venue-map.css" in ramen_html and "venue-map.js" in ramen_html, "Venue map assets are not linked"
+          assert (ramen_dir / "venue-map.css").is_file(), "Venue map stylesheet is missing"
+          assert (ramen_dir / "venue-map.js").is_file(), "Venue map script is missing"
+          map_js = (ramen_dir / "venue-map.js").read_text(encoding="utf-8", errors="ignore")
+          assert "venue-map-shell" in map_js and "OpenStreetMap" in map_js, "Venue map implementation is incomplete"
 
-          planner = out / "ramen-tech-2026" / "planner.js"
+          planner = ramen_dir / "planner.js"
           planner_text = planner.read_text(encoding="utf-8", errors="ignore")
           assert "duration=0;method='同じ会場・移動なし';" in planner_text, "Same-venue zero travel rule is missing"
           assert "同じ施設内の移動目安" not in planner_text, "Old same-venue 3-minute rule remains"
@@ -156,7 +171,7 @@ jobs:
           ]:
               assert (out / image).is_file(), f"Required image is missing: {image}"
 
-          print(f"Smoke test passed: {len(pages)} pages, {len(posts)} Instagram posts, RAMEN TECH special site")
+          print(f"Smoke test passed: {len(pages)} pages, {len(posts)} Instagram posts, RAMEN TECH venue map")
           PY
 
       - name: Configure GitHub Pages

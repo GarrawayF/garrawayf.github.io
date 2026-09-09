@@ -1,56 +1,26 @@
-/* RAMEN TECH venue map. Uses catalog geo data; falls back to a local venue grid if map tiles/library cannot load. */
+/* RAMEN TECH venue map: decluttered, area-first, Garraway F highlighted. */
 'use strict';
 (()=>{
-const D=window.RAMEN_CATALOG;
-if(!D)return;
+const D=window.RAMEN_CATALOG;if(!D)return;
 const excluded=new Set(['tbd','private','city','kyushu-venues']);
 const rows=D.venues.filter(v=>!excluded.has(v.id));
 const located=rows.filter(v=>v.geo&&Number.isFinite(v.geo.lat)&&Number.isFinite(v.geo.lng)&&v.geo.status==='located');
-const list=document.getElementById('venue-list');
-if(!list||!list.parentElement)return;
-
-const shell=document.createElement('section');
-shell.className='venue-map-shell';
-shell.id='venue-map';
-shell.setAttribute('aria-labelledby','venue-map-title');
-shell.innerHTML=`<div class="venue-map-head"><div><p class="venue-map-kicker">VENUE MAP / FUKUOKA</p><p class="venue-map-title" id="venue-map-title">会場を地図から探す。</p></div><p class="venue-map-note">ピンを押すと、その会場のイベントへ。<br>Garraway Fは黄色で表示しています。</p></div><div class="venue-map-stage"><div id="venue-leaflet" aria-label="RAMEN TECH 会場マップ"></div><div id="venue-map-fallback" class="venue-map-fallback"><div class="venue-map-fallback-grid"></div></div></div><div class="venue-map-legend"><span><i class="venue-map-dot gf"></i>Garraway F</span><span><i class="venue-map-dot"></i>イベント会場</span><span><i class="venue-map-dot cowork"></i>コワーキング</span><span>${located.length}会場を位置表示</span></div>`;
+const list=document.getElementById('venue-list');if(!list||!list.parentElement)return;
+const areaOrder=['今泉','天神','大名','博多','その他'];
+const areaOf=v=>areaOrder.includes(v.area)?v.area:'その他';
+const shell=document.createElement('section');shell.className='venue-map-shell';shell.id='venue-map';shell.setAttribute('aria-labelledby','venue-map-title');
+shell.innerHTML=`<div class="venue-map-head"><div><p class="venue-map-kicker">VENUE MAP / FUKUOKA</p><p class="venue-map-title" id="venue-map-title">エリアから会場を探す。</p><p class="venue-map-sub">まずエリアを選ぶ。必要な会場だけ地図に表示します。</p></div><a class="venue-map-gf-jump" href="#garraway-featured">GARRAWAY F ↗</a></div><div class="venue-map-area-tabs" role="group" aria-label="会場エリアを選ぶ"><button data-map-area="all" aria-pressed="true">すべて</button>${areaOrder.map(a=>`<button data-map-area="${a}" aria-pressed="false">${a}</button>`).join('')}</div><div class="venue-map-layout"><div class="venue-map-side"><div class="venue-map-side-head"><strong id="venue-map-area-title">主要会場</strong><small id="venue-map-count"></small></div><div id="venue-map-quicklist" class="venue-map-quicklist"></div></div><div class="venue-map-stage"><div id="venue-leaflet" aria-label="RAMEN TECH 会場マップ"></div><div id="venue-map-fallback" class="venue-map-fallback"><div class="venue-map-fallback-grid"></div></div></div></div><div class="venue-map-legend"><span><i class="venue-map-dot gf"></i>Garraway F</span><span><i class="venue-map-dot"></i>会場</span><span>ピンは選択中エリアのみ表示</span></div>`;
 list.parentElement.insertBefore(shell,list);
-
-function goVenue(id){
- const select=document.getElementById('venue-select');
- if(select){select.value=id;select.dispatchEvent(new Event('change',{bubbles:true}));document.getElementById('schedule')?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});}
- else location.href=`#schedule`;
-}
+let current='all',map,layer;
+function goVenue(id){const select=document.getElementById('venue-select');if(select){select.value=id;select.dispatchEvent(new Event('change',{bubbles:true}));document.getElementById('schedule')?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});}else location.href='#schedule';}
 function gm(v){return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((v.geo?.address||v.address||v.name)+' 福岡')}`;}
-function fallback(){
- const f=document.getElementById('venue-map-fallback');if(!f)return;f.classList.add('visible');
- f.querySelector('.venue-map-fallback-grid').innerHTML=rows.sort((a,b)=>(b.eventCount||0)-(a.eventCount||0)||a.name.localeCompare(b.name,'ja')).map(v=>`<button type="button" data-map-venue="${v.id}" class="${v.id==='garraway'?'gf':''}"><strong>${v.name}</strong><small>${v.area||'福岡'} / ${v.eventCount||0}掲載枠</small></button>`).join('');
-}
-function markerHTML(v){const gf=v.id==='garraway',cowork=v.roles?.includes('コワーキング');return `<div class="venue-marker${gf?' gf':cowork?' cowork':''}"><span>${gf?'GF':Math.max(1,Math.min(99,v.eventCount||1))}</span></div>`;}
-function init(){
- if(!window.L){fallback();return;}
- const L=window.L,el=document.getElementById('venue-leaflet');if(!el)return;
- const map=L.map(el,{scrollWheelZoom:false,zoomControl:true});
- L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map);
- const bounds=[];
- located.forEach(v=>{
-  const icon=L.divIcon({className:'',html:markerHTML(v),iconSize:v.id==='garraway'?[38,38]:[28,28],iconAnchor:v.id==='garraway'?[19,34]:[14,25],popupAnchor:[0,-25]});
-  const m=L.marker([v.geo.lat,v.geo.lng],{icon,title:v.name}).addTo(map);
-  m.bindPopup(`<div class="venue-map-popup"><strong>${v.name}</strong><small>${v.area||'福岡'} / ${v.eventCount||0}掲載枠</small><button type="button" data-map-venue="${v.id}">この会場の予定</button><a href="${gm(v)}" target="_blank" rel="noopener noreferrer">Googleマップ ↗</a></div>`);
-  bounds.push([v.geo.lat,v.geo.lng]);
- });
- if(bounds.length)map.fitBounds(bounds,{padding:[34,34],maxZoom:15});else map.setView([33.5904,130.4017],13);
- map.on('popupopen',()=>{document.querySelectorAll('[data-map-venue]').forEach(b=>{if(!b.dataset.mapBound){b.dataset.mapBound='1';b.addEventListener('click',()=>goVenue(b.dataset.mapVenue));}});});
- setTimeout(()=>map.invalidateSize(),120);
-}
-
-document.addEventListener('click',e=>{const b=e.target.closest('[data-map-venue]');if(b)goVenue(b.dataset.mapVenue);});
-
-function loadLeaflet(){
- if(window.L){init();return;}
- const css=document.createElement('link');css.rel='stylesheet';css.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';css.integrity='sha256-p4NxAoJBhIINfQ3ynzJO2TZHP2WGQfSxZqjMZb0d2mM=';css.crossOrigin='';document.head.appendChild(css);
- const s=document.createElement('script');s.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';s.integrity='sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';s.crossOrigin='';s.onload=init;s.onerror=fallback;document.head.appendChild(s);
- setTimeout(()=>{if(!window.L)fallback();},5000);
-}
-loadLeaflet();
+function visible(){return located.filter(v=>current==='all'||areaOf(v)===current).sort((a,b)=>(b.id==='garraway')-(a.id==='garraway')||(b.eventCount||0)-(a.eventCount||0)||a.name.localeCompare(b.name,'ja'));}
+function quickList(){const vs=visible();document.getElementById('venue-map-count').textContent=vs.length+'会場';document.getElementById('venue-map-area-title').textContent=current==='all'?'主要会場':current+'エリア';document.getElementById('venue-map-quicklist').innerHTML=vs.slice(0,10).map(v=>`<button type="button" data-map-venue="${v.id}" class="${v.id==='garraway'?'gf':''}"><span>${v.id==='garraway'?'GF':String(Math.max(1,v.eventCount||1)).padStart(2,'0')}</span><strong>${v.name}</strong><small>${v.eventCount||0}掲載枠</small></button>`).join('')||'<p>位置情報のある会場がありません。</p>';}
+function markerHTML(v){const gf=v.id==='garraway';return `<div class="venue-marker${gf?' gf':''}"><span>${gf?'GF':'•'}</span></div>`;}
+function draw(){quickList();if(!map||!window.L)return;const L=window.L;if(layer)layer.clearLayers();else layer=L.layerGroup().addTo(map);const vs=visible(),bounds=[];vs.forEach(v=>{const icon=L.divIcon({className:'',html:markerHTML(v),iconSize:v.id==='garraway'?[44,44]:[24,24],iconAnchor:v.id==='garraway'?[22,39]:[12,21],popupAnchor:[0,-22]});const m=L.marker([v.geo.lat,v.geo.lng],{icon,title:v.name}).addTo(layer);m.bindPopup(`<div class="venue-map-popup"><strong>${v.name}</strong><small>${areaOf(v)} / ${v.eventCount||0}掲載枠</small><button type="button" data-map-venue="${v.id}">この会場の予定</button><a href="${gm(v)}" target="_blank" rel="noopener noreferrer">Googleマップ ↗</a></div>`);bounds.push([v.geo.lat,v.geo.lng]);});if(bounds.length===1)map.setView(bounds[0],16);else if(bounds.length)map.fitBounds(bounds,{padding:[42,42],maxZoom:16});}
+function fallback(){const f=document.getElementById('venue-map-fallback');if(!f)return;f.classList.add('visible');const vs=visible();f.querySelector('.venue-map-fallback-grid').innerHTML=vs.map(v=>`<button type="button" data-map-venue="${v.id}" class="${v.id==='garraway'?'gf':''}"><strong>${v.name}</strong><small>${areaOf(v)} / ${v.eventCount||0}掲載枠</small></button>`).join('');}
+function init(){if(!window.L){fallback();return;}const L=window.L,el=document.getElementById('venue-leaflet');if(!el)return;map=L.map(el,{scrollWheelZoom:false,zoomControl:true,minZoom:12,maxZoom:18});L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map);draw();setTimeout(()=>map.invalidateSize(),120);}
+document.addEventListener('click',e=>{const area=e.target.closest('[data-map-area]');if(area){current=area.dataset.mapArea;document.querySelectorAll('[data-map-area]').forEach(b=>b.setAttribute('aria-pressed',String(b===area)));draw();return;}const b=e.target.closest('[data-map-venue]');if(b)goVenue(b.dataset.mapVenue);});
+quickList();
+function loadLeaflet(){if(window.L){init();return;}const css=document.createElement('link');css.rel='stylesheet';css.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';css.crossOrigin='';document.head.appendChild(css);const s=document.createElement('script');s.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';s.crossOrigin='';s.onload=init;s.onerror=fallback;document.head.appendChild(s);setTimeout(()=>{if(!window.L)fallback();},5000);}loadLeaflet();
 })();

@@ -54,6 +54,18 @@ jobs:
             -e 's#/GarrawayFapp.github.io/ramen-tech-2026/#/ramen-tech-2026/#g' \
             -e 's#/GarrawayFapp.github.io/#/#g'
 
+          python3 - <<'PY'
+          from pathlib import Path
+          planner = Path('site/public/ramen-tech-2026/planner.js')
+          text = planner.read_text(encoding='utf-8')
+          old = "duration=a.e.room&&a.e.room===b.e.room?0:3;method=duration?'同じ施設内の移動目安':'同じ部屋';"
+          new = "duration=0;method='同じ会場・移動なし';"
+          if old not in text and new not in text:
+              raise SystemExit('Same-venue transfer rule was not found')
+          text = text.replace(old, new)
+          planner.write_text(text, encoding='utf-8')
+          PY
+
       - name: Set up Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
@@ -102,6 +114,11 @@ jobs:
           ramen_html = ramen.read_text(encoding="utf-8", errors="ignore")
           assert "非公式" in ramen_html, "Unofficial guide label is missing"
           assert "Garraway F" in ramen_html, "Garraway F feature is missing"
+
+          planner = out / "ramen-tech-2026" / "planner.js"
+          planner_text = planner.read_text(encoding="utf-8", errors="ignore")
+          assert "duration=0;method='同じ会場・移動なし';" in planner_text, "Same-venue zero travel rule is missing"
+          assert "同じ施設内の移動目安" not in planner_text, "Old same-venue 3-minute rule remains"
 
           text_files = [
               path for path in out.rglob("*")

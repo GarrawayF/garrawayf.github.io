@@ -27,7 +27,7 @@ jobs:
         with:
           path: site
 
-      - name: Checkout approved social feed
+      - name: Checkout approved social feed and RAMEN TECH guide
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           repository: MDL20241119/GarrawayFapp.github.io
@@ -36,16 +36,21 @@ jobs:
           sparse-checkout: |
             data
             images/instagram
+            ramen-tech-2026
           sparse-checkout-cone-mode: false
 
-      - name: Prepare social content
+      - name: Prepare published content
         shell: bash
         run: |
-          mkdir -p site/public/data site/public/images
+          mkdir -p site/public/data site/public/images site/public/ramen-tech-2026
           cp -R published/data/. site/public/data/
           if [ -d published/images/instagram ]; then
             cp -R published/images/instagram site/public/images/
           fi
+          cp -R published/ramen-tech-2026/. site/public/ramen-tech-2026/
+          find site/public/ramen-tech-2026 -type f \( -name '*.html' -o -name '*.js' -o -name '*.css' -o -name '*.json' -o -name '*.md' \) -print0 | xargs -0 sed -i \
+            -e 's#https://mobilitydlab.com/GarrawayFapp.github.io/ramen-tech-2026/#https://garrawayf.github.io/ramen-tech-2026/#g' \
+            -e 's#https://mobilitydlab.com/GarrawayFapp.github.io/#https://garrawayf.github.io/#g'
 
       - name: Set up Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -90,6 +95,12 @@ jobs:
               assert "プレオープン｜試験公開中" in html, f"Missing trial label: {page}"
               assert 'name="robots"' in html and "noindex, nofollow" in html, f"Missing noindex: {page}"
 
+          ramen = out / "ramen-tech-2026" / "index.html"
+          assert ramen.is_file(), "RAMEN TECH special site is missing"
+          ramen_html = ramen.read_text(encoding="utf-8", errors="ignore")
+          assert "非公式" in ramen_html, "Unofficial guide label is missing"
+          assert "Garraway F" in ramen_html, "Garraway F feature is missing"
+
           text_files = [
               path for path in out.rglob("*")
               if path.is_file() and path.suffix in {".html", ".js", ".css", ".json", ".txt"}
@@ -98,6 +109,7 @@ jobs:
               path.read_text(encoding="utf-8", errors="ignore") for path in text_files
           )
           assert "/GarrawayFapp.github.io" not in published_text, "Legacy base path remains"
+          assert "mobilitydlab.com/GarrawayFapp.github.io" not in published_text, "Legacy RAMEN host remains"
           assert "2019garrawf@gmail.com" not in published_text
           assert "2019garrawayf@gmail.com" not in published_text, "Hidden CC remains"
 
@@ -125,7 +137,7 @@ jobs:
           ]:
               assert (out / image).is_file(), f"Required image is missing: {image}"
 
-          print(f"Smoke test passed: {len(pages)} pages, {len(posts)} Instagram posts")
+          print(f"Smoke test passed: {len(pages)} pages, {len(posts)} Instagram posts, RAMEN TECH special site")
           PY
 
       - name: Configure GitHub Pages

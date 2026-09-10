@@ -111,7 +111,7 @@ jobs:
           assert 'classic-ui.js?v=20260910c6' in html
           assert 'access-planner.js?v=20260910c6' in html
           access=(ramen/'access-planner.js').read_text(encoding='utf-8')
-          for marker in ['行きの交通を探す','帰りの交通を探す','最初に参加','最後まで参加','東京','大阪']: assert marker in access, marker
+          for marker in ['行き｜このイベントに間に合う','帰り｜このイベント後に帰る','最初のイベント','最後のイベント','東京','大阪']: assert marker in access, marker
           classic=(ramen/'classic-ui.js').read_text(encoding='utf-8')
           assert 'ensureRoadMap' in classic
           print('Smoke test passed: event-first round-trip travel finder is included')
@@ -153,7 +153,7 @@ jobs:
               html=get('').decode('utf-8')
               assert 'access-planner.js?v='+version in html
               access=get('access-planner.js').decode('utf-8')
-              assert '行きの交通を探す' in access and '帰りの交通を探す' in access
+              assert '行き｜このイベントに間に合う' in access and '帰り｜このイベント後に帰る' in access
               print('PUBLIC URL VERIFIED: '+root)
               print('UI '+version+': event-first round-trip travel finder served successfully.')
               break

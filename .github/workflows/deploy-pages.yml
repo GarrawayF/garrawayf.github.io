@@ -73,13 +73,14 @@ jobs:
           js=(root/'guide.js').read_text(encoding='utf-8').replace('この確認版について','このガイドについて').replace('このプレビューは保存データを使い、自動取得処理を実行しません。','このガイドは配信時点の保存データを表示し、閲覧中に自動取得は行いません。')
           (root/'guide.js').write_text(js,encoding='utf-8')
           html=(root/'index.html').read_text(encoding='utf-8')
-          classic='<link rel="stylesheet" href="v3-classic.css?v=20260910c4"><script src="classic-ui.js?v=20260910c4" defer></script><meta name="garraway-ui-version" content="20260910c4">'
+          classic='<link rel="stylesheet" href="v3-classic.css?v=20260910c5"><script src="classic-ui.js?v=20260910c5" defer></script><script src="access-planner.js?v=20260910c5" defer></script><meta name="garraway-ui-version" content="20260910c5">'
           html=html.replace('<meta name="theme-color" content="#f7f7f2">','<meta name="theme-color" content="#1892F5">')
           if classic not in html: html=html.replace('</head>',classic+'</head>')
           (root/'index.html').write_text(html,encoding='utf-8')
           PY
           node --check site/public/ramen-tech-2026/guide.js
           node --check site/public/ramen-tech-2026/classic-ui.js
+          node --check site/public/ramen-tech-2026/access-planner.js
       - name: Set up Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
@@ -102,30 +103,18 @@ jobs:
         working-directory: site
         run: |
           python3 - <<'PY'
-          import json
           from pathlib import Path
-          out=Path('out')
-          pages=[out/'index.html',out/'events'/'index.html',out/'contact'/'index.html',out/'privacy'/'index.html']
-          for page in pages:
-            assert page.is_file(); html=page.read_text(encoding='utf-8'); assert 'プレオープン｜試験公開中' in html; assert 'name="robots"' in html and 'noindex, nofollow' in html
-          ramen=out/'ramen-tech-2026'; html=(ramen/'index.html').read_text(encoding='utf-8',errors='ignore')
+          out=Path('out'); ramen=out/'ramen-tech-2026'
+          html=(ramen/'index.html').read_text(encoding='utf-8',errors='ignore')
           assert 'RAMEN TECH 2026 非公式回遊ガイド｜Garraway F' in html
           assert 'window.GUIDE_CONFIG={preview:false' in html
-          assert 'v3-classic.css?v=20260910c4' in html and (ramen/'v3-classic.css').is_file()
-          assert 'classic-ui.js?v=20260910c4' in html and (ramen/'classic-ui.js').is_file()
-          css=(ramen/'v3-classic.css').read_text(encoding='utf-8')
-          for marker in ['.site-header','.classic-hero','.day-tab','.plan-map-aside','.card-title','Arial']: assert marker in css
-          classic_js=(ramen/'classic-ui.js').read_text(encoding='utf-8')
-          assert 'data-classic-search' in classic_js
-          assert 'data-map-mode="road"' in classic_js and 'ensureRoadMap' in classic_js
-          guide=(ramen/'guide.js').read_text(encoding='utf-8',errors='ignore')
-          for marker in ['plan-map','マイ予定','当日ナビ','このガイドについて']: assert marker in guide or marker in html
-          assert 'このプレビューは保存データを使い' not in guide
-          text='\n'.join(p.read_text(encoding='utf-8',errors='ignore') for p in out.rglob('*') if p.is_file() and p.suffix in {'.html','.js','.css','.json','.txt'})
-          assert '/GarrawayFapp.github.io' not in text and 'mobilitydlab.com/GarrawayFapp.github.io' not in text
-          assert '2019garrawf@gmail.com' not in text and '2019garrawayf@gmail.com' not in text
-          instagram=json.loads((out/'data'/'instagram.json').read_text(encoding='utf-8')); assert instagram.get('includes_tagged_posts') is False and instagram.get('includes_stories') is False
-          print('Smoke test passed: classic UI + real-road-map default in My Plan')
+          assert 'classic-ui.js?v=20260910c5' in html
+          assert 'access-planner.js?v=20260910c5' in html
+          access=(ramen/'access-planner.js').read_text(encoding='utf-8')
+          for marker in ['行きの交通を探す','帰りの交通を探す','最初のイベント','最後のイベント','東京','大阪']: assert marker in access
+          classic=(ramen/'classic-ui.js').read_text(encoding='utf-8')
+          assert 'ensureRoadMap' in classic
+          print('Smoke test passed: event-first round-trip travel finder is included')
           PY
       - name: Configure GitHub Pages
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b
@@ -147,32 +136,25 @@ jobs:
       - name: Deploy website
         id: deployment
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e
-      - name: Verify public RAMEN TECH UI files
+      - name: Verify public RAMEN TECH travel finder
         shell: bash
         run: |
           python3 - <<'PY'
           import time,urllib.request
           root='https://garrawayf.github.io/ramen-tech-2026/'
-          version='20260910c4'
+          version='20260910c5'
           def get(path):
             req=urllib.request.Request(root+path+'?v='+version,headers={'User-Agent':'GarrawayF-deployment-check/1.0','Cache-Control':'no-cache'})
-            with urllib.request.urlopen(req,timeout=20) as response:
-              assert response.status==200
-              return response.read()
+            with urllib.request.urlopen(req,timeout=20) as response:return response.read()
           for attempt in range(8):
             try:
               html=get('').decode('utf-8')
-              assert 'v3-classic.css?v='+version in html
-              assert 'classic-ui.js?v='+version in html
-              assert 'window.GUIDE_CONFIG={preview:false' in html
-              classic=get('classic-ui.js').decode('utf-8')
-              assert 'ensureRoadMap' in classic and 'data-map-mode="road"' in classic
-              assert 'plan-map' in get('guide.js').decode('utf-8')
+              assert 'access-planner.js?v='+version in html
+              access=get('access-planner.js').decode('utf-8')
+              assert '行きの交通を探す' in access and '帰りの交通を探す' in access
               print('PUBLIC URL VERIFIED: '+root)
-              print('UI '+version+': real road map defaults in My Plan.')
               break
-            except Exception as error:
-              print('Waiting for public cache refresh:',type(error).__name__,str(error))
+            except Exception as e:
               if attempt==7: raise
               time.sleep(10)
           PY

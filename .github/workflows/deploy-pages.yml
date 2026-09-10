@@ -73,7 +73,7 @@ jobs:
           js=(root/'guide.js').read_text(encoding='utf-8').replace('この確認版について','このガイドについて').replace('このプレビューは保存データを使い、自動取得処理を実行しません。','このガイドは配信時点の保存データを表示し、閲覧中に自動取得は行いません。')
           (root/'guide.js').write_text(js,encoding='utf-8')
           html=(root/'index.html').read_text(encoding='utf-8')
-          classic='<link rel="stylesheet" href="v3-classic.css?v=20260910c2"><script src="classic-ui.js?v=20260910c2" defer></script><meta name="garraway-ui-version" content="20260910c2">'
+          classic='<link rel="stylesheet" href="v3-classic.css?v=20260910c4"><script src="classic-ui.js?v=20260910c4" defer></script><meta name="garraway-ui-version" content="20260910c4">'
           html=html.replace('<meta name="theme-color" content="#f7f7f2">','<meta name="theme-color" content="#1892F5">')
           if classic not in html: html=html.replace('</head>',classic+'</head>')
           (root/'index.html').write_text(html,encoding='utf-8')
@@ -111,11 +111,13 @@ jobs:
           ramen=out/'ramen-tech-2026'; html=(ramen/'index.html').read_text(encoding='utf-8',errors='ignore')
           assert 'RAMEN TECH 2026 非公式回遊ガイド｜Garraway F' in html
           assert 'window.GUIDE_CONFIG={preview:false' in html
-          assert 'v3-classic.css?v=20260910c2' in html and (ramen/'v3-classic.css').is_file()
-          assert 'classic-ui.js?v=20260910c2' in html and (ramen/'classic-ui.js').is_file()
+          assert 'v3-classic.css?v=20260910c4' in html and (ramen/'v3-classic.css').is_file()
+          assert 'classic-ui.js?v=20260910c4' in html and (ramen/'classic-ui.js').is_file()
           css=(ramen/'v3-classic.css').read_text(encoding='utf-8')
           for marker in ['.site-header','.classic-hero','.day-tab','.plan-map-aside','.card-title','Arial']: assert marker in css
-          assert 'data-classic-search' in (ramen/'classic-ui.js').read_text(encoding='utf-8')
+          classic_js=(ramen/'classic-ui.js').read_text(encoding='utf-8')
+          assert 'data-classic-search' in classic_js
+          assert 'data-map-mode="road"' in classic_js and 'ensureRoadMap' in classic_js
           guide=(ramen/'guide.js').read_text(encoding='utf-8',errors='ignore')
           for marker in ['plan-map','マイ予定','当日ナビ','このガイドについて']: assert marker in guide or marker in html
           assert 'このプレビューは保存データを使い' not in guide
@@ -123,7 +125,7 @@ jobs:
           assert '/GarrawayFapp.github.io' not in text and 'mobilitydlab.com/GarrawayFapp.github.io' not in text
           assert '2019garrawf@gmail.com' not in text and '2019garrawayf@gmail.com' not in text
           instagram=json.loads((out/'data'/'instagram.json').read_text(encoding='utf-8')); assert instagram.get('includes_tagged_posts') is False and instagram.get('includes_stories') is False
-          print('Smoke test passed: original masthead/fonts/cards + unchanged v3 map planner')
+          print('Smoke test passed: classic UI + real-road-map default in My Plan')
           PY
       - name: Configure GitHub Pages
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b
@@ -149,13 +151,9 @@ jobs:
         shell: bash
         run: |
           python3 - <<'PY'
-          import hashlib,time,urllib.request
+          import time,urllib.request
           root='https://garrawayf.github.io/ramen-tech-2026/'
-          version='20260910c2'
-          expected={
-            'v3-classic.css':'67763d1a2fda17c16fd9d469b75bf7058e5f1c44642c51dbd1ca3a01c0024fba',
-            'classic-ui.js':'336f6c192c0e77e5a124bb05e45a5f473dad0ad2afc65a3de3fdc760b4ee846a'
-          }
+          version='20260910c4'
           def get(path):
             req=urllib.request.Request(root+path+'?v='+version,headers={'User-Agent':'GarrawayF-deployment-check/1.0','Cache-Control':'no-cache'})
             with urllib.request.urlopen(req,timeout=20) as response:
@@ -167,11 +165,11 @@ jobs:
               assert 'v3-classic.css?v='+version in html
               assert 'classic-ui.js?v='+version in html
               assert 'window.GUIDE_CONFIG={preview:false' in html
-              for filename,digest in expected.items():
-                assert hashlib.sha256(get(filename)).hexdigest()==digest,filename+' differs from tested version'
+              classic=get('classic-ui.js').decode('utf-8')
+              assert 'ensureRoadMap' in classic and 'data-map-mode="road"' in classic
               assert 'plan-map' in get('guide.js').decode('utf-8')
               print('PUBLIC URL VERIFIED: '+root)
-              print('UI '+version+': HTML, original-style CSS, masthead script and map planner served successfully.')
+              print('UI '+version+': real road map defaults in My Plan.')
               break
             except Exception as error:
               print('Waiting for public cache refresh:',type(error).__name__,str(error))

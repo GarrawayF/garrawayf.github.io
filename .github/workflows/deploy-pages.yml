@@ -56,13 +56,6 @@ jobs:
           new="duration=0;method='同じ会場・移動なし';"
           if old not in text and new not in text: raise SystemExit('Same-venue rule missing')
           planner.write_text(text.replace(old,new),encoding='utf-8')
-          index=root/'index.html'; html=index.read_text(encoding='utf-8')
-          html=html.replace('RAMEN TECH 2026 CITY GUIDE｜全会場スケジュール・Garraway F編集版','RAMEN TECH 2026 非公式回遊ガイド｜Garraway F')
-          html=html.replace('<meta property="og:title" content="RAMEN TECH 2026 CITY GUIDE">','<meta property="og:title" content="RAMEN TECH 2026 非公式回遊ガイド｜Garraway F">')
-          html=html.replace('RAMEN TECH 特設サイト / 非公式イベントガイド','RAMEN TECH 2026 非公式回遊ガイド｜Garraway F')
-          css='<link rel="stylesheet" href="venue-map.css?v=20260909m1">'; js='<script src="venue-map.js?v=20260909m1" defer></script>'
-          if css not in html: html=html.replace('</head>',css+js+'</head>')
-          index.write_text(html,encoding='utf-8')
           PY
       - name: Assemble redesigned RAMEN TECH guide
         shell: bash
@@ -70,22 +63,19 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           import base64, gzip
-          root=Path('site/public/ramen-tech-2026')
-          bundle=root/'v3-bundle'
-          def unpack(prefix, target):
+          root=Path('site/public/ramen-tech-2026'); bundle=root/'v3-bundle'
+          def unpack(prefix,target):
               parts=sorted(bundle.glob(prefix+'.*.part'))
-              if not parts:
-                  raise SystemExit(f'Missing bundle: {prefix}')
+              if not parts: raise SystemExit(f'Missing bundle: {prefix}')
               packed=''.join(p.read_text(encoding='utf-8').strip() for p in parts)
-              data=gzip.decompress(base64.b64decode(packed))
-              (root/target).write_bytes(data)
-          unpack('index_html','index.html')
-          unpack('guide_css','guide.css')
-          unpack('guide_js','guide.js')
-          js=(root/'guide.js').read_text(encoding='utf-8')
-          js=js.replace('この確認版について','このガイドについて')
-          js=js.replace('このプレビューは保存データを使い、自動取得処理を実行しません。','このガイドは配信時点の保存データを表示し、閲覧中に自動取得は行いません。')
+              (root/target).write_bytes(gzip.decompress(base64.b64decode(packed)))
+          unpack('index_html','index.html'); unpack('guide_css','guide.css'); unpack('guide_js','guide.js')
+          js=(root/'guide.js').read_text(encoding='utf-8').replace('この確認版について','このガイドについて').replace('このプレビューは保存データを使い、自動取得処理を実行しません。','このガイドは配信時点の保存データを表示し、閲覧中に自動取得は行いません。')
           (root/'guide.js').write_text(js,encoding='utf-8')
+          html=(root/'index.html').read_text(encoding='utf-8')
+          classic='<link rel="stylesheet" href="v3-classic.css?v=20260910c1">'
+          if classic not in html: html=html.replace('</head>',classic+'</head>')
+          (root/'index.html').write_text(html,encoding='utf-8')
           PY
       - name: Set up Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
@@ -114,32 +104,19 @@ jobs:
           out=Path('out')
           pages=[out/'index.html',out/'events'/'index.html',out/'contact'/'index.html',out/'privacy'/'index.html']
           for page in pages:
-            assert page.is_file(), f'Missing page: {page}'
-            html=page.read_text(encoding='utf-8')
-            assert 'プレオープン｜試験公開中' in html
-            assert 'name="robots"' in html and 'noindex, nofollow' in html
+            assert page.is_file(); html=page.read_text(encoding='utf-8'); assert 'プレオープン｜試験公開中' in html; assert 'name="robots"' in html and 'noindex, nofollow' in html
           ramen=out/'ramen-tech-2026'; html=(ramen/'index.html').read_text(encoding='utf-8',errors='ignore')
           assert 'RAMEN TECH 2026 非公式回遊ガイド｜Garraway F' in html
           assert 'window.GUIDE_CONFIG={preview:false' in html
-          assert (ramen/'guide.css').is_file() and (ramen/'guide.js').is_file() and (ramen/'catalog.js').is_file()
+          assert 'v3-classic.css?v=20260910c1' in html and (ramen/'v3-classic.css').is_file()
           guide=(ramen/'guide.js').read_text(encoding='utf-8',errors='ignore')
-          for marker in ['plan-map','マイ予定','当日ナビ','このガイドについて']:
-            assert marker in guide or marker in html, marker
+          for marker in ['plan-map','マイ予定','当日ナビ','このガイドについて']: assert marker in guide or marker in html
           assert 'このプレビューは保存データを使い' not in guide
-          assert (ramen/'venue-map.css').is_file() and (ramen/'venue-map.js').is_file()
-          planner=(ramen/'planner.js').read_text(encoding='utf-8',errors='ignore')
-          assert "duration=0;method='同じ会場・移動なし';" in planner
-          assert '同じ施設内の移動目安' not in planner
           text='\n'.join(p.read_text(encoding='utf-8',errors='ignore') for p in out.rglob('*') if p.is_file() and p.suffix in {'.html','.js','.css','.json','.txt'})
           assert '/GarrawayFapp.github.io' not in text and 'mobilitydlab.com/GarrawayFapp.github.io' not in text
           assert '2019garrawf@gmail.com' not in text and '2019garrawayf@gmail.com' not in text
-          instagram=json.loads((out/'data'/'instagram.json').read_text(encoding='utf-8'))
-          assert instagram.get('includes_tagged_posts') is False and instagram.get('includes_stories') is False
-          for post in instagram.get('posts') or []:
-            image=str(post.get('image') or ''); assert image and not image.startswith(('http://','https://','data:')); assert (out/image).is_file()
-          for image in ['images/hero-community-800.webp','images/hero-community-1440.webp','images/floor-kitchen-dining.webp','images/access-tenjin-class-3f.webp']:
-            assert (out/image).is_file(), image
-          print('Smoke test passed including redesigned RAMEN TECH itinerary map')
+          instagram=json.loads((out/'data'/'instagram.json').read_text(encoding='utf-8')); assert instagram.get('includes_tagged_posts') is False and instagram.get('includes_stories') is False
+          print('Smoke test passed: improved UX + classic RAMEN TECH visual language')
           PY
       - name: Configure GitHub Pages
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b

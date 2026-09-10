@@ -57,6 +57,9 @@ jobs:
           if old not in text and new not in text: raise SystemExit('Same-venue rule missing')
           planner.write_text(text.replace(old,new),encoding='utf-8')
           index=root/'index.html'; html=index.read_text(encoding='utf-8')
+          html=html.replace('RAMEN TECH 2026 CITY GUIDE｜全会場スケジュール・Garraway F編集版','RAMEN TECH 2026 非公式回遊ガイド｜Garraway F')
+          html=html.replace('<meta property="og:title" content="RAMEN TECH 2026 CITY GUIDE">','<meta property="og:title" content="RAMEN TECH 2026 非公式回遊ガイド｜Garraway F">')
+          html=html.replace('RAMEN TECH 特設サイト / 非公式イベントガイド','RAMEN TECH 2026 非公式回遊ガイド｜Garraway F')
           css='<link rel="stylesheet" href="venue-map.css?v=20260909m1">'; js='<script src="venue-map.js?v=20260909m1" defer></script>'
           if css not in html: html=html.replace('</head>',css+js+'</head>')
           index.write_text(html,encoding='utf-8')
@@ -93,6 +96,7 @@ jobs:
             assert 'プレオープン｜試験公開中' in html
             assert 'name="robots"' in html and 'noindex, nofollow' in html
           ramen=out/'ramen-tech-2026'; html=(ramen/'index.html').read_text(encoding='utf-8',errors='ignore')
+          assert 'RAMEN TECH 2026 非公式回遊ガイド｜Garraway F' in html
           assert '非公式' in html and 'Garraway F' in html
           assert (ramen/'venue-map.css').is_file() and (ramen/'venue-map.js').is_file()
           planner=(ramen/'planner.js').read_text(encoding='utf-8',errors='ignore')

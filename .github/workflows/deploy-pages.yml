@@ -57,6 +57,16 @@ jobs:
           if old not in text and new not in text: raise SystemExit('Same-venue rule missing')
           planner.write_text(text.replace(old,new),encoding='utf-8')
           PY
+      - name: Verify and refresh flight timetables
+        shell: bash
+        run: |
+          node published/ramen-tech-2026/tests/access-planner.test.cjs
+          if ! timeout 240s python3 site/public/ramen-tech-2026/scripts/update-flight-data.py; then
+            echo "::warning::Airport timetable refresh unavailable; keeping the dated verified snapshot."
+            test -s site/public/ramen-tech-2026/flight-data.js
+          fi
+          node --check site/public/ramen-tech-2026/flight-data.js
+          node --check site/public/ramen-tech-2026/flight-monthly.js
       - name: Assemble redesigned RAMEN TECH guide
         shell: bash
         run: |
@@ -73,7 +83,7 @@ jobs:
           js=(root/'guide.js').read_text(encoding='utf-8').replace('この確認版について','このガイドについて').replace('このプレビューは保存データを使い、自動取得処理を実行しません。','このガイドは配信時点の保存データを表示し、閲覧中に自動取得は行いません。')
           (root/'guide.js').write_text(js,encoding='utf-8')
           html=(root/'index.html').read_text(encoding='utf-8')
-          classic='<link rel="stylesheet" href="v3-classic.css?v=20260911t3"><script src="classic-ui.js?v=20260911t3" defer></script><script src="access-planner.js?v=20260911t3" defer></script><meta name="garraway-ui-version" content="20260911t3">'
+          classic='<link rel="stylesheet" href="v3-classic.css?v=20260911f1"><script src="classic-ui.js?v=20260911f1" defer></script><script src="flight-data.js?v=20260911f1" defer></script><script src="flight-monthly.js?v=20260911f1" defer></script><script src="access-planner.js?v=20260911f1" defer></script><meta name="garraway-ui-version" content="20260911f1">'
           html=html.replace('<meta name="theme-color" content="#f7f7f2">','<meta name="theme-color" content="#1892F5">')
           if classic not in html: html=html.replace('</head>',classic+'</head>')
           (root/'index.html').write_text(html,encoding='utf-8')
@@ -108,8 +118,10 @@ jobs:
           html=(ramen/'index.html').read_text(encoding='utf-8',errors='ignore')
           assert 'RAMEN TECH 2026 非公式回遊ガイド｜Garraway F' in html
           assert 'window.GUIDE_CONFIG={preview:false' in html
-          assert 'classic-ui.js?v=20260911t3' in html
-          assert 'access-planner.js?v=20260911t3' in html
+          assert 'classic-ui.js?v=20260911f1' in html
+          assert 'access-planner.js?v=20260911f1' in html
+          assert 'flight-data.js?v=20260911f1' in html
+          assert 'flight-monthly.js?v=20260911f1' in html
           access=(ramen/'access-planner.js').read_text(encoding='utf-8')
           for marker in ['行き｜このイベントに間に合う','帰り｜このイベント後に帰る','最初のイベント','最後のイベント','東京','大阪','placeAfterPlanContent']: assert marker in access, marker
           classic=(ramen/'classic-ui.js').read_text(encoding='utf-8')
@@ -142,7 +154,7 @@ jobs:
           python3 - <<'PY'
           import time,urllib.request
           root='https://garrawayf.github.io/ramen-tech-2026/'
-          version='20260911t3'
+          version='20260911f1'
           def get(path):
             req=urllib.request.Request(root+path+'?v='+version,headers={'User-Agent':'GarrawayF-deployment-check/1.0','Cache-Control':'no-cache'})
             with urllib.request.urlopen(req,timeout=20) as response:

@@ -4,11 +4,11 @@ import { SITE_LINKS } from "./site-links";
 import styles from "./social-links.module.css";
 
 const socials = [
-  { name: "Facebook", detail: "Garraway F", href: SITE_LINKS.facebook, brand: "facebook", icon: "facebook.png" },
-  { name: "Instagram", detail: "ラウンジ", href: SITE_LINKS.instagram, brand: "instagram", icon: "instagram.svg" },
-  { name: "Instagram", detail: "ライブラリー", href: SITE_LINKS.libraryInstagram, brand: "instagram", icon: "instagram.svg" },
-  { name: "X", detail: "旧Twitter", href: SITE_LINKS.x, brand: "x", icon: "x.svg" },
   { name: "LINE", detail: "公式アカウント", href: SITE_LINKS.line, brand: "line", icon: "line.png" },
+  { name: "Facebook", detail: "Garraway F", href: SITE_LINKS.facebook, brand: "facebook", icon: "facebook.png" },
+  { name: "Instagram", detail: "GarrawayF公式", href: SITE_LINKS.instagram, brand: "instagram", icon: "instagram.svg" },
+  { name: "Instagram", detail: "GarrawayF図書館", href: SITE_LINKS.libraryInstagram, brand: "instagram", icon: "instagram.svg" },
+  { name: "X", detail: "旧Twitter", href: SITE_LINKS.x, brand: "x", icon: "x.svg" },
   { name: "note", detail: "Garraway F", href: SITE_LINKS.note, brand: "note", icon: "note.png" },
 ] as const;
 

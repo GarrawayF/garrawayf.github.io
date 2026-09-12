@@ -90,7 +90,7 @@ jobs:
           js=(root/'guide.js').read_text(encoding='utf-8').replace('この確認版について','このガイドについて').replace('このプレビューは保存データを使い、自動取得処理を実行しません。','このガイドは配信時点の保存データを表示し、閲覧中に自動取得は行いません。')
           (root/'guide.js').write_text(js,encoding='utf-8')
           html=(root/'index.html').read_text(encoding='utf-8')
-          classic='<link rel="stylesheet" href="v3-classic.css?v=20260911f1"><script src="classic-ui.js?v=20260912k3" defer></script><script src="flight-data.js?v=20260911f1" defer></script><script src="flight-monthly.js?v=20260911f1" defer></script><script src="access-planner.js?v=20260911f1" defer></script><meta name="garraway-ui-version" content="20260911f1">'
+          classic='<link rel="stylesheet" href="v3-classic.css?v=20260911f1"><script src="classic-ui.js?v=20260912k4" defer></script><script src="flight-data.js?v=20260911f1" defer></script><script src="flight-monthly.js?v=20260911f1" defer></script><script src="access-planner.js?v=20260911f1" defer></script><meta name="garraway-ui-version" content="20260911f1">'
           html=html.replace('<meta name="theme-color" content="#f7f7f2">','<meta name="theme-color" content="#1892F5">')
           if classic not in html: html=html.replace('</head>',classic+'</head>')
           (root/'index.html').write_text(html,encoding='utf-8')
@@ -128,7 +128,7 @@ jobs:
           html=(ramen/'index.html').read_text(encoding='utf-8',errors='ignore')
           assert 'RAMEN TECH 2026 非公式回遊ガイド｜Garraway F' in html
           assert 'window.GUIDE_CONFIG={preview:false' in html
-          assert 'classic-ui.js?v=20260912k3' in html
+          assert 'classic-ui.js?v=20260912k4' in html
           assert 'access-planner.js?v=20260911f1' in html
           assert 'flight-data.js?v=20260911f1' in html
           assert 'flight-monthly.js?v=20260911f1' in html
@@ -138,7 +138,7 @@ jobs:
           assert 'ensureRoadMap' in classic
           assert "'kyushu/'" in classic
           autumn=(ramen/'kyushu/index.html').read_text(encoding='utf-8')
-          assert 'garraway-kyushu-version' in autumn and '20260912k3' in autumn
+          assert 'garraway-kyushu-version' in autumn and '20260912k4' in autumn
           assert '福岡に来たら、' in autumn and '九州まで遊ぼう。' in autumn
           assert 'id="event-grid"' in autumn and 'id="event-dialog"' in autumn
           print('Smoke test passed: visible event-first round-trip travel finder below My Plan')
@@ -183,7 +183,11 @@ jobs:
               assert 'placeAfterPlanContent' in access
               assert '行き｜このイベントに間に合う' in access and '帰り｜このイベント後に帰る' in access
               autumn=get('kyushu/').decode('utf-8')
-              assert '20260912k3' in autumn and '福岡に来たら、' in autumn
+              assert '20260912k4' in autumn and '福岡に来たら、' in autumn
+              assert autumn.count('実際のイベント写真ではありません。')==1
+              assert autumn.count('class="card-source"')==19
+              assert 'class="photo-tag"' not in autumn and 'class="cover-image-tag"' not in autumn
+              assert 'class="image-disclosure"' not in get('kyushu/kyushu.js').decode('utf-8')
               manifest=json.loads(get('kyushu/image-manifest.json'))
               assert manifest['version']=='20260912k3' and len(manifest['assets'])==19
               assert len({asset['sha256'] for asset in manifest['assets']})==19

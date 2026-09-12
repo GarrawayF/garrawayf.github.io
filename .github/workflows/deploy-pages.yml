@@ -9,17 +9,20 @@ on:
 
 permissions: {}
 concurrency:
-  group: pages-${{ github.run_id }}
+  group: garrawayf-pages-publish
   cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     permissions:
       contents: read
       pages: write
       id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout Garraway F source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -145,24 +148,54 @@ jobs:
           PY
       - name: Configure GitHub Pages
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b
+      - name: Inspect GitHub Pages publishing source
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PAGES_REPOSITORY: ${{ github.repository }}
+        run: |
+          publishing_type=$(gh api "repos/$PAGES_REPOSITORY/pages" --jq '.build_type')
+          echo "GitHub Pages publishing source: $publishing_type"
+          if [ "$publishing_type" != "workflow" ]; then
+            echo "::warning::Set Settings > Pages > Source to GitHub Actions to prevent the branch publisher from replacing the built website."
+          fi
       - name: Upload website
         uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa
         with:
           path: site/out
-  deploy:
-    runs-on: ubuntu-24.04
-    needs: build
-    timeout-minutes: 10
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
       - name: Deploy website
         id: deployment
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e
+      - name: Verify public website matches this build
+        env:
+          PUBLISHED_REVISION: ${{ github.sha }}
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import hashlib, os, time, urllib.request
+          from pathlib import Path
+          pages = {
+              '': Path('site/out/index.html'),
+              'events/': Path('site/out/events/index.html'),
+              'contact/': Path('site/out/contact/index.html'),
+              'privacy/': Path('site/out/privacy/index.html'),
+          }
+          for attempt in range(8):
+              try:
+                  for route, expected in pages.items():
+                      url = 'https://garrawayf.github.io/' + route + '?revision=' + os.environ['PUBLISHED_REVISION']
+                      request = urllib.request.Request(url, headers={'Cache-Control': 'no-cache', 'User-Agent': 'GarrawayF-deployment-check/1.0'})
+                      with urllib.request.urlopen(request, timeout=20) as response:
+                          assert response.status == 200, route
+                          actual = response.read()
+                      assert hashlib.sha256(actual).digest() == hashlib.sha256(expected.read_bytes()).digest(), 'Published page differs from build: /' + route
+                  print('Public homepage, events, contact and privacy pages match this build.')
+                  break
+              except Exception as error:
+                  print('Waiting for public cache refresh:', type(error).__name__, str(error))
+                  if attempt == 7:
+                      raise
+                  time.sleep(10)
+          PY
       - name: Verify public RAMEN TECH travel finder
         shell: bash
         run: |

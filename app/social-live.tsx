@@ -8,6 +8,7 @@ import { loadSocialData } from "./social-data";
 import { formatEventDate, getEventState, sortEvents } from "./event-schedule";
 import { useEventClock } from "./use-event-clock";
 import Phrase from "./phrase";
+import SocialLinks from "./social-links";
 
 type InstagramPost = {
   id?: string;
@@ -38,15 +39,6 @@ type SocialData = {
   instagram?: { posts?: InstagramPost[] };
   facebook?: { events?: FacebookEvent[] };
 };
-
-const socials = [
-  ["FACEBOOK", SITE_LINKS.facebook, "FB"],
-  ["INSTAGRAM", SITE_LINKS.instagram, "IG"],
-  ["LIBRARY IG", SITE_LINKS.libraryInstagram, "LI"],
-  ["X / TWITTER", SITE_LINKS.x, "X"],
-  ["LINE", SITE_LINKS.line, "LN"],
-  ["NOTE", SITE_LINKS.note, "NT"],
-];
 
 const formatDate = (value?: string) => {
   if (!value) return "NOW";
@@ -250,11 +242,7 @@ export default function SocialLive() {
         <span>イベント情報を一覧で見る</span><b>→</b>
       </Link>
 
-      <nav className="socialDirectLinks" aria-label="Garraway F公式SNS">
-        {socials.map(([name, href, code]) => (
-          <a href={href} target="_blank" rel="noreferrer" key={name}><b>{code}</b><span>{name}</span><i>↗</i></a>
-        ))}
-      </nav>
+      <SocialLinks />
     </section>
   );
 }

@@ -6,8 +6,8 @@ import MobileMenu from "./mobile-menu";
 import Phrase from "./phrase";
 
 const stats = [
-  { value: "24,000", label: "COMMUNITY MEMBERS", ja: "コミュニティ会員" },
-  { value: "88,888", label: "TOTAL VISITS", ja: "累計来館" },
+  { value: "25,000+", label: "COMMUNITY MEMBERS", ja: "コミュニティ会員" },
+  { value: "90,000+", label: "TOTAL VISITS", ja: "累計来館" },
   { value: "100+", label: "CO-CREATIONS", ja: "共創プロジェクト" },
 ];
 
@@ -234,7 +234,7 @@ export default function Home() {
       </div>
 
       <section className="stats" aria-label="Garraway Fの実績">
-        <p className="statsIntro">SINCE 2019 / AS OF AUG 2026<br /><b>つながりが、動き出している。</b></p>
+        <p className="statsIntro">SINCE 2019 / AS OF SEP 2026<br /><b>つながりが、動き出している。</b></p>
         {stats.map((stat) => (
           <div className="stat" key={stat.label}>
             <strong>{stat.value}</strong>

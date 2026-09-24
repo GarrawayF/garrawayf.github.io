@@ -98,6 +98,9 @@ jobs:
           if classic not in html: html=html.replace('</head>',classic+'</head>')
           (root/'index.html').write_text(html,encoding='utf-8')
           PY
+          python3 site/public/ramen-tech-2026/scripts/prepare-live-guide.py --site site/public/ramen-tech-2026
+          node --check site/public/ramen-tech-2026/live-data.js
+          node site/public/ramen-tech-2026/tests/live-data.test.cjs
           node --check site/public/ramen-tech-2026/guide.js
           node --check site/public/ramen-tech-2026/classic-ui.js
           node --check site/public/ramen-tech-2026/access-planner.js
@@ -131,6 +134,12 @@ jobs:
           html=(ramen/'index.html').read_text(encoding='utf-8',errors='ignore')
           assert 'RAMEN TECH 2026 非公式回遊ガイド｜Garraway F' in html
           assert 'window.GUIDE_CONFIG={preview:false' in html
+          assert 'live-data.js?v=' in html
+          import json
+          snapshot=json.loads((ramen/'catalog.json').read_text())
+          status=json.loads((ramen/'sync-status.json').read_text())
+          assert snapshot['meta']['catalogVersion']==status['catalogVersion']
+          assert snapshot['meta']['duplicateAliases']>=11
           assert 'classic-ui.js?v=20260912k4' in html
           assert 'access-planner.js?v=20260911f1' in html
           assert 'flight-data.js?v=20260911f1' in html
@@ -212,6 +221,11 @@ jobs:
             try:
               html=get('').decode('utf-8')
               assert 'access-planner.js?v='+version in html
+              assert 'live-data.js?v=' in html
+              current=json.loads(get('catalog.json'))
+              health=json.loads(get('sync-status.json'))
+              assert current['meta']['catalogVersion']==health['catalogVersion']
+              assert len(current['events'])>100
               access=get('access-planner.js').decode('utf-8')
               assert 'placeAfterPlanContent' in access
               assert '行き｜このイベントに間に合う' in access and '帰り｜このイベント後に帰る' in access
@@ -235,3 +249,5 @@ jobs:
               if attempt==7: raise
               time.sleep(10)
           PY
+
+

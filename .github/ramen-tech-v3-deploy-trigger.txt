@@ -1,1 +1,2 @@
 RAMEN TECH 2026 redeploy — fix visible TRIP PLANNER below My Plan — 2026-09-11 06:28 JST
+2026-09-24: publish verified hourly schedules and v3 live freshness (ESM-compatible checks).

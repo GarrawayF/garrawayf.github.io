@@ -101,6 +101,7 @@ jobs:
           python3 site/public/ramen-tech-2026/scripts/prepare-live-guide.py --site site/public/ramen-tech-2026
           node --check site/public/ramen-tech-2026/live-data.js
           node site/public/ramen-tech-2026/tests/live-data.test.cjs
+          node site/public/ramen-tech-2026/tests/guide-ux.test.cjs site/public/ramen-tech-2026
           node --check site/public/ramen-tech-2026/guide.js
           node --check site/public/ramen-tech-2026/classic-ui.js
           node --check site/public/ramen-tech-2026/access-planner.js
@@ -171,9 +172,12 @@ jobs:
         uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa
         with:
           path: site/out
+          name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Deploy website
         id: deployment
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e
+        with:
+          artifact_name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Verify public website matches this build
         env:
           PUBLISHED_REVISION: ${{ github.sha }}
@@ -249,5 +253,6 @@ jobs:
               if attempt==7: raise
               time.sleep(10)
           PY
+
 
 

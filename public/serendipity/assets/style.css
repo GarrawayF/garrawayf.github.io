@@ -32,3 +32,10 @@
 @media(min-width:761px) and (max-width:1100px){.desktop-nav{gap:13px;letter-spacing:0}.brand{font-size:29px}}
 
 .hero-image figcaption span:last-child{white-space:nowrap}
+
+/* User-selected photographs: keep faces visible in each editorial crop. */
+.hero-image img.photo-hero-welcome{aspect-ratio:1.5;object-position:50% 25%}
+.journal-photo img.photo-meetup,.article-hero img.photo-meetup{object-position:50% 40%}
+.article-hero img.photo-meetup{aspect-ratio:2}
+.journal-photo img.photo-conversation,.article-hero img.photo-conversation{object-position:50% 55%}
+.article-hero img.photo-conversation{aspect-ratio:1.65}

@@ -40,5 +40,6 @@
 .journal-photo img.photo-conversation,.article-hero img.photo-conversation{object-position:50% 55%}
 .article-hero img.photo-conversation{aspect-ratio:1.65}
 
-/* Preserve the complete user-selected image, including both people and captions. */
-.journal-photo img.photo-team-20261005{object-fit:contain;object-position:center;background:#fff}
+/* Fill the TEAM card with the photo, cropping only its blank top/bottom margins. */
+.journal-card .journal-photo img.photo-team-20261005{aspect-ratio:1.05;object-fit:cover;object-position:50% 46%;background:#fff}
+.journal-card:hover .journal-photo img.photo-team-20261005{transform:none}

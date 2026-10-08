@@ -67,6 +67,8 @@ jobs:
           if old not in text and new not in text: raise SystemExit('Same-venue rule missing')
           planner.write_text(text.replace(old,new),encoding='utf-8')
           PY
+      - name: Test publication verifier
+        run: python3 -m unittest discover -s site/.github/scripts -p 'test_*.py' -v
       - name: Verify and refresh flight timetables
         shell: bash
         run: |
@@ -178,81 +180,7 @@ jobs:
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e
         with:
           artifact_name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
-      - name: Verify public website matches this build
-        env:
-          PUBLISHED_REVISION: ${{ github.sha }}
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          import hashlib, os, time, urllib.request
-          from pathlib import Path
-          pages = {
-              '': Path('site/out/index.html'),
-              'events/': Path('site/out/events/index.html'),
-              'contact/': Path('site/out/contact/index.html'),
-              'privacy/': Path('site/out/privacy/index.html'),
-          }
-          for attempt in range(8):
-              try:
-                  for route, expected in pages.items():
-                      url = 'https://garrawayf.github.io/' + route + '?revision=' + os.environ['PUBLISHED_REVISION']
-                      request = urllib.request.Request(url, headers={'Cache-Control': 'no-cache', 'User-Agent': 'GarrawayF-deployment-check/1.0'})
-                      with urllib.request.urlopen(request, timeout=20) as response:
-                          assert response.status == 200, route
-                          actual = response.read()
-                      assert hashlib.sha256(actual).digest() == hashlib.sha256(expected.read_bytes()).digest(), 'Published page differs from build: /' + route
-                  print('Public homepage, events, contact and privacy pages match this build.')
-                  break
-              except Exception as error:
-                  print('Waiting for public cache refresh:', type(error).__name__, str(error))
-                  if attempt == 7:
-                      raise
-                  time.sleep(10)
-          PY
-      - name: Verify public RAMEN TECH travel finder
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          import hashlib,json,time,urllib.request
-          root='https://garrawayf.github.io/ramen-tech-2026/'
-          version='20260911f1'
-          def get(path):
-            req=urllib.request.Request(root+path+'?v='+version,headers={'User-Agent':'GarrawayF-deployment-check/1.0','Cache-Control':'no-cache'})
-            with urllib.request.urlopen(req,timeout=20) as response:
-              assert response.status==200
-              return response.read()
-          for attempt in range(8):
-            try:
-              html=get('').decode('utf-8')
-              assert 'access-planner.js?v='+version in html
-              assert 'live-data.js?v=' in html
-              current=json.loads(get('catalog.json'))
-              health=json.loads(get('sync-status.json'))
-              assert current['meta']['catalogVersion']==health['catalogVersion']
-              assert len(current['events'])>100
-              access=get('access-planner.js').decode('utf-8')
-              assert 'placeAfterPlanContent' in access
-              assert '行き｜このイベントに間に合う' in access and '帰り｜このイベント後に帰る' in access
-              autumn=get('kyushu/').decode('utf-8')
-              assert '20260912k4' in autumn and '福岡に来たら、' in autumn
-              assert autumn.count('実際のイベント写真ではありません。')==1
-              assert autumn.count('class="card-source"')==19
-              assert 'class="photo-tag"' not in autumn and 'class="cover-image-tag"' not in autumn
-              assert 'class="image-disclosure"' not in get('kyushu/kyushu.js').decode('utf-8')
-              manifest=json.loads(get('kyushu/image-manifest.json'))
-              assert manifest['version']=='20260912k3' and len(manifest['assets'])==19
-              assert len({asset['sha256'] for asset in manifest['assets']})==19
-              for asset in manifest['assets']:
-                  image=get('kyushu/'+asset['path'])
-                  assert len(image)>1000 and hashlib.sha256(image).hexdigest()==asset['sha256']
-              print('PUBLIC URL VERIFIED: '+root)
-              print('UI '+version+': visible Trip Planner below My Plan served successfully.')
-              break
-            except Exception as error:
-              print('Waiting for public cache refresh:',type(error).__name__,str(error))
-              if attempt==7: raise
-              time.sleep(10)
-          PY
-
-
-
+      - name: Verify public website and RAMEN TECH match this build
+        timeout-minutes: 15
+        # urllib's socket timeout cannot bound a continuously trickling response.
+        run: timeout --verbose --kill-after=5s 12m python3 -u site/.github/scripts/verify-publication.py

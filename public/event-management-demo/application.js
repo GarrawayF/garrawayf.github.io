@@ -1,9 +1,3 @@
-const form=document.querySelector('#application-form');
-const review=document.querySelector('#review');
-form.addEventListener('submit',event=>{
- event.preventDefault();if(!form.reportValidity())return;
- const values=new FormData(form);
- document.querySelector('#summary').textContent=['イベント名：'+values.get('title'),'主催者：'+values.get('organizer'),'開催希望日：'+values.get('date'),'参加予定：'+values.get('people')+'人','目的：'+values.get('purpose')].join('\n\n');
- form.hidden=true;review.hidden=false;review.focus();
-});
+const form=document.querySelector('#application-form');const review=document.querySelector('#review');
+form.addEventListener('submit',event=>{event.preventDefault();if(!form.reportValidity())return;const values=new FormData(form);const error=form.querySelector('.form-error');const phone=String(values.get('phone')||'');if(!/^[+\d\s()-]{8,30}$/.test(phone)||!/^\d{8,15}$/.test(phone.replace(/\D/g,''))){error.textContent='当日連絡できる電話番号を半角で入力してください。';return;}for(const prefix of ['first','second']){const date=values.get(prefix+'Date'),start=values.get(prefix+'Start'),end=values.get(prefix+'End');if(prefix==='second'&&!date&&!start&&!end)continue;if(!date||!start||!end||String(start)>=String(end)){error.textContent='希望日と開始・終了時刻を確認してください。';return;}}error.textContent='';const entries=[...form.querySelectorAll('[data-field-label]')].map(el=>el.dataset.fieldLabel+'：'+(values.get(el.name)||'未入力'));entries.push('確認事項：5区分を確認（デモ）');document.querySelector('#summary').textContent=entries.join('\n\n');form.hidden=true;review.hidden=false;review.focus();});
 document.querySelector('#back').addEventListener('click',()=>{review.hidden=true;form.hidden=false;form.querySelector('input').focus();});

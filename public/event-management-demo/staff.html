@@ -1,0 +1,324 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer"><meta name="garraway-preview-version" content="20261011-public-staff-v33"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'"><title>イベント管理の確認版｜Garraway F｜架空データ</title><style>:root{--pink:#ad2c69;--line:#e5d8df;--quiet:#6f6068}*{box-sizing:border-box}body{margin:0;background:#fff9fc;color:#2e2329;font-family:Arial,'Noto Sans JP',sans-serif;font-size:14px;line-height:1.45}#app{max-width:1000px;margin:auto}button,a{color:inherit}button{font:inherit;cursor:pointer;background:#fff;border:1px solid var(--line);border-radius:7px;min-height:36px;padding:6px 10px}button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid #205fa5;outline-offset:2px}header{display:flex;align-items:center;justify-content:space-between;padding:10px 12px 5px;gap:8px}header b{font-size:17px}header b span{font-size:12px;font-weight:400;color:var(--quiet)}.private{font-size:11px;color:var(--quiet)}nav{display:flex;gap:5px;padding:5px 12px 8px;border-bottom:1px solid var(--line)}nav button{flex:1;min-width:0;font-size:13px;font-weight:bold;padding:6px 4px}button[aria-pressed=true]{background:var(--pink);color:white;border-color:var(--pink)}main{padding:10px 12px}h1{font-size:20px;line-height:1.35;margin:0}h2{font-size:17px;line-height:1.45;margin:5px 0 9px}.heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}.heading small,.hint,.progress-note,footer{color:var(--quiet);font-size:12px}.queues{display:flex;gap:4px}.queues button{flex:1;padding:4px 5px;font-size:12px;white-space:nowrap}.queues b{margin-left:3px}.hint{margin:6px 0}.sort{display:flex;gap:5px;margin-bottom:5px}.sort button{min-height:28px;padding:2px 9px;font-size:12px}.event-row{display:block;text-align:left;width:100%;min-height:62px;padding:8px;border-radius:0;border:0;border-top:1px solid var(--line);background:white}.event-row:last-child{border-bottom:1px solid var(--line)}.row-top,.row-bottom{display:flex;gap:8px;align-items:center;justify-content:space-between;min-width:0}.row-top strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;min-width:0}.badge{white-space:nowrap;font-size:11px;color:#8b570c;background:#fff1d7;padding:2px 4px;border-radius:4px}.row-bottom{font-size:11px;color:var(--quiet);margin-top:5px}.row-bottom>span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.row-bottom>span:last-child{white-space:nowrap}details{margin-top:8px;padding:9px 10px;background:#fff;border:1px solid var(--line);border-radius:7px}summary{font-size:13px;font-weight:bold;cursor:pointer}details p{font-size:13px}footer{margin:12px 0 8px;line-height:1.5}.detail-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.detail-nav button{min-height:32px}.detail-nav a{font-size:12px;color:var(--pink)}.event-date{margin:6px 0 10px}.event-date span{display:block;color:var(--quiet);font-size:12px}.flow{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:2px}.flow button{min-width:0;padding:6px 1px 6px 4px;border-radius:0;clip-path:polygon(0 0,90% 0,100% 50%,90% 100%,0 100%,8% 50%);background:#eee4e9;border:0;min-height:51px;font-size:11px}.flow b,.flow span{display:block}.flow span{font-size:10px;margin-top:3px;color:var(--quiet)}.progress-note{margin:6px 0 10px;line-height:1.6}.focus{border:1px solid #dab2c6;border-left:4px solid var(--pink);border-radius:8px;padding:10px;background:white}.eyebrow{margin:0;color:var(--pink);font-size:12px;font-weight:bold}.focus p:not(.eyebrow){font-size:13px;margin:9px 0}.focus-facts{display:flex;justify-content:space-between;font-size:12px;gap:8px}.focus-facts b{color:#975100}.primary{background:var(--pink);color:white;border-color:var(--pink);width:100%;min-height:42px;font-weight:bold}.role-state{display:flex;gap:6px;justify-content:space-between;font-size:11px;color:var(--quiet);margin:9px 0}.role-state b{font-weight:600}.alert{font-size:12px;color:#8b3b12;background:#fff0d8;padding:7px;border-radius:4px}.stages{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}.stages button{font-size:12px}.step{display:grid;grid-template-columns:1fr auto;gap:3px 10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}.step b{max-width:150px;font-size:12px;white-space:pre-line}.step small{grid-column:1/-1;font-size:10px;color:var(--quiet);overflow-wrap:anywhere}.done{color:#3a7459}.warn{color:#b25412}dl{display:grid;grid-template-columns:105px 1fr;font-size:13px;gap:7px}dt{color:var(--quiet)}dd{margin:0;white-space:pre-line}.empty{padding:20px 8px;border:1px dashed var(--line);font-size:13px}@media(min-width:700px){header,nav,main{padding-left:24px;padding-right:24px}.event-row{display:flex;min-height:48px;gap:20px}.row-top{width:55%}.row-bottom{width:45%;margin:0}.detail{max-width:800px;margin:auto}.flow button{font-size:13px}.flow span{font-size:12px}.role-state{justify-content:flex-start;gap:24px}}@media(max-width:340px){main{padding:8px}header{padding:8px}.private{font-size:10px}nav{padding:5px 8px}.row-top{gap:3px}.row-top strong{font-size:13px}.badge{font-size:10px}.row-bottom{font-size:10px;gap:3px}.flow b{font-size:10px}.flow span{font-size:9px}}
+
+.detail-nav>button{flex:0 0 auto;width:auto}.detail-nav>a{flex:0 0 auto}.flow{width:100%}.flow button{width:100%;overflow:hidden}.flow span{white-space:normal}
+
+.preview-notice{margin:2px 12px 4px;font-size:11px;color:var(--quiet)}.sample-caption{font-size:12px;color:var(--quiet)}footer a{color:var(--pink)}@media(min-width:700px){.preview-notice{margin-left:24px;margin-right:24px}}
+</style></head><body><div id="app"></div><script type="application/json" id="data">{"schema":"garraway-public-review-samples-v1","isFictional":true,"events":[{"id":"sample-event-1","title":"サンプル交流会 A","date":"2026-12-03","eventTime":"14:00〜16:00","occupancyTime":"13:00〜17:00","organizer":"架空サンプル団体 A","note":"架空の確認事項です。空欄だけで実施済み・未実施は判断しません。","next":"投影資料の共有状況を確認する","sourceDateRaw":"2026-12-03 14:00〜16:00（架空の日程）","space":"サンプルスペース","concierge":"サンプル担当 A","sourceApproval":"可","steps":[{"column":"E","cell":"架空サンプル1・E","label":"問い合わせ報告","raw":"TRUE","state":"checked","display":"チェック済"},{"column":"G","cell":"架空サンプル1・G","label":"同意書・審査フォーム・ヒアリングシート送付","raw":"済","state":"done-recorded","display":"記録済"},{"column":"H","cell":"架空サンプル1・H","label":"アンケート・施設紹介協力案内の送付","raw":null,"state":"blank","display":"記録なし"},{"column":"J","cell":"架空サンプル1・J","label":"審査フォーム回答","raw":"FALSE","state":"unchecked","display":"未チェック"},{"column":"K","cell":"架空サンプル1・K","label":"同意書回答","raw":"未","state":"not-done-recorded","display":"未"},{"column":"L","cell":"架空サンプル1・L","label":"ヒアリングシート回答","raw":"TRUE","state":"checked","display":"チェック済"},{"column":"M","cell":"架空サンプル1・M","label":"ヒアリングシート二重チェック","raw":"済","state":"done-recorded","display":"記録済"},{"column":"P","cell":"架空サンプル1・P","label":"原状復帰・アプリ・レイアウト案内送付","raw":null,"state":"blank","display":"記録なし"},{"column":"Q","cell":"架空サンプル1・Q","label":"施設紹介画像・文・アンケートQR送付","raw":"FALSE","state":"unchecked","display":"未チェック"},{"column":"S","cell":"架空サンプル1・S","label":"事前打ち合わせ日時・担当・方法","raw":"未","state":"not-done-recorded","display":"未"},{"column":"T","cell":"架空サンプル1・T","label":"投影資料の事前共有","raw":"TRUE","state":"checked","display":"チェック済"},{"column":"U","cell":"架空サンプル1・U","label":"告知画像・告知文・申込フォーム収受","raw":"済","state":"done-recorded","display":"記録済"},{"column":"V","cell":"架空サンプル1・V","label":"FBイベントページ・HPイベント情報","raw":null,"state":"blank","display":"記録なし"},{"column":"W","cell":"架空サンプル1・W","label":"Googleカレンダーへの告知タスク入力","raw":"FALSE","state":"unchecked","display":"未チェック"},{"column":"X","cell":"架空サンプル1・X","label":"イベントボードPOP掲示","raw":"未","state":"not-done-recorded","display":"未"},{"column":"AA","cell":"架空サンプル1・AA","label":"開催後の現場復帰確認・報告","raw":null,"state":"blank","display":"記録なし"}],"counts":{"doneOrChecked":6,"explicitNotDone":3,"unchecked":3,"blank":4,"total":16},"sourceCells":{"approval":"架空サンプル1・O"},"stageHint":"準備の記録あり"},{"id":"sample-event-2","title":"サンプル共創ワークショップ B","date":"2026-12-06","eventTime":"14:00〜16:00","occupancyTime":"13:00〜17:00","organizer":"架空サンプル団体 B","note":"架空の確認事項です。空欄だけで実施済み・未実施は判断しません。","next":"案内送付の記録を確認する","sourceDateRaw":"2026-12-06 14:00〜16:00（架空の日程）","space":"サンプルスペース","concierge":"サンプル担当 B","sourceApproval":"","steps":[{"column":"E","cell":"架空サンプル2・E","label":"問い合わせ報告","raw":"済","state":"done-recorded","display":"記録済"},{"column":"G","cell":"架空サンプル2・G","label":"同意書・審査フォーム・ヒアリングシート送付","raw":null,"state":"blank","display":"記録なし"},{"column":"H","cell":"架空サンプル2・H","label":"アンケート・施設紹介協力案内の送付","raw":"FALSE","state":"unchecked","display":"未チェック"},{"column":"J","cell":"架空サンプル2・J","label":"審査フォーム回答","raw":"未","state":"not-done-recorded","display":"未"},{"column":"K","cell":"架空サンプル2・K","label":"同意書回答","raw":"TRUE","state":"checked","display":"チェック済"},{"column":"L","cell":"架空サンプル2・L","label":"ヒアリングシート回答","raw":"済","state":"done-recorded","display":"記録済"},{"column":"M","cell":"架空サンプル2・M","label":"ヒアリングシート二重チェック","raw":null,"state":"blank","display":"記録なし"},{"column":"P","cell":"架空サンプル2・P","label":"原状復帰・アプリ・レイアウト案内送付","raw":"FALSE","state":"unchecked","display":"未チェック"},{"column":"Q","cell":"架空サンプル2・Q","label":"施設紹介画像・文・アンケートQR送付","raw":"未","state":"not-done-recorded","display":"未"},{"column":"S","cell":"架空サンプル2・S","label":"事前打ち合わせ日時・担当・方法","raw":"TRUE","state":"checked","display":"チェック済"},{"column":"T","cell":"架空サンプル2・T","label":"投影資料の事前共有","raw":"済","state":"done-recorded","display":"記録済"},{"column":"U","cell":"架空サンプル2・U","label":"告知画像・告知文・申込フォーム収受","raw":null,"state":"blank","display":"記録なし"},{"column":"V","cell":"架空サンプル2・V","label":"FBイベントページ・HPイベント情報","raw":"FALSE","state":"unchecked","display":"未チェック"},{"column":"W","cell":"架空サンプル2・W","label":"Googleカレンダーへの告知タスク入力","raw":"未","state":"not-done-recorded","display":"未"},{"column":"X","cell":"架空サンプル2・X","label":"イベントボードPOP掲示","raw":"TRUE","state":"checked","display":"チェック済"},{"column":"AA","cell":"架空サンプル2・AA","label":"開催後の現場復帰確認・報告","raw":null,"state":"blank","display":"記録なし"}],"counts":{"doneOrChecked":6,"explicitNotDone":3,"unchecked":3,"blank":4,"total":16},"sourceCells":{"approval":"架空サンプル2・O"},"stageHint":"書類回収中"},{"id":"sample-event-3","title":"サンプル読書会 C","date":"2026-12-09","eventTime":"14:00〜16:00","occupancyTime":"13:00〜17:00","organizer":"架空サンプル団体 C","note":"架空の確認事項です。空欄だけで実施済み・未実施は判断しません。","next":"開催準備の担当を確認する","sourceDateRaw":"2026-12-09 14:00〜16:00（架空の日程）","space":"サンプルスペース","concierge":"サンプル担当 C","sourceApproval":"可","steps":[{"column":"E","cell":"架空サンプル3・E","label":"問い合わせ報告","raw":null,"state":"blank","display":"記録なし"},{"column":"G","cell":"架空サンプル3・G","label":"同意書・審査フォーム・ヒアリングシート送付","raw":"FALSE","state":"unchecked","display":"未チェック"},{"column":"H","cell":"架空サンプル3・H","label":"アンケート・施設紹介協力案内の送付","raw":"未","state":"not-done-recorded","display":"未"},{"column":"J","cell":"架空サンプル3・J","label":"審査フォーム回答","raw":"TRUE","state":"checked","display":"チェック済"},{"column":"K","cell":"架空サンプル3・K","label":"同意書回答","raw":"済","state":"done-recorded","display":"記録済"},{"column":"L","cell":"架空サンプル3・L","label":"ヒアリングシート回答","raw":null,"state":"blank","display":"記録なし"},{"column":"M","cell":"架空サンプル3・M","label":"ヒアリングシート二重チェック","raw":"FALSE","state":"unchecked","display":"未チェック"},{"column":"P","cell":"架空サンプル3・P","label":"原状復帰・アプリ・レイアウト案内送付","raw":"未","state":"not-done-recorded","display":"未"},{"column":"Q","cell":"架空サンプル3・Q","label":"施設紹介画像・文・アンケートQR送付","raw":"TRUE","state":"checked","display":"チェック済"},{"column":"S","cell":"架空サンプル3・S","label":"事前打ち合わせ日時・担当・方法","raw":"済","state":"done-recorded","display":"記録済"},{"column":"T","cell":"架空サンプル3・T","label":"投影資料の事前共有","raw":null,"state":"blank","display":"記録なし"},{"column":"U","cell":"架空サンプル3・U","label":"告知画像・告知文・申込フォーム収受","raw":"FALSE","state":"unchecked","display":"未チェック"},{"column":"V","cell":"架空サンプル3・V","label":"FBイベントページ・HPイベント情報","raw":"未","state":"not-done-recorded","display":"未"},{"column":"W","cell":"架空サンプル3・W","label":"Googleカレンダーへの告知タスク入力","raw":"TRUE","state":"checked","display":"チェック済"},{"column":"X","cell":"架空サンプル3・X","label":"イベントボードPOP掲示","raw":"済","state":"done-recorded","display":"記録済"},{"column":"AA","cell":"架空サンプル3・AA","label":"開催後の現場復帰確認・報告","raw":null,"state":"blank","display":"記録なし"}],"counts":{"doneOrChecked":6,"explicitNotDone":3,"unchecked":3,"blank":4,"total":16},"sourceCells":{"approval":"架空サンプル3・O"},"stageHint":"準備の記録あり"},{"id":"sample-event-4","title":"サンプルアイデア相談会 D","date":"2026-12-12","eventTime":"14:00〜16:00","occupancyTime":"13:00〜17:00","organizer":"架空サンプル団体 D","note":"架空の確認事項です。空欄だけで実施済み・未実施は判断しません。","next":"投影資料の共有状況を確認する","sourceDateRaw":"2026-12-12 14:00〜16:00（架空の日程）","space":"サンプルスペース","concierge":"サンプル担当 A","sourceApproval":"","steps":[{"column":"E","cell":"架空サンプル4・E","label":"問い合わせ報告","raw":"FALSE","state":"unchecked","display":"未チェック"},{"column":"G","cell":"架空サンプル4・G","label":"同意書・審査フォーム・ヒアリングシート送付","raw":"未","state":"not-done-recorded","display":"未"},{"column":"H","cell":"架空サンプル4・H","label":"アンケート・施設紹介協力案内の送付","raw":"TRUE","state":"checked","display":"チェック済"},{"column":"J","cell":"架空サンプル4・J","label":"審査フォーム回答","raw":"済","state":"done-recorded","display":"記録済"},{"column":"K","cell":"架空サンプル4・K","label":"同意書回答","raw":null,"state":"blank","display":"記録なし"},{"column":"L","cell":"架空サンプル4・L","label":"ヒアリングシート回答","raw":"FALSE","state":"unchecked","display":"未チェック"},{"column":"M","cell":"架空サンプル4・M","label":"ヒアリングシート二重チェック","raw":"未","state":"not-done-recorded","display":"未"},{"column":"P","cell":"架空サンプル4・P","label":"原状復帰・アプリ・レイアウト案内送付","raw":"TRUE","state":"checked","display":"チェック済"},{"column":"Q","cell":"架空サンプル4・Q","label":"施設紹介画像・文・アンケートQR送付","raw":"済","state":"done-recorded","display":"記録済"},{"column":"S","cell":"架空サンプル4・S","label":"事前打ち合わせ日時・担当・方法","raw":null,"state":"blank","display":"記録なし"},{"column":"T","cell":"架空サンプル4・T","label":"投影資料の事前共有","raw":"FALSE","state":"unchecked","display":"未チェック"},{"column":"U","cell":"架空サンプル4・U","label":"告知画像・告知文・申込フォーム収受","raw":"未","state":"not-done-recorded","display":"未"},{"column":"V","cell":"架空サンプル4・V","label":"FBイベントページ・HPイベント情報","raw":"TRUE","state":"checked","display":"チェック済"},{"column":"W","cell":"架空サンプル4・W","label":"Googleカレンダーへの告知タスク入力","raw":"済","state":"done-recorded","display":"記録済"},{"column":"X","cell":"架空サンプル4・X","label":"イベントボードPOP掲示","raw":null,"state":"blank","display":"記録なし"},{"column":"AA","cell":"架空サンプル4・AA","label":"開催後の現場復帰確認・報告","raw":null,"state":"blank","display":"記録なし"}],"counts":{"doneOrChecked":6,"explicitNotDone":3,"unchecked":3,"blank":4,"total":16},"sourceCells":{"approval":"架空サンプル4・O"},"stageHint":"書類回収中"},{"id":"sample-event-5","title":"サンプル学びの会 E","date":"2026-12-15","eventTime":"14:00〜16:00","occupancyTime":"13:00〜17:00","organizer":"架空サンプル団体 E","note":"架空の確認事項です。空欄だけで実施済み・未実施は判断しません。","next":"案内送付の記録を確認する","sourceDateRaw":"2026-12-15 14:00〜16:00（架空の日程）","space":"サンプルスペース","concierge":"サンプル担当 B","sourceApproval":"可","steps":[{"column":"E","cell":"架空サンプル5・E","label":"問い合わせ報告","raw":"未","state":"not-done-recorded","display":"未"},{"column":"G","cell":"架空サンプル5・G","label":"同意書・審査フォーム・ヒアリングシート送付","raw":"TRUE","state":"checked","display":"チェック済"},{"column":"H","cell":"架空サンプル5・H","label":"アンケート・施設紹介協力案内の送付","raw":"済","state":"done-recorded","display":"記録済"},{"column":"J","cell":"架空サンプル5・J","label":"審査フォーム回答","raw":null,"state":"blank","display":"記録なし"},{"column":"K","cell":"架空サンプル5・K","label":"同意書回答","raw":"FALSE","state":"unchecked","display":"未チェック"},{"column":"L","cell":"架空サンプル5・L","label":"ヒアリングシート回答","raw":"未","state":"not-done-recorded","display":"未"},{"column":"M","cell":"架空サンプル5・M","label":"ヒアリングシート二重チェック","raw":"TRUE","state":"checked","display":"チェック済"},{"column":"P","cell":"架空サンプル5・P","label":"原状復帰・アプリ・レイアウト案内送付","raw":"済","state":"done-recorded","display":"記録済"},{"column":"Q","cell":"架空サンプル5・Q","label":"施設紹介画像・文・アンケートQR送付","raw":null,"state":"blank","display":"記録なし"},{"column":"S","cell":"架空サンプル5・S","label":"事前打ち合わせ日時・担当・方法","raw":"FALSE","state":"unchecked","display":"未チェック"},{"column":"T","cell":"架空サンプル5・T","label":"投影資料の事前共有","raw":"未","state":"not-done-recorded","display":"未"},{"column":"U","cell":"架空サンプル5・U","label":"告知画像・告知文・申込フォーム収受","raw":"TRUE","state":"checked","display":"チェック済"},{"column":"V","cell":"架空サンプル5・V","label":"FBイベントページ・HPイベント情報","raw":"済","state":"done-recorded","display":"記録済"},{"column":"W","cell":"架空サンプル5・W","label":"Googleカレンダーへの告知タスク入力","raw":null,"state":"blank","display":"記録なし"},{"column":"X","cell":"架空サンプル5・X","label":"イベントボードPOP掲示","raw":"FALSE","state":"unchecked","display":"未チェック"},{"column":"AA","cell":"架空サンプル5・AA","label":"開催後の現場復帰確認・報告","raw":null,"state":"blank","display":"記録なし"}],"counts":{"doneOrChecked":6,"explicitNotDone":3,"unchecked":3,"blank":4,"total":16},"sourceCells":{"approval":"架空サンプル5・O"},"stageHint":"準備の記録あり"},{"id":"sample-event-6","title":"サンプル活動報告会 F","date":"2026-12-18","eventTime":"14:00〜16:00","occupancyTime":"13:00〜17:00","organizer":"架空サンプル団体 F","note":"架空の確認事項です。空欄だけで実施済み・未実施は判断しません。","next":"開催準備の担当を確認する","sourceDateRaw":"2026-12-18 14:00〜16:00（架空の日程）","space":"サンプルスペース","concierge":"サンプル担当 C","sourceApproval":"","steps":[{"column":"E","cell":"架空サンプル6・E","label":"問い合わせ報告","raw":"TRUE","state":"checked","display":"チェック済"},{"column":"G","cell":"架空サンプル6・G","label":"同意書・審査フォーム・ヒアリングシート送付","raw":"済","state":"done-recorded","display":"記録済"},{"column":"H","cell":"架空サンプル6・H","label":"アンケート・施設紹介協力案内の送付","raw":null,"state":"blank","display":"記録なし"},{"column":"J","cell":"架空サンプル6・J","label":"審査フォーム回答","raw":"FALSE","state":"unchecked","display":"未チェック"},{"column":"K","cell":"架空サンプル6・K","label":"同意書回答","raw":"未","state":"not-done-recorded","display":"未"},{"column":"L","cell":"架空サンプル6・L","label":"ヒアリングシート回答","raw":"TRUE","state":"checked","display":"チェック済"},{"column":"M","cell":"架空サンプル6・M","label":"ヒアリングシート二重チェック","raw":"済","state":"done-recorded","display":"記録済"},{"column":"P","cell":"架空サンプル6・P","label":"原状復帰・アプリ・レイアウト案内送付","raw":null,"state":"blank","display":"記録なし"},{"column":"Q","cell":"架空サンプル6・Q","label":"施設紹介画像・文・アンケートQR送付","raw":"FALSE","state":"unchecked","display":"未チェック"},{"column":"S","cell":"架空サンプル6・S","label":"事前打ち合わせ日時・担当・方法","raw":"未","state":"not-done-recorded","display":"未"},{"column":"T","cell":"架空サンプル6・T","label":"投影資料の事前共有","raw":"TRUE","state":"checked","display":"チェック済"},{"column":"U","cell":"架空サンプル6・U","label":"告知画像・告知文・申込フォーム収受","raw":"済","state":"done-recorded","display":"記録済"},{"column":"V","cell":"架空サンプル6・V","label":"FBイベントページ・HPイベント情報","raw":null,"state":"blank","display":"記録なし"},{"column":"W","cell":"架空サンプル6・W","label":"Googleカレンダーへの告知タスク入力","raw":"FALSE","state":"unchecked","display":"未チェック"},{"column":"X","cell":"架空サンプル6・X","label":"イベントボードPOP掲示","raw":"未","state":"not-done-recorded","display":"未"},{"column":"AA","cell":"架空サンプル6・AA","label":"開催後の現場復帰確認・報告","raw":null,"state":"blank","display":"記録なし"}],"counts":{"doneOrChecked":6,"explicitNotDone":3,"unchecked":3,"blank":4,"total":16},"sourceCells":{"approval":"架空サンプル6・O"},"stageHint":"書類回収中"}]}</script><script>(() => {
+  // latest/garraway-event-review-site/src/management/model.js
+  var DEFINITIONS = [
+    { id: "reportInquiry", title: "\u554F\u3044\u5408\u308F\u305B\u3092\u5973\u5C06\u30FB\u30C8\u30E8\u30BF\u3078\u5831\u544A", phase: 0, role: "\u904B\u55B6", internal: true },
+    { id: "sendPack", title: "\u540C\u610F\u66F8\u30FB\u5BE9\u67FB\u30D5\u30A9\u30FC\u30E0\u30FB\u30D2\u30A2\u30EA\u30F3\u30B0\u3092\u6848\u5185", phase: 0, role: "\u904B\u55B6" },
+    { id: "sendCooperation", title: "\u30A2\u30F3\u30B1\u30FC\u30C8\u30FB\u65BD\u8A2D\u7D39\u4ECB\u3078\u306E\u5354\u529B\u3092\u6848\u5185", phase: 0, role: "\u904B\u55B6" },
+    { id: "screening", title: "\u4E8B\u524D\u5BE9\u67FB\u30D5\u30A9\u30FC\u30E0\u3092\u53D7\u9818", phase: 0, role: "\u4E3B\u50AC\u8005" },
+    { id: "hearing", title: "\u8A73\u7D30\u30D2\u30A2\u30EA\u30F3\u30B0\u3092\u53D7\u9818", phase: 0, role: "\u4E3B\u50AC\u8005" },
+    { id: "consent", title: "\u4E3B\u50AC\u8005\u304C\u624B\u52D5\u540C\u610F\u3057\u305F\u540C\u610F\u66F8\u3092\u53D7\u9818", phase: 0, role: "\u4E3B\u50AC\u8005" },
+    { id: "doubleCheck", title: "\u30D2\u30A2\u30EA\u30F3\u30B0\u3092\u4E8C\u91CD\u30C1\u30A7\u30C3\u30AF", phase: 1, role: "\u904B\u55B6", internal: true, deps: ["hearing"] },
+    { id: "approval", title: "\u8CAC\u4EFB\u8005\u306E\u6700\u7D42\u627F\u8A8D\u3092\u8A18\u9332\uFF08\u958B\u50AC\u53EF\uFF09", phase: 1, role: "\u8CAC\u4EFB\u8005", internal: true, deps: ["screening", "hearing", "consent", "doubleCheck"] },
+    { id: "approvalMail", title: "\u627F\u8A8D\u30E1\u30FC\u30EB\u306E\u9001\u4FE1\u3092\u8A18\u9332", phase: 1, role: "\u904B\u55B6", deps: ["approval"] },
+    { id: "sendGuides", title: "\u539F\u72B6\u5FA9\u5E30\u30FB\u30A2\u30D7\u30EA\u30FB\u30EC\u30A4\u30A2\u30A6\u30C8\u3092\u6848\u5185", phase: 2, role: "\u904B\u55B6", offset: -7, deps: ["approvalMail"] },
+    { id: "sendQr", title: "\u65BD\u8A2D\u7D39\u4ECB\u753B\u50CF\u30FB\u6587\u7AE0\u30FB\u30A2\u30F3\u30B1\u30FC\u30C8QR\u3092\u6848\u5185", phase: 2, role: "\u904B\u55B6", offset: -7, deps: ["approvalMail"] },
+    { id: "space", title: "\u5229\u7528\u30B9\u30DA\u30FC\u30B9\u30FB\u30EC\u30A4\u30A2\u30A6\u30C8\u3092\u78BA\u8A8D", phase: 2, role: "\u4E3B\u50AC\u8005", offset: -5, deps: ["approvalMail"] },
+    { id: "meeting", title: "\u4E8B\u524D\u6253\u5408\u305B\u30FB\u4F1A\u5834\u30EA\u30CF\u30FC\u30B5\u30EB", phase: 2, role: "\u904B\u55B6", offset: -3, deps: ["space"] },
+    { id: "meetingShare", title: "\u6253\u5408\u305B\u5185\u5BB9\u3092\u30C1\u30FC\u30E0\u306B\u5171\u6709", phase: 2, role: "\u904B\u55B6", internal: true, offset: -3, deps: ["meeting"] },
+    { id: "slides", title: "\u6295\u5F71\u8CC7\u6599\u3092\u4E8B\u524D\u5171\u6709", phase: 2, role: "\u4E3B\u50AC\u8005", offset: -3, deps: ["approvalMail"] },
+    { id: "promo", title: "\u544A\u77E5\u753B\u50CF\u30FB\u6587\u7AE0\u30FB\u7533\u8FBC\u30D5\u30A9\u30FC\u30E0\u3092\u53D7\u9818", phase: 2, role: "\u4E3B\u50AC\u8005", offset: -7, deps: ["approvalMail"] },
+    { id: "facebook", title: "FB\u30A4\u30D9\u30F3\u30C8\u30DA\u30FC\u30B8\u3092\u4F5C\u6210", phase: 2, role: "\u904B\u55B6", offset: -7, deps: ["promo"] },
+    { id: "website", title: "HP\u30A4\u30D9\u30F3\u30C8\u60C5\u5831\u3092\u66F4\u65B0", phase: 2, role: "\u904B\u55B6", offset: -7, deps: ["promo"] },
+    { id: "calendar", title: "Google\u30AB\u30EC\u30F3\u30C0\u30FC\u306B\u544A\u77E5\u30BF\u30B9\u30AF\u3092\u767B\u9332", phase: 2, role: "\u904B\u55B6", internal: true, offset: -7, deps: ["approvalMail"] },
+    { id: "roles", title: "\u5F79\u5272\u5206\u62C5\u8868\u3092\u4F5C\u6210\u30FB\u5370\u5237", phase: 2, role: "\u904B\u55B6", internal: true, offset: -5, deps: ["approvalMail"] },
+    { id: "announce3", title: "3\u65E5\u524D\u306E\u30A4\u30D9\u30F3\u30C8\u544A\u77E5", phase: 2, role: "\u904B\u55B6", offset: -3, deps: ["facebook", "website"] },
+    { id: "announce1", title: "1\u65E5\u524D\u306E\u30A4\u30D9\u30F3\u30C8\u544A\u77E5", phase: 2, role: "\u904B\u55B6", offset: -1, deps: ["facebook", "website"] },
+    { id: "hours", title: "\u55B6\u696D\u6642\u9593\u5909\u66F4\u306E\u304A\u77E5\u3089\u305B", phase: 2, role: "\u904B\u55B6", offset: -1, deps: ["approvalMail"] },
+    { id: "pop", title: "\u30A4\u30D9\u30F3\u30C8\u30DC\u30FC\u30C9\u30FBPOP\u3092\u63B2\u793A", phase: 2, role: "\u904B\u55B6", offset: -1, deps: ["approvalMail"] },
+    { id: "checkin", title: "\u5F53\u65E5\u306E\u53D7\u4ED8\u30FB\u5165\u9928\u3092\u78BA\u8A8D", phase: 3, role: "\u904B\u55B6", offset: 0, deps: ["approvalMail"] },
+    { id: "restore", title: "\u539F\u72B6\u5FA9\u5E30\u30FB\u5B8C\u5168\u64A4\u53CE\u3092\u5831\u544A", phase: 3, role: "\u4E3B\u50AC\u8005", offset: 0, deps: ["checkin"] },
+    { id: "restoreCheck", title: "\u539F\u72B6\u5FA9\u5E30\u3092\u78BA\u8A8D", phase: 3, role: "\u904B\u55B6", internal: true, offset: 0, deps: ["restore"] },
+    { id: "restoreReport", title: "\u539F\u72B6\u5FA9\u5E30\u306E\u78BA\u8A8D\u7D50\u679C\u3092\u8CAC\u4EFB\u8005\u3078\u5831\u544A", phase: 3, role: "\u904B\u55B6", internal: true, offset: 0, deps: ["restoreCheck"] },
+    { id: "report", title: "\u7D42\u4E86\u5831\u544A\u30FB\u5B9F\u65BD\u8CC7\u6599\u3092\u63D0\u51FA", phase: 4, role: "\u4E3B\u50AC\u8005", offset: 3, deps: ["restore"] },
+    { id: "photos", title: "\u5199\u771F\u30FB\u5E83\u5831\u5229\u7528\u6761\u4EF6\u3092\u78BA\u8A8D", phase: 4, role: "\u4E3B\u50AC\u8005", offset: 3, deps: ["restore"] },
+    { id: "archive", title: "\u5831\u544A\u78BA\u8A8D\u30FB\u5E83\u5831\u30FB\u5C65\u6B74\u5171\u6709\u3092\u5B8C\u4E86", phase: 4, role: "\u904B\u55B6", internal: true, offset: 5, deps: ["restoreReport", "report", "photos"] }
+  ];
+
+  // latest/garraway-event-review-site/shared/workflow-presentation.mjs
+  var freezeStage = (stage, index) => Object.freeze({ ...stage, index, taskIds: Object.freeze(stage.substeps.flatMap((step) => step.taskIds)), substeps: Object.freeze(stage.substeps.map((step) => Object.freeze({ ...step, taskIds: Object.freeze([...step.taskIds]) }))) });
+  var WORKFLOW_STAGES = Object.freeze([
+    { id: "application", label: "\u4F01\u753B\u7533\u8ACB", goal: "\u4F01\u753B\u306E\u5185\u5BB9\u3092\u7533\u8ACB\u3057\u3001\u554F\u3044\u5408\u308F\u305B\u3092\u5973\u5C06\u30FB\u30C8\u30E8\u30BF\u3078\u5171\u6709\u3059\u308B", substeps: [
+      { id: "inquiry-sharing", label: "\u4F01\u753B\u76F8\u8AC7\u306E\u5171\u6709", taskIds: ["reportInquiry"] }
+    ] },
+    { id: "screening-documents", label: "\u4E8B\u524D\u5BE9\u67FB\u30FB\u66F8\u985E\u78BA\u8A8D", goal: "\u4E8B\u524D\u5BE9\u67FB\u30D5\u30A9\u30FC\u30E0\u30FB\u30D2\u30A2\u30EA\u30F3\u30B0\u30B7\u30FC\u30C8\u30FB\u540C\u610F\u66F8\u3092\u56DE\u53CE\u3057\u3001\u5185\u5BB9\u306E\u4E8C\u91CD\u30C1\u30A7\u30C3\u30AF\u3092\u7D42\u3048\u308B", substeps: [
+      { id: "document-guidance", label: "\u66F8\u985E\u6848\u5185", taskIds: ["sendPack", "sendCooperation"] },
+      { id: "screening-receipt", label: "\u4E8B\u524D\u5BE9\u67FB\u30D5\u30A9\u30FC\u30E0\u306E\u53D7\u9818\u30FB\u78BA\u8A8D", taskIds: ["screening"] },
+      { id: "hearing-consent-collection", label: "\u30D2\u30A2\u30EA\u30F3\u30B0\u30FB\u540C\u610F\u66F8\u306E\u56DE\u53CE", taskIds: ["hearing", "consent"] },
+      { id: "document-check", label: "\u56DE\u53CE\u5185\u5BB9\u306E\u78BA\u8A8D", taskIds: ["doubleCheck"] }
+    ] },
+    { id: "decision-notification", label: "\u6700\u7D42\u5224\u65AD\u30FB\u7D50\u679C\u901A\u77E5", goal: "\u5973\u5C06\u30FB\u30C8\u30E8\u30BF\u306E\u6700\u7D42\u5224\u65AD\u3092\u8A18\u9332\u3057\u3001\u4E3B\u50AC\u8005\u3078\u306E\u7D50\u679C\u901A\u77E5\u3092\u78BA\u8A8D\u3059\u308B", substeps: [
+      { id: "final-decision", label: "\u5973\u5C06\u30FB\u30C8\u30E8\u30BF\u306E\u6700\u7D42\u5224\u65AD", taskIds: ["approval"] },
+      { id: "result-notification", label: "\u7D50\u679C\u901A\u77E5", taskIds: ["approvalMail"] }
+    ] },
+    { id: "preparation", label: "\u958B\u50AC\u6E96\u5099\u30FB\u30EA\u30CF\u30FC\u30B5\u30EB", goal: "\u5FC5\u8981\u306A\u6848\u5185\u30FB\u4F1A\u5834\u6E96\u5099\u30FB\u4E8B\u524D\u6253\u5408\u305B\u30FB\u30EA\u30CF\u30FC\u30B5\u30EB\u30FB\u544A\u77E5\u30FB\u5F79\u5272\u5206\u62C5\u3092\u6574\u3048\u308B", substeps: [
+      { id: "preparation-guidance", label: "\u5229\u7528\u6848\u5185", taskIds: ["sendGuides", "sendQr"] },
+      { id: "venue-roles", label: "\u4F1A\u5834\u30FB\u5F79\u5272\u78BA\u8A8D", taskIds: ["space", "roles"] },
+      { id: "meeting-rehearsal", label: "\u4E8B\u524D\u30EA\u30CF\u30FC\u30B5\u30EB\u30FB\u8CC7\u6599\u5171\u6709", taskIds: ["meeting", "meetingShare", "slides"] },
+      { id: "publicity-preparation", label: "\u544A\u77E5\u6E96\u5099", taskIds: ["promo", "facebook", "website", "calendar"] },
+      { id: "publicity-announcements", label: "\u76F4\u524D\u544A\u77E5\u30FB\u63B2\u793A", taskIds: ["announce3", "announce1", "hours", "pop"] }
+    ] },
+    { id: "event-restoration", label: "\u5F53\u65E5\u904B\u55B6\u30FB\u5B8C\u5168\u64A4\u53CE", goal: "\u5F53\u65E5\u306E\u53D7\u4ED8\u30FB\u5165\u9928\u3092\u78BA\u8A8D\u3057\u3001\u539F\u72B6\u5FA9\u5E30\u30FB\u5B8C\u5168\u64A4\u53CE\u306E\u78BA\u8A8D\u3068\u8CAC\u4EFB\u8005\u3078\u306E\u5831\u544A\u3092\u7D42\u3048\u308B", substeps: [
+      { id: "event-reception", label: "\u5F53\u65E5\u306E\u53D7\u4ED8\u30FB\u5165\u9928", taskIds: ["checkin"] },
+      { id: "restoration-report", label: "\u539F\u72B6\u5FA9\u5E30\u30FB\u5B8C\u5168\u64A4\u53CE\u306E\u5831\u544A", taskIds: ["restore"] },
+      { id: "restoration-verification", label: "\u539F\u72B6\u5FA9\u5E30\u306E\u78BA\u8A8D\u30FB\u8CAC\u4EFB\u8005\u5831\u544A", taskIds: ["restoreCheck", "restoreReport"] }
+    ] },
+    { id: "reporting", label: "\u7D42\u4E86\u5831\u544A", goal: "\u7D42\u4E86\u5831\u544A\u30FB\u5B9F\u65BD\u8CC7\u6599\u3068\u5199\u771F\u306E\u5229\u7528\u6761\u4EF6\u3092\u78BA\u8A8D\u3057\u3001\u5E83\u5831\u30FB\u5C65\u6B74\u5171\u6709\u3092\u7D42\u3048\u308B", substeps: [
+      { id: "report-submission", label: "\u7D42\u4E86\u5831\u544A\u30FB\u5B9F\u65BD\u8CC7\u6599\u30FB\u5199\u771F\u78BA\u8A8D", taskIds: ["report", "photos"] },
+      { id: "report-archive", label: "\u5831\u544A\u78BA\u8A8D\u30FB\u5E83\u5831\u30FB\u5C65\u6B74\u5171\u6709", taskIds: ["archive"] }
+    ] }
+  ].map(freezeStage));
+  var STAGE_LABELS = Object.freeze(WORKFLOW_STAGES.map((stage) => stage.label));
+  var ROLE_LABELS = Object.freeze({ concierge: "\u30B3\u30F3\u30B7\u30A7\u30EB\u30B8\u30E5", reviewer: "\u5973\u5C06\u30FB\u30C8\u30E8\u30BF", applicant: "\u7533\u8ACB\u8005" });
+  var definitions = new Map(DEFINITIONS.map((definition) => [definition.id, definition]));
+  var taskLocations = new Map(WORKFLOW_STAGES.flatMap((stage) => stage.substeps.flatMap((step) => step.taskIds.map((id) => [id, { stageIndex: stage.index, substepId: step.id }]))));
+  var memberId = (member) => member?.id ?? member?.subject ?? "";
+  var memberFor = (members, id) => id ? members.find((member) => memberId(member) === id) : null;
+  var validRole = (role2) => Object.hasOwn(ROLE_LABELS, role2) ? role2 : "unknown";
+  var roleLabel = (role2) => ROLE_LABELS[role2] ?? "\u5F79\u5272\u672A\u78BA\u8A8D";
+  var taskList = (event) => Array.isArray(event?.tasks) ? event.tasks : [];
+  var pending = (task) => task?.state !== "done" || task?.needsReview === true || Boolean(task?.blockedBy?.length);
+  var ready = (task) => Array.isArray(task?.blockedBy) && task.blockedBy.length === 0;
+  var done = (task) => Boolean(task && task.state === "done" && task.needsReview !== true && ready(task));
+  var taskDisplayTitles = Object.freeze({ screening: "\u4E8B\u524D\u5BE9\u67FB\u30D5\u30A9\u30FC\u30E0\u306E\u53D7\u9818\u30FB\u78BA\u8A8D" });
+  function taskActorDetails(task, event = {}, members = []) {
+    if (!task) return { id: "", label: "\u78BA\u8A8D\u304C\u5FC5\u8981", role: "unknown", roleLabel: roleLabel("unknown"), known: false, mine: false };
+    const definition = definitions.get(task.id);
+    const submitted = definition?.role === "\u4E3B\u50AC\u8005" && task.state === "submitted";
+    const id = (submitted ? event.caseHandler : event.taskAssignments?.[task.id]) || "";
+    const member = memberFor(members, id);
+    const role2 = member ? validRole(member.role) : definition?.role === "\u4E3B\u50AC\u8005" && !submitted ? "applicant" : definition?.role === "\u8CAC\u4EFB\u8005" ? "reviewer" : submitted || definition?.role === "\u904B\u55B6" ? "concierge" : "unknown";
+    const label = member?.label || member?.name || "";
+    const mine = task.mine === true;
+    let display = label ? `${label}\uFF08${roleLabel(role2)}\uFF09` : mine ? "\u3042\u306A\u305F" : !id ? role2 === "applicant" ? "\u7533\u8ACB\u8005" : `${roleLabel(role2)}\uFF08\u62C5\u5F53\u672A\u8A2D\u5B9A\uFF09` : `${roleLabel(role2)}\uFF08\u6C0F\u540D\u672A\u78BA\u8A8D\uFF09`;
+    if (!label && !mine && task.ownerLabel === "\u904B\u55B6\u304B\u3089\u306E\u78BA\u8A8D\u5F85\u3061") display = task.ownerLabel;
+    if (label && mine) display += "\u30FB\u3042\u306A\u305F";
+    return { id, label: display, role: role2, roleLabel: roleLabel(role2), known: Boolean(member), mine };
+  }
+  function eventActors(event = {}, members = []) {
+    const assignments = event.taskAssignments ?? {}, ids = new Set([event.caseHandler, ...Object.values(assignments)].filter((id) => typeof id === "string" && id));
+    return [...ids].map((id) => {
+      const member = memberFor(members, id), role2 = member ? validRole(member.role) : "unknown";
+      return { id, label: member?.label || member?.name || "\u6C0F\u540D\u672A\u78BA\u8A8D", role: role2, roleLabel: roleLabel(role2), taskIds: Object.entries(assignments).filter(([taskId, subject]) => subject === id && definitions.has(taskId)).map(([taskId]) => taskId), isCaseHandler: id === event.caseHandler, known: Boolean(member) };
+    });
+  }
+  function presentWorkflow(event = {}, { members = [] } = {}) {
+    const journey = event.journey ?? {};
+    const unknown = !Number.isInteger(journey.stage) || journey.stage < 0 || journey.stage >= WORKFLOW_STAGES.length || event.source?.authenticatedWorkflow === false;
+    const stageIndex = unknown ? null : journey.stage;
+    const closed = Boolean(event.outcome && event.outcome !== "active" || event.source?.excludedFromActive === true);
+    const needsReview = Boolean(journey.needsReview || event.changePending || taskList(event).some((task) => task.needsReview));
+    const byId = new Map(taskList(event).filter((task) => definitions.has(task.id)).map((task) => [task.id, task]));
+    const projectTask = (id) => {
+      const task = byId.get(id);
+      if (!task) return null;
+      const definition = definitions.get(id), actorDetails = taskActorDetails(task, event, members);
+      const source = event.source?.taskObservations?.[id];
+      return { ...task, title: taskDisplayTitles[id] ?? task.title ?? definition.title, canonicalTitle: definition.title, sourceTitle: definition.title, ...taskLocations.get(id), actor: actorDetails.label, actorDetails, complete: !unknown && done(task), actionable: !unknown && !closed && pending(task) && ready(task), sourceHasField: task.sourceStatus !== void 0 || source !== void 0, sourceStatus: task.sourceStatus ?? source?.raw ?? "", sourceObservedState: task.sourceObservedState ?? source?.state ?? "unknown", sourceCombined: task.sourceCombined ?? source?.combined ?? false };
+    };
+    const stages = WORKFLOW_STAGES.map((stage) => {
+      const substeps = stage.substeps.map((step) => {
+        const tasks2 = step.taskIds.map(projectTask).filter(Boolean), completedCount2 = tasks2.filter((task) => task.complete).length, totalCount2 = step.taskIds.length, missingCount = totalCount2 - tasks2.length;
+        const status = unknown || missingCount ? "unknown" : completedCount2 === totalCount2 ? "complete" : tasks2.some((task) => task.needsReview) ? "needs-review" : tasks2.some((task) => task.actionable) ? "pending" : "blocked";
+        return { ...step, tasks: tasks2, status, completedCount: completedCount2, totalCount: totalCount2, missingCount, complete: status === "complete", current: false };
+      });
+      const completedCount = substeps.reduce((total, step) => total + step.completedCount, 0), totalCount = stage.taskIds.length;
+      const complete2 = !unknown && substeps.every((step) => step.complete);
+      return { ...stage, substeps, completedCount, totalCount, complete: complete2, current: stage.index === stageIndex, status: unknown ? "unknown" : complete2 ? "complete" : stage.index === stageIndex ? "current" : stage.index < stageIndex ? "incomplete" : "upcoming" };
+    });
+    const currentStage = stageIndex === null ? null : stages[stageIndex];
+    const currentSubstep = currentStage?.substeps.find((step) => !step.complete) ?? null;
+    if (currentSubstep) currentSubstep.current = true;
+    const tasks = DEFINITIONS.map((definition) => projectTask(definition.id)).filter(Boolean);
+    const actionableTasks = tasks.filter((task) => task.actionable);
+    const outstandingEarlierTasks = stageIndex === null ? [] : tasks.filter((task) => task.stageIndex < stageIndex && !task.complete);
+    const nextTask = actionableTasks.find((task) => task.mine) ?? actionableTasks[0] ?? null;
+    const complete = Boolean(!unknown && !closed && !needsReview && journey.complete === true && stages.every((stage) => stage.complete));
+    const nextAction = closed ? "\u3053\u306E\u6848\u4EF6\u306E\u5BFE\u5FDC\u306F\u7D42\u4E86\u3057\u3066\u3044\u307E\u3059" : unknown ? "\u539F\u7968\u3068\u30A2\u30D7\u30EA\u306E\u5DE5\u7A0B\u30FB\u62C5\u5F53\u3092\u7167\u5408\u3059\u308B" : complete ? "\u3059\u3079\u3066\u306E\u78BA\u8A8D\u304C\u5B8C\u4E86\u3057\u307E\u3057\u305F" : nextTask ? `${event.changePending ? "\u5909\u66F4\u6848\uFF1A" : ""}${nextTask.title}` : "\u5148\u306B\u5FC5\u8981\u306A\u78BA\u8A8D\u30FB\u62C5\u5F53\u3092\u78BA\u8A8D\u3059\u308B";
+    const nextActor = nextTask?.actor ?? (closed || complete ? "" : unknown ? "\u5DE5\u7A0B\u30FB\u62C5\u5F53\u672A\u78BA\u8A8D" : journey.waitingOn || "\u78BA\u8A8D\u304C\u5FC5\u8981");
+    return { stageIndex, stageLabel: currentStage?.label ?? "\u539F\u7968\u30FB\u5DE5\u7A0B\u672A\u78BA\u8A8D", stageGoal: currentStage?.goal ?? "\u539F\u7968\u306E\u8A18\u9332\u3068\u8A8D\u8A3C\u6E08\u307F\u306E\u5DE5\u7A0B\u30FB\u62C5\u5F53\u3092\u7167\u5408\u3059\u308B", stages, currentStage, currentSubstep, tasks, nextTask, nextAction, nextActor, actionableTasks, outstandingEarlierTasks, actors: eventActors(event, members), complete, unknown, closed, needsReview };
+  }
+
+  // latest/garraway-event-review-site/shared/staff-role-view.mjs
+  var STAFF_VIEW_ROLES = Object.freeze(["concierge", "okami", "toyota"]);
+  var STAFF_VIEW_LABELS = Object.freeze({ concierge: "\u30B3\u30F3\u30B7\u30A7\u30EB\u30B8\u30E5", okami: "\u5973\u5C06", toyota: "\u30C8\u30E8\u30BF" });
+  var okamiStatuses = /* @__PURE__ */ new Set(["requested", "planned", "resolved"]);
+  var toyotaStatuses = /* @__PURE__ */ new Set(["requested", "not-requested", "approved", "rejected"]);
+  var taskStates = /* @__PURE__ */ new Set(["pending", "submitted", "done"]);
+  var text = (value) => typeof value === "string" ? value : "";
+  var object = (value) => value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  var validDate = (value) => typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) && Number.isFinite(Date.parse(value + "T00:00:00Z")) && (/* @__PURE__ */ new Date(value + "T00:00:00Z")).toISOString().slice(0, 10) === value;
+  function normalizeStaffViewRole(role2) {
+    return STAFF_VIEW_ROLES.includes(role2) ? role2 : role2 === "reviewer" ? "okami" : "concierge";
+  }
+  function sourceEvidence(event) {
+    const source = object(event.source), records = [];
+    if (Object.hasOwn(source, "statusRaw")) records.push({ kind: "source-decision", raw: text(source.statusRaw) });
+    if (Object.hasOwn(source, "handlerRaw")) records.push({ kind: "source-handler", raw: text(source.handlerRaw) });
+    if (Object.hasOwn(source, "decisionDueRaw")) records.push({ kind: "source-due", raw: text(source.decisionDueRaw) });
+    const observations = object(source.taskObservations);
+    const tasks = Array.isArray(event.tasks) ? event.tasks : [];
+    const ids = /* @__PURE__ */ new Set([...Object.keys(observations), ...tasks.filter((task) => task.sourceStatus !== void 0).map((task) => task.id)]);
+    for (const id of ids) {
+      const observed = object(observations[id]), task = tasks.find((item) => item.id === id);
+      records.push({ kind: "source-task", taskId: id, raw: text(task?.sourceStatus ?? observed.raw), state: text(task?.sourceObservedState ?? observed.state) || "unknown", combined: task?.sourceCombined === true || observed.combined === true });
+    }
+    return records;
+  }
+  function metadata(event, role2) {
+    const route = object(object(event.staffRouting)[role2]), sourceRecords = sourceEvidence(event);
+    const evidenceValues = Array.isArray(route.evidence) ? route.evidence : [route.evidence];
+    const routingEvidence = evidenceValues.filter((value) => typeof value === "string" && value.length).map((raw) => ({ kind: "routing", raw }));
+    const sourceSummary = sourceRecords.length ? "\u539F\u7968\u306E\u8A18\u9332\u3042\u308A\uFF08\u4F9D\u983C\u30FB\u627F\u8A8D\u306E\u6839\u62E0\u3068\u306F\u5225\uFF09" : "";
+    const dueRaw = text(route.due);
+    return { route, reason: text(route.reason), question: text(route.question), due: validDate(dueRaw) ? dueRaw : "", dueRaw, evidence: routingEvidence.map((item) => item.raw).join(" \uFF0F ") || sourceSummary, evidenceRecords: [...routingEvidence, ...sourceRecords], sourceEvidence: sourceRecords };
+  }
+  function baseRecord(event, role2, meta) {
+    return { eventId: text(event.id), role: role2, label: "\u672A\u78BA\u8A8D", category: "unknown", priority: 3, status: "unknown", required: "unknown", reason: meta.reason, question: meta.question, due: meta.due, dueRaw: meta.dueRaw, evidence: meta.evidence, evidenceRecords: meta.evidenceRecords, sourceEvidence: meta.sourceEvidence, taskId: null, actionable: false, mine: false, owner: "", closed: false };
+  }
+  function classifyConcierge(event, base, { members = [] } = {}) {
+    const flow = presentWorkflow(event, { members });
+    if (flow.unknown) return { ...base, label: "\u5DE5\u7A0B\u30FB\u62C5\u5F53\u672A\u78BA\u8A8D", question: base.question || "\u539F\u7968\u3068\u30A2\u30D7\u30EA\u306E\u5DE5\u7A0B\u30FB\u62C5\u5F53\u3092\u7167\u5408\u3059\u308B", reason: base.reason || "\u8A8D\u8A3C\u6E08\u307F\u306E\u5DE5\u7A0B\u304C\u78BA\u8A8D\u3067\u304D\u3066\u3044\u307E\u305B\u3093\u3002" };
+    const tasks = flow.tasks.filter((task) => task.actorDetails.role === "concierge");
+    const known = tasks.filter((task) => taskStates.has(task.state) && Array.isArray(task.blockedBy));
+    const open = known.filter((task) => !task.complete);
+    const ready2 = open.filter((task) => task.actionable);
+    const next = ready2.find((task) => task.mine) ?? ready2[0];
+    if (next) {
+      const mine = next.mine === true;
+      return { ...base, label: mine ? "\u81EA\u5206\u306E\u6B21\u306E\u5BFE\u5FDC" : "\u30C1\u30FC\u30E0\u306E\u6B21\u306E\u5BFE\u5FDC", category: mine ? "own" : "team", priority: mine ? 0 : 1, status: "pending", question: next.title, reason: base.reason || text(next.request), due: validDate(next.due) ? next.due : "", dueRaw: text(next.due), taskId: next.id, actionable: true, mine, owner: next.actor };
+    }
+    if (tasks.length !== known.length) return { ...base, label: "\u4F5C\u696D\u306E\u72B6\u614B\u672A\u78BA\u8A8D", question: base.question || "\u62C5\u5F53\u4F5C\u696D\u306E\u72B6\u614B\u30FB\u5148\u884C\u78BA\u8A8D\u3092\u7167\u5408\u3059\u308B" };
+    const blocked = open.find((task) => task.mine) ?? open[0];
+    if (blocked) return { ...base, label: "\u5148\u884C\u78BA\u8A8D\u5F85\u3061", category: "blocked", priority: 2, status: "blocked", question: blocked.title, reason: base.reason || blocked.blockedBy.join(" \uFF0F "), due: validDate(blocked.due) ? blocked.due : "", dueRaw: text(blocked.due), taskId: blocked.id, mine: blocked.mine === true, owner: blocked.actor };
+    if (flow.complete) return { ...base, label: "\u5BFE\u5FDC\u5B8C\u4E86", category: "resolved", priority: 5, status: "resolved", question: base.question || "\u5BFE\u5FDC\u8A18\u9332\u3092\u78BA\u8A8D\u3059\u308B" };
+    if (!flow.tasks.length) return { ...base, label: "\u4F5C\u696D\u306E\u72B6\u614B\u672A\u78BA\u8A8D", question: base.question || "\u5DE5\u7A0B\u3068\u62C5\u5F53\u4F5C\u696D\u3092\u78BA\u8A8D\u3059\u308B" };
+    return { ...base, label: "\u4ED6\u62C5\u5F53\u306E\u5BFE\u5FDC\u5F85\u3061", category: "waiting", priority: 4, status: "waiting", question: base.question || "\u4ED6\u62C5\u5F53\u306E\u9032\u884C\u72B6\u6CC1\u3092\u78BA\u8A8D\u3059\u308B" };
+  }
+  function staffRoleQueue(input = {}, requestedRole = "concierge", options = {}) {
+    const event = object(input), role2 = normalizeStaffViewRole(requestedRole), meta = metadata(event, role2), base = baseRecord(event, role2, meta);
+    if (["cancelled", "declined"].includes(event.outcome) || event.source?.excludedFromActive === true) return { ...base, label: "\u5BFE\u5FDC\u7D42\u4E86", category: "closed", priority: 6, status: "closed", closed: true, question: base.question || "\u7D42\u4E86\u3057\u305F\u6848\u4EF6\u306E\u8A18\u9332\u3092\u78BA\u8A8D\u3059\u308B" };
+    if (role2 === "concierge") return classifyConcierge(event, base, options);
+    if (role2 === "okami") {
+      const status2 = okamiStatuses.has(meta.route.status) ? meta.route.status : "unknown";
+      if (status2 === "requested") return { ...base, label: "\u5973\u5C06\u78BA\u8A8D\u4F9D\u983C\u3042\u308A", category: status2, priority: 0, status: status2, actionable: true, question: base.question || "\u4F9D\u983C\u3055\u308C\u305F\u78BA\u8A8D\u4E8B\u9805\u3092\u78BA\u8A8D\u3059\u308B" };
+      if (status2 === "planned") return { ...base, label: "\u5973\u5C06\u3078\u306E\u4F9D\u983C\u4E88\u5B9A", category: status2, priority: 2, status: status2, question: base.question || "\u4F9D\u983C\u524D\u306E\u6E96\u5099\u72B6\u6CC1\u3092\u78BA\u8A8D\u3059\u308B" };
+      if (status2 === "resolved") return { ...base, label: "\u5973\u5C06\u78BA\u8A8D\u5BFE\u5FDC\u6E08\u307F", category: status2, priority: 5, status: status2, question: base.question || "\u5973\u5C06\u306E\u78BA\u8A8D\u8A18\u9332\u3092\u898B\u308B" };
+      return { ...base, label: "\u5973\u5C06\u78BA\u8A8D\u306E\u72B6\u6CC1\u672A\u78BA\u8A8D", question: base.question || "\u5973\u5C06\u3078\u306E\u4F9D\u983C\u72B6\u6CC1\u3092\u78BA\u8A8D\u3059\u308B" };
+    }
+    const required = meta.route.required === true ? true : meta.route.required === false ? false : "unknown";
+    const status = toyotaStatuses.has(meta.route.status) ? meta.route.status : "unknown";
+    const record = { ...base, required, status };
+    if (required === "unknown") return { ...record, label: "\u30C8\u30E8\u30BF\u78BA\u8A8D\u306E\u8981\u5426\u672A\u78BA\u8A8D", question: base.question || "\u30C8\u30E8\u30BF\u306E\u78BA\u8A8D\u304C\u5FC5\u8981\u304B\u78BA\u8A8D\u3059\u308B" };
+    if (required === false && ["requested", "approved", "rejected"].includes(status)) return { ...record, label: "\u30C8\u30E8\u30BF\u78BA\u8A8D\u306E\u8A18\u9332\u8981\u7167\u5408", reason: base.reason || "\u78BA\u8A8D\u4E0D\u8981\u306E\u8A18\u9332\u3068\u4F9D\u983C\u30FB\u5224\u65AD\u306E\u8A18\u9332\u304C\u4E00\u81F4\u3057\u3066\u3044\u307E\u305B\u3093\u3002", question: base.question || "\u30C8\u30E8\u30BF\u78BA\u8A8D\u306E\u8981\u5426\u3068\u5224\u65AD\u8A18\u9332\u3092\u7167\u5408\u3059\u308B" };
+    if (required === false) return { ...record, label: "\u30C8\u30E8\u30BF\u78BA\u8A8D\u4E0D\u8981", category: "not-required", priority: 5, question: base.question || "\u78BA\u8A8D\u4E0D\u8981\u306E\u7406\u7531\u3092\u78BA\u8A8D\u3059\u308B" };
+    if (status === "requested") return { ...record, label: "\u30C8\u30E8\u30BF\u78BA\u8A8D\u4F9D\u983C\u4E2D", category: status, priority: 0, actionable: true, question: base.question || "\u4F9D\u983C\u3055\u308C\u305F\u5224\u65AD\u4E8B\u9805\u3092\u78BA\u8A8D\u3059\u308B" };
+    if (status === "not-requested") return { ...record, label: "\u30C8\u30E8\u30BF\u78BA\u8A8D\u304C\u5FC5\u8981\u30FB\u672A\u4F9D\u983C", category: status, priority: 2, question: base.question || "\u30C8\u30E8\u30BF\u3078\u306E\u78BA\u8A8D\u4F9D\u983C\u3092\u6E96\u5099\u3059\u308B" };
+    if (status === "approved") return { ...record, label: "\u30C8\u30E8\u30BF\u627F\u8A8D\u8A18\u9332\u3042\u308A", category: status, priority: 5, question: base.question || "\u30C8\u30E8\u30BF\u306E\u627F\u8A8D\u8A18\u9332\u3092\u78BA\u8A8D\u3059\u308B" };
+    if (status === "rejected") return { ...record, label: "\u30C8\u30E8\u30BF\u5426\u8A8D\u8A18\u9332\u3042\u308A", category: status, priority: 5, question: base.question || "\u30C8\u30E8\u30BF\u306E\u5426\u8A8D\u7406\u7531\u3092\u78BA\u8A8D\u3059\u308B" };
+    return { ...record, label: "\u30C8\u30E8\u30BF\u78BA\u8A8D\u306E\u72B6\u6CC1\u672A\u78BA\u8A8D", question: base.question || "\u30C8\u30E8\u30BF\u3078\u306E\u4F9D\u983C\u30FB\u5224\u65AD\u72B6\u6CC1\u3092\u78BA\u8A8D\u3059\u308B" };
+  }
+
+  // src/app.js
+  var D = JSON.parse(document.querySelector("#data").textContent);
+  var app = document.querySelector("#app");
+  var roles = { concierge: "\u30B3\u30F3\u30B7\u30A7\u30EB\u30B8\u30E5", okami: "\u5973\u5C06", toyota: "\u30C8\u30E8\u30BF" };
+  var role = "concierge";
+  var selected = null;
+  var filter = "all";
+  var sort = "date";
+  var direction = 1;
+  var esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+  var groups = [["\u4F01\u753B\u7533\u8ACB", ["E"]], ["\u4E8B\u524D\u5BE9\u67FB", ["G", "H", "J", "K", "L", "M"]], ["\u6700\u7D42\u5224\u65AD", []], ["\u958B\u50AC\u6E96\u5099", ["P", "Q", "S", "T", "U", "V", "W", "X"]], ["\u5F53\u65E5\u904B\u55B6", []], ["\u7D42\u4E86\u5831\u544A", ["AA"]]];
+  var done2 = (s) => ["checked", "done-recorded"].includes(s.state);
+  function routing(e) {
+    const q = staffRoleQueue({ ...e, source: { statusRaw: e.sourceApproval || "" } }, role);
+    if (role !== "concierge" && q.category !== "unknown") return { ...q, due: q.due || "\u671F\u9650\u672A\u8A18\u9332" };
+    return role === "concierge" ? { label: "\u5BFE\u5FDC\u72B6\u6CC1\u3092\u78BA\u8A8D", question: e.next, due: "\u671F\u9650\u672A\u8A18\u9332", category: "unknown" } : role === "okami" ? { label: "\u76F8\u8AC7\u6BB5\u968E \u8981\u78BA\u8A8D", question: "\u5973\u5C06\u3078\u306E\u76F8\u8AC7\u306E\u6709\u7121\u30FB\u76F8\u8AC7\u5185\u5BB9\u30FB\u4E88\u5B9A\u3092\u78BA\u8A8D\u3059\u308B", due: "\u76F8\u8AC7\u671F\u9650\u672A\u8A18\u9332", category: "unknown" } : { label: "\u627F\u8A8D\u6BB5\u968E \u8981\u78BA\u8A8D", question: "\u30C8\u30E8\u30BF\u627F\u8A8D\u306E\u8981\u5426\u30FB\u4F9D\u983C\u72B6\u6CC1\u30FB\u5224\u65AD\u8A18\u9332\u3092\u78BA\u8A8D\u3059\u308B", due: "\u5224\u65AD\u671F\u9650\u672A\u8A18\u9332", category: "unknown" };
+  }
+  function stageLabel(e) {
+    return e.stageHint === "\u6E96\u5099\u306E\u8A18\u9332\u3042\u308A" ? "\u6E96\u5099\uFF08\u30B5\u30F3\u30D7\u30EB\u8A18\u9332\uFF09" : "\u66F8\u985E\u56DE\u53CE\uFF08\u8981\u78BA\u8A8D\uFF09";
+  }
+  function warning(e) {
+    return e.steps.some((s) => s.column === "T" && s.state === "not-done-recorded") ? "\u6295\u5F71\u8CC7\u6599 \u672A" : !e.space ? e.eventTime ? "\u5834\u6240 \u7A7A\u6B04" : "\u6642\u9593\u30FB\u5834\u6240 \u7A7A\u6B04" : e.steps.some((s) => s.column === "X" && s.state === "unchecked") ? "POP \u672A\u30C1\u30A7\u30C3\u30AF" : "\u8A18\u9332\u3092\u78BA\u8A8D";
+  }
+  function countText(e) {
+    const c = e.counts;
+    return `\u6E08\u30FB\u30C1\u30A7\u30C3\u30AF ${c.doneOrChecked}/${c.total}\u3000\u672A ${c.explicitNotDone}\u3000\u672A\u30C1\u30A7\u30C3\u30AF ${c.unchecked}\u3000\u7A7A\u6B04 ${c.blank}`;
+  }
+  function header() {
+    return `<header><b>Garraway F <span>\u30A4\u30D9\u30F3\u30C8\u7BA1\u7406</span></b><span class="private">\u516C\u958B\u30FB\u67B6\u7A7A\u30C7\u30FC\u30BF\u7248</span></header><p class="preview-notice">\u78BA\u8A8D\u7528\u306E\u67B6\u7A7A6\u6848\u4EF6\u3067\u3059\u3002\u5B9F\u30C7\u30FC\u30BF\u30FB\u4FDD\u5B58\u30FB\u901A\u77E5\u306F\u3042\u308A\u307E\u305B\u3093\u3002</p><nav aria-label="\u8868\u793A\u3059\u308B\u5F79\u5272">${Object.entries(roles).map(([k, v]) => `<button data-role="${k}" aria-pressed="${role === k}">${v}</button>`).join("")}</nav>`;
+  }
+  function queue() {
+    const labels = role === "okami" ? [["requested", "\u76F8\u8AC7\u4E2D"], ["planned", "\u76F8\u8AC7\u4E88\u5B9A"], ["unknown", "\u8981\u78BA\u8A8D"]] : role === "toyota" ? [["requested", "\u627F\u8A8D\u5F85\u3061"], ["not-requested", "\u4F9D\u983C\u524D"], ["unknown", "\u8981\u78BA\u8A8D"]] : [["unknown", "\u78BA\u8A8D\u4E8B\u9805\u3042\u308A"]];
+    return `<div class="queues"><button data-filter="all" aria-pressed="${filter === "all"}">\u5168\u4EF6 <b>${D.events.length}</b></button>${labels.map(([k, l]) => `<button data-filter="${k}" aria-pressed="${filter === k}">${l} <b>${k === "unknown" ? D.events.length : 0}</b></button>`).join("")}</div>`;
+  }
+  function list() {
+    let events = D.events.filter((e) => filter === "all" || routing(e).category === filter);
+    events.sort((a, b) => String(a[sort] || "").localeCompare(String(b[sort] || ""), "ja") * direction);
+    return `<main><div class="heading"><h1>${role === "concierge" ? "\u9032\u884C\u3092\u78BA\u8A8D" : role === "okami" ? "\u76F8\u8AC7\u3092\u78BA\u8A8D" : "\u627F\u8A8D\u3092\u78BA\u8A8D"}</h1><small>\u540C\u3058${D.events.length}\u4EF6\u3092\u8868\u793A</small></div>${queue()}<p class="hint">${role === "concierge" ? "\u30B5\u30F3\u30D7\u30EB\u8A18\u9332\u306E\u6B8B\u4E8B\u9805\u3068\u3001\u6B21\u306B\u78BA\u8A8D\u3059\u308B\u3053\u3068" : role === "okami" ? "\u76F8\u8AC7\u4E2D\u30FB\u4E88\u5B9A\u306F\u30B5\u30F3\u30D7\u30EB\u8A18\u9332\u306B\u8A18\u9332\u306A\u3057\u3002\u8981\u78BA\u8A8D\u3068\u3057\u3066\u8868\u793A\u3002" : "\u300C\u958B\u50AC\u53EF\u300D\u3068\u30C8\u30E8\u30BF\u306E\u627F\u8A8D\u8A18\u9332\u306F\u5225\u3002\u9078\u629E\u6848\u4EF6\u306E\u627F\u8A8D\u5C65\u6B74\u306F\u8981\u78BA\u8A8D\u3002"}</p><div class="sort"><button data-sort="date">\u958B\u50AC\u65E5 ${sort === "date" ? direction === 1 ? "\u2191" : "\u2193" : ""}</button><button data-sort="title">\u30A4\u30D9\u30F3\u30C8\u540D ${sort === "title" ? direction === 1 ? "\u2191" : "\u2193" : ""}</button><button data-sort="concierge">\u62C5\u5F53 ${sort === "concierge" ? direction === 1 ? "\u2191" : "\u2193" : ""}</button></div><section aria-label="\u30A4\u30D9\u30F3\u30C8\u4E00\u89A7">${events.map((e) => `<button class="event-row" data-event="${e.id}"><span class="row-top"><strong>${esc(e.title)}</strong><b class="badge">${esc(role === "concierge" ? warning(e) : routing(e).label)}</b></span><span class="row-bottom"><span><b>${esc(e.date.slice(5).replace("-", "/"))}</b> ${esc(e.eventTime || "\u6642\u523B\u672A\u8A18\u9332")} \xB7 ${esc(stageLabel(e))}</span><span>${esc(role === "concierge" ? e.counts.doneOrChecked + "/16\u8A18\u9332\u6E08" : routing(e).due)}</span></span></button>`).join("") || '<p class="empty">\u3053\u306E\u533A\u5206\u3068\u78BA\u8A8D\u3067\u304D\u308B\u8A18\u9332\u306F\u3042\u308A\u307E\u305B\u3093\u3002<br>\u300C\u8981\u78BA\u8A8D\u300D\u306B\u30B5\u30F3\u30D7\u30EB\u304C\u672A\u8A18\u9332\u306E\u6848\u4EF6\u304C\u3042\u308A\u307E\u3059\u3002</p>'}</section><details class="list-help"><summary>\u5F79\u5272\u306E\u9055\u3044\u30FB\u8A18\u9332\u306E\u8AAD\u307F\u65B9</summary><p>\u30B3\u30F3\u30B7\u30A7\u30EB\u30B8\u30E5\u306F\u5B9F\u52D9\u306E\u9032\u884C\u3001\u5973\u5C06\u306F\u76F8\u8AC7\u3001\u30C8\u30E8\u30BF\u306F\u627F\u8A8D\u5224\u65AD\u3092\u512A\u5148\u3057\u307E\u3059\u3002\u5168\u54E1\u304C\u540C\u3058\u30A4\u30D9\u30F3\u30C8\u7BA1\u7406\u7968\u3092\u958B\u304D\u307E\u3059\u3002</p><p>\u5973\u5C06\u76F8\u8AC7\u4E2D\u3068\u76F8\u8AC7\u4E88\u5B9A\u3001\u30C8\u30E8\u30BF\u627F\u8A8D\u4F9D\u983C\u6E08\u3068\u4F9D\u983C\u524D\u306F\u5225\u7BA1\u7406\u3067\u3059\u3002\u4F9D\u983C\u3084\u4E88\u5B9A\u306E\u8A18\u9332\u304C\u306A\u3044\u3082\u306E\u3092\u3001\u627F\u8A8D\u5F85\u3061\u30FB\u76F8\u8AC7\u4E88\u5B9A\u306B\u306F\u3057\u307E\u305B\u3093\u3002</p><p>\u3053\u308C\u306F\u8868\u793A\u5207\u66FF\u3067\u3001\u672C\u4EBA\u8A8D\u8A3C\u3084\u627F\u8A8D\u6A29\u9650\u306E\u5207\u66FF\u3067\u306F\u3042\u308A\u307E\u305B\u3093\u3002\u5B9F\u969B\u306E\u627F\u8A8D\u30FB\u4FDD\u5B58\u306F\u884C\u3044\u307E\u305B\u3093\u3002</p></details>${footer()}</main>`;
+  }
+  function progress(e) {
+    return `<section class="flow" aria-label="6\u5DE5\u7A0B\u306E\u30B5\u30F3\u30D7\u30EB\u8A18\u9332">${groups.map(([label, cols], i) => {
+      const ss = e.steps.filter((s) => cols.includes(s.column));
+      const known = ss.filter(done2).length;
+      return `<button data-stage="${i}"><b>${label}</b><span>${i === 2 ? "\u53EF\u5426 " + esc(e.sourceApproval || "\u7A7A\u6B04") : ss.length ? known + "/" + ss.length + " \u8A18\u9332\u6E08" : "\u5B9F\u65BD\u672A\u78BA\u8A8D"}</span></button>`;
+    }).join("")}</section>`;
+  }
+  function steps(e, cols) {
+    return e.steps.filter((s) => !cols || cols.includes(s.column)).map((s) => `<div class="step"><span>${esc(s.label)}</span><b class="${done2(s) ? "done" : s.state === "not-done-recorded" ? "warn" : ""}">${esc(s.display)}</b><small>${esc(s.cell)} \xB7 \u30B5\u30F3\u30D7\u30EB\u8868\u8A18\uFF1A${esc(s.raw === null ? "\u7A7A\u6B04" : s.raw)}</small></div>`).join("");
+  }
+  function detail() {
+    const e = D.events.find((x) => x.id === selected), r = routing(e);
+    return `<main class="detail"><div class="detail-nav"><button data-back>\u2190 \u4E00\u89A7</button><span class="sample-caption">\u67B6\u7A7A\u30B5\u30F3\u30D7\u30EB\u306E\u7BA1\u7406\u7968</span></div><h1>${esc(e.title)}</h1><p class="event-date"><b>${esc(e.date)} ${esc(e.eventTime || "\u6642\u523B\u672A\u8A18\u9332")}</b><span>${esc(e.space || "\u30B9\u30DA\u30FC\u30B9\u672A\u8A18\u9332")} \xB7 \u958B\u50AC\u4E88\u5B9A</span></p>${progress(e)}<p class="progress-note">${countText(e)}<br>\u7A7A\u6B04\u306F\u672A\u5B9F\u65BD\u3092\u610F\u5473\u3057\u307E\u305B\u3093\u3002\u5DE5\u7A0B\u306E\u5B8C\u4E86\u306F\u65AD\u5B9A\u3057\u307E\u305B\u3093\u3002</p><section class="focus"><p class="eyebrow">${roles[role]}\u304C\u4ECA\u78BA\u8A8D\u3059\u308B\u3053\u3068</p><h2>${esc(r.question)}</h2><div class="focus-facts"><b>${esc(r.due)}</b><span>\u6B21\u306E\u62C5\u5F53\uFF1A\u8981\u78BA\u8A8D</span></div><p>${esc(role === "concierge" ? e.note : role === "okami" ? "\u554F\u3044\u5408\u308F\u305B\u5831\u544A\u3068\u3001\u5973\u5C06\u3078\u306E\u76F8\u8AC7\u5185\u5BB9\u30FB\u6BB5\u968E\u30FB\u4E88\u5B9A\u306E\u8A18\u9332\u3092\u78BA\u8A8D\u3057\u307E\u3059\u3002\u76F8\u8AC7\u6BB5\u968E\u306F\u672A\u8A18\u9332\u3067\u3059\u3002" : "\u30B5\u30F3\u30D7\u30EB\u8A18\u9332\u306E\u958B\u50AC\u53EF\u5426\uFF1A" + (e.sourceApproval || "\u7A7A\u6B04") + "\u3002\u627F\u8A8D\u8005\u30FB\u4F9D\u983C\u65E5\u30FB\u627F\u8A8D\u65E5\u6642\u306E\u8A18\u9332\u306F\u306A\u304F\u3001\u30C8\u30E8\u30BF\u627F\u8A8D\u6E08\u3068\u306F\u5224\u5B9A\u3057\u307E\u305B\u3093\u3002")}</p><button data-open-records class="primary">\u30B5\u30F3\u30D7\u30EB\u8A18\u9332\u3092\u78BA\u8A8D\u3059\u308B</button></section><div class="role-state"><span>\u5973\u5C06\u76F8\u8AC7 <b>\u6BB5\u968E\u672A\u8A18\u9332</b></span><span>\u30C8\u30E8\u30BF\u627F\u8A8D <b>\u6BB5\u968E\u672A\u8A18\u9332</b></span></div><details><summary>\u62C5\u5F53\u30FB\u65E5\u6642\u30FB\u5224\u65AD\u306E\u6839\u62E0</summary><dl><dt>\u62C5\u5F53\u30B3\u30F3\u30B7\u30A7\u30EB\u30B8\u30E5</dt><dd>${esc(e.concierge || "\u8A18\u9332\u306A\u3057")}</dd><dt>\u4E3B\u50AC\u8005</dt><dd>${esc(e.organizer || "\u8A18\u9332\u306A\u3057")}</dd><dt>\u30B5\u30F3\u30D7\u30EB\u8A18\u9332\u306E\u65E5\u6642</dt><dd>${esc(e.sourceDateRaw)}</dd><dt>\u65BD\u8A2D\u5229\u7528\u4E88\u5B9A</dt><dd>${esc(e.occupancyTime || "\u8A18\u9332\u306A\u3057")}</dd><dt>\u30B5\u30F3\u30D7\u30EB\u8A18\u9332\u306E\u958B\u50AC\u53EF\u5426</dt><dd>${esc(e.sourceApproval || "\u7A7A\u6B04")} (${esc(e.sourceCells.approval)})</dd></dl><p>\u958B\u50AC\u53EF\u5426\u306E\u8A18\u9332\u3068\u3001\u30C8\u30E8\u30BF\u306E\u627F\u8A8D\u5C65\u6B74\u306F\u5225\u3067\u3059\u3002\u6B21\u62C5\u5F53\u30FB\u4F5C\u696D\u671F\u9650\u30FB\u76F8\u8AC7\u671F\u9650\u30FB\u5224\u65AD\u671F\u9650\u306F\u672A\u8A18\u9332\u3067\u3059\u3002</p></details><details id="records"><summary>\u5DE5\u7A0B\u5225\u306E\u8A18\u9332\u30FB\u3069\u3053\u307E\u3067\u9032\u3093\u3060\u304B</summary><div class="stages">${groups.map(([l, cols], i) => `<button data-record-stage="${i}" aria-pressed="false">${l}</button>`).join("")}<button data-record-stage="all" aria-pressed="true">\u5168\u5DE5\u7A0B</button></div><div id="step-records">${steps(e)}</div></details><details><summary>\u958B\u50AC\u6E96\u5099\u30FB\u5F53\u65E5\u306E\u8A08\u753B</summary><p>\u672C\u756A ${esc(e.eventTime || "\u672A\u8A18\u9332")} \uFF0F \u65BD\u8A2D\u5229\u7528 ${esc(e.occupancyTime || "\u672A\u8A18\u9332")}</p>${steps(e, ["S", "T", "U", "V", "W", "X"])}</details><details><summary>\u7D42\u4E86\u5F8C\u306E\u5831\u544A</summary>${steps(e, ["AA"])}</details>${footer()}</main>`;
+  }
+  function footer() {
+    return `<footer>\u3059\u3079\u3066\u67B6\u7A7A\u306E\u30B5\u30F3\u30D7\u30EB\u3067\u3059\u3002\u5B9F\u969B\u306E\u7533\u8ACB\u53D7\u4ED8\u30FB\u627F\u8A8D\u30FB\u4FDD\u5B58\u30FB\u81EA\u52D5\u540C\u671F\u30FB\u901A\u77E5\u306F\u884C\u3044\u307E\u305B\u3093\u3002<br>\u5F79\u5272\u306E\u8868\u793A\u5207\u66FF\u306F\u3001\u672C\u4EBA\u8A8D\u8A3C\u3084\u6A29\u9650\u306E\u5207\u66FF\u3067\u306F\u3042\u308A\u307E\u305B\u3093\u3002<br><a href="/">Garraway F \u30B5\u30A4\u30C8\u3078</a> \xB7 <a href="./">\u7533\u8ACB\u753B\u9762\u306E\u78BA\u8A8D\u7248\u3078</a></footer>`;
+  }
+  function render() {
+    app.innerHTML = header() + (selected ? detail() : list());
+    app.querySelectorAll("[data-role]").forEach((b) => b.onclick = () => {
+      role = b.dataset.role;
+      filter = "all";
+      render();
+    });
+    app.querySelectorAll("[data-filter]").forEach((b) => b.onclick = () => {
+      filter = b.dataset.filter;
+      render();
+    });
+    app.querySelectorAll("[data-sort]").forEach((b) => b.onclick = () => {
+      direction = sort === b.dataset.sort ? -direction : 1;
+      sort = b.dataset.sort;
+      render();
+    });
+    app.querySelectorAll("[data-event]").forEach((b) => b.onclick = () => {
+      selected = b.dataset.event;
+      render();
+      window.scrollTo(0, 0);
+    });
+    app.querySelector("[data-back]")?.addEventListener("click", () => {
+      selected = null;
+      render();
+      window.scrollTo(0, 0);
+    });
+    const openRecords = (i) => {
+      const node = app.querySelector("#records");
+      node.open = true;
+      const e = D.events.find((x) => x.id === selected);
+      app.querySelector("#step-records").innerHTML = steps(e, i === "all" ? null : groups[Number(i)][1]);
+      app.querySelectorAll("[data-record-stage]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.recordStage === String(i))));
+      if (i === "2") app.querySelector("#step-records").innerHTML = "<p>\u30B5\u30F3\u30D7\u30EB\u8A18\u9332\u306E\u958B\u50AC\u53EF\u5426\uFF1A" + esc(e.sourceApproval || "\u7A7A\u6B04") + "\u3002\u30C8\u30E8\u30BF\u627F\u8A8D\u306E\u5C65\u6B74\u306F\u672A\u8A18\u9332\u3067\u3059\u3002</p>";
+      if (i === "4") app.querySelector("#step-records").innerHTML = "<p>\u5B9F\u958B\u50AC\u306E\u5B8C\u4E86\u8A18\u9332\u306F\u3042\u308A\u307E\u305B\u3093\u3002\u4E88\u5B9A\u6642\u9593\u304B\u3089\u5B9F\u65BD\u6E08\u307F\u3068\u306F\u5224\u65AD\u3057\u307E\u305B\u3093\u3002</p>";
+      node.scrollIntoView({ block: "start" });
+    };
+    app.querySelector("[data-open-records]")?.addEventListener("click", () => openRecords("all"));
+    app.querySelectorAll("[data-stage]").forEach((b) => b.onclick = () => openRecords(b.dataset.stage));
+    app.querySelectorAll("[data-record-stage]").forEach((b) => b.onclick = () => openRecords(b.dataset.recordStage));
+  }
+  render();
+})();
+</script></body></html>

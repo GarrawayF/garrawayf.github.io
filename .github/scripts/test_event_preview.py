@@ -113,6 +113,20 @@ class PublicEventPreviewTests(unittest.TestCase):
         self.assertIn('共有側の保存は確認待ち', staff)
         self.assertIn('主催者への承認通知メール送信は行いません', staff)
 
+    def test_concierge_access_help_is_collapsed_and_safe(self):
+        html = (ROOT / 'public/event-management-demo/concierge.html').read_text()
+        block = re.search(r'<details class="entry-caution" id="access-help">(.*?)</details>', html, re.S)
+        self.assertIsNotNone(block)
+        self.assertIn('<summary>開けないとき</summary>', block[1])
+        self.assertIn('https://garrawayf.github.io/event-management-demo/concierge.html', block[1])
+        self.assertIn('SafariまたはChrome', block[1])
+        self.assertIn('移動先の管理画面で入力', block[1])
+        self.assertNotIn('script.google.com', block[1])
+        self.assertNotRegex(block[1], r'ログアウト|[Cc]ookie|クッキー|削除')
+        details = [a for tag, a in Page(html).tags if a.get('id') == 'access-help']
+        self.assertEqual(len(details), 1)
+        self.assertNotIn('open', details[0])
+
     def test_homepage_entry_and_separate_application_remain(self):
         homepage = (ROOT / 'app/page.tsx').read_text()
         self.assertIn('/event-management-demo/concierge.html', homepage)

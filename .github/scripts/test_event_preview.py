@@ -52,6 +52,33 @@ class PublicEventPreviewTests(unittest.TestCase):
         self.assertIn("connect-src 'none'", csp)
         self.assertIn("form-action 'none'", csp)
 
+    def test_demo_boundary_is_prominent(self):
+        self.assertIn('<title>デモ版', self.text)
+        for filename in ('index.html', 'application.html'):
+            html = (ROOT / 'public/event-management-demo' / filename).read_text()
+            notice = re.search(r'<div class="demo-notice">(.*?)</div>', html, re.S)[1]
+            self.assertIn('<b>デモ版</b>', notice)
+            self.assertIn('入力内容は送信されません', notice)
+            self.assertIn('Googleスプレッドシートには保存されません', notice)
+            self.assertIn('デモ版：入力内容は送信されません', html)
+        script = (ROOT / 'public/event-management-demo/application.js').read_text()
+        self.assertIn('event.preventDefault()', script)
+        for forbidden in ('fetch(', 'XMLHttpRequest', 'sendBeacon', 'localStorage'):
+            self.assertNotIn(forbidden, script)
+
+    def test_six_workflow_names_and_stable_mapping(self):
+        names = ['事前申し込み', '詳細すり合わせ', '承認', '開催準備', '当日', '結果報告']
+        for filename in ('index.html', 'application.html'):
+            html = (ROOT / 'public/event-management-demo' / filename).read_text()
+            steps = re.search(r'<ol class="steps">(.*?)</ol>', html, re.S)[1]
+            self.assertEqual(re.findall(r'<span>(.*?)</span>', steps), names)
+            self.assertEqual(re.findall(r'<b>(.*?)</b>', steps), ['01', '02', '03', '04', '05', '06'])
+            self.assertIn('現行事前審査フォームの確認事項', html)
+        groups = json.loads(re.search(r'  var groups = (.*);', self.text)[1])
+        self.assertEqual([g[0] for g in groups], names)
+        self.assertEqual([g[1] for g in groups], [['E'], ['G', 'H', 'J', 'K', 'L', 'M'], [], ['P', 'Q', 'S', 'T', 'U', 'V', 'W', 'X'], [], ['AA']])
+        self.assertIn('審査フォーム回答', self.text)
+
     def test_homepage_entry_and_separate_application_remain(self):
         self.assertIn('/event-management-demo/staff.html', (ROOT / 'app/page.tsx').read_text())
         for name in ('index.html', 'application.html', 'application.js', 'styles.css', 'mobile-v32.html'):

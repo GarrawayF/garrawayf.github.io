@@ -97,7 +97,7 @@ class PublicEventPreviewTests(unittest.TestCase):
             self.assertEqual(entries[0].get('rel'), 'noreferrer')
             self.assertNotIn('application.html', html)
             self.assertNotIn('staff.html', html)
-            self.assertNotIn('catalog/', html)
+            self.assertIn('./catalog/' + ('applicant' if access == 'apply' else 'concierge') + '.html', html)
             for tag, attrs in parsed.tags:
                 self.assertNotIn(tag, ('form', 'input', 'textarea', 'script', 'iframe'))
             for marker in ['docs.google.com', 'gmail.com', 'localStorage', 'sessionStorage', 'SECRET', 'PASSWORD']:

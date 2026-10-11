@@ -109,7 +109,8 @@ class PublicEventPreviewTests(unittest.TestCase):
         self.assertIn('表示は未確認', applicant)
         self.assertIn('正式統合は未完了', applicant)
         staff = (ROOT / 'public/event-management-demo/concierge.html').read_text()
-        self.assertIn('本人端末での確認待ち', staff)
+        self.assertIn('共有パスワードでのログインは本人端末で確認済み', staff)
+        self.assertIn('共有側の保存は確認待ち', staff)
         self.assertIn('主催者への承認通知メール送信は行いません', staff)
 
     def test_homepage_entry_and_separate_application_remain(self):

@@ -585,7 +585,8 @@ export default function Home() {
         <nav aria-label="関連リンク">
           <Link href="/events">Events →</Link>
           <Link href="/contact">Contact →</Link>
-          <a href={withBasePath("/event-management-demo/staff.html")}>イベント管理の確認版 →</a>
+          <a href={withBasePath("/event-management-demo/")}>イベントを申し込む／デモ版 →</a>
+          <a href={withBasePath("/event-management-demo/concierge.html")}>コンシェルジュ管理／デモ版 →</a>
           <Link href="/privacy">Privacy →</Link>
           <a href={SITE_LINKS.webAppTerms} target="_blank" rel="noreferrer">App Terms ↗</a>
           <a href={SITE_LINKS.instagram} target="_blank" rel="noreferrer">Instagram ↗</a>

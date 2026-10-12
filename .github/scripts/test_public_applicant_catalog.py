@@ -9,8 +9,8 @@ from urllib.parse import unquote, urlsplit
 ROOT = Path(__file__).resolve().parents[2] / 'public' / 'event-management-demo'
 CATALOG = ROOT / 'catalog'
 PDF_NAME = 'applicant-guide-20261012.pdf'
-EXPECTED_SIZE = 421995
-EXPECTED_SHA256 = '3a3aa81c5cc8bc45c53c6915f36d3a9560d26b48938661cb1ef8abba84939f59'
+EXPECTED_SIZE = 136495
+EXPECTED_SHA256 = 'b8ca106aad30078982a451172f224d1d7d163ee059abfa431503c92295522e6a'
 
 
 class Tags(HTMLParser):
@@ -85,10 +85,11 @@ class PublicApplicantCatalogTests(unittest.TestCase):
             self.assertIn(directive, csp)
         self.assertNotRegex(self.css, r'https?://|@import|url\(')
 
-    def test_demo_scope_and_unverified_e2e_are_visible(self):
-        for text in ('デモ版', '架空', '正式な開催承認・承認通知メールは実装していません', '保存〜管理反映の実操作は未確認', 'E2E未確認', '2026年10月12日版'):
+    def test_demo_scope_and_verified_boundaries_are_visible(self):
+        for text in ('デモ版', '架空', '正式な開催承認・承認通知メールは実装していません', '最終利用同意の保存・管理画面への反映を確認済み', '保存・提出・最終利用同意は別の操作', '全30項目', '2026年10月13日版'):
             self.assertIn(text, self.html)
-        self.assertNotIn('実機で確認済み', self.html)
+        self.assertNotIn('E2E未確認', self.html)
+        self.assertNotIn('保存〜管理反映の実操作は未確認', self.html)
         for stage in ('事前申し込み', '詳細すり合わせ', '承認', '開催準備', '当日', '結果報告'):
             self.assertIn(stage, self.html)
         self.assertEqual(len([1 for tag, attrs in self.tags if tag == 'span' and attrs.get('class') == 'page-number']), 6)

@@ -98,3 +98,12 @@ h3 { font-size: 17px; line-height: 1.6; }
 .cover-summary span,.cover-summary p,.cover-summary small { font-size:12px; letter-spacing:.12em; }
 .cover-summary strong { font-size:30px; line-height:1.65; }
 .cover-summary b { font-size:34px; letter-spacing:.08em; margin-top:auto; }
+
+/* Immediate tactile feedback for native PDF links; download progress belongs to the browser. */
+.button { transition: background-color .12s ease, color .12s ease, transform .12s ease; }
+.button:hover { border-color: #174f83; box-shadow: 0 0 0 2px #174f8320; }
+.button:active { background: #103756; border-color: #103756; color: #fff; transform: translateY(1px); }
+@media (prefers-reduced-motion: reduce) {
+  .button { transition: none; }
+  .button:active { transform: none; }
+}

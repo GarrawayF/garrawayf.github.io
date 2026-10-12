@@ -116,6 +116,8 @@ jobs:
           node-version: 22.13.0
           cache: npm
           cache-dependency-path: site/package-lock.json
+      - name: Test event application async feedback
+        run: node site/.github/scripts/test_github_applicant.mjs
       - name: Install dependencies
         working-directory: site
         run: npm ci
@@ -184,3 +186,4 @@ jobs:
         timeout-minutes: 15
         # urllib's socket timeout cannot bound a continuously trickling response.
         run: timeout --verbose --kill-after=5s 12m python3 -u site/.github/scripts/verify-publication.py
+

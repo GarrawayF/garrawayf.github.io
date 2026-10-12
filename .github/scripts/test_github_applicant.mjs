@@ -149,5 +149,21 @@ async function consentReadinessRegression(){
  console.log('consent readiness: explanation optional, 30 original clauses, screening/review waits, authoritative gate, missing details, changed conditions, auth expiry, unknown save and version conflict passed');
 }
 
-(async()=>{await consentReadinessRegression();await feedbackLifecycle();await consentFeedback();await resumeReadWriteFeedback();await transport('applicant');await transport('resume');await otpFlow('applicant');await otpFlow('resume');for(const page of ['applicant','resume'])for(const interruption of ['pagehide','timeout'])await otpFlow(page,interruption);})().catch(e=>{console.error(e);process.exitCode=1;});
+function hearingNextActionRegression(){
+ const source=fs.readFileSync(root+'resume.js','utf8'),end=source.indexOf('root.GarrawayConsent='),start=source.lastIndexOf('(function(root){',end),close=source.indexOf('})(window);',end)+'})(window);'.length;
+ const c={URL,JSON,Date,Set,Map};c.window=c;vm.createContext(c);vm.runInContext(source.slice(start,close),c);
+ const make=(task={},workflow={})=>({id:'fictional-hearing',outcome:'active',canAgreeConsent:true,canProvideOperationalDetails:true,tasks:[{id:'hearing',state:'pending',needsReview:false,request:'',mine:true,blockedBy:[],...task}],consentWorkflow:{version:1,current:true,records:[{}],missingHearing:[],...workflow}});
+ const focus=e=>c.GarrawayConsent.hearingFocus(e,e.tasks[0]),state=e=>c.GarrawayConsent.hearingAction(e),lower=e=>c.GarrawayConsent.readinessNotice(e);
+ const saved=make();assert.equal(state(saved).state,'ready');assert.match(focus(saved),/保存済みの詳細を確認して提出する/);assert.match(focus(saved),/詳細を提出して確認を依頼/);assert.match(lower(saved),/保存だけでは運営への提出は完了しません/);assert.match(focus(saved),/最終同意は記録済み/);assert.match(lower(saved),/再同意は不要/);
+ const incomplete=make({}, {missingHearing:['架空の不足']});assert.equal(state(incomplete).state,'incomplete');assert.match(focus(incomplete),/当日の詳しい内容を入力する/);assert.match(focus(incomplete),/data-action="submit-task"/);
+ for(const missingHearing of [undefined,null,'',{}]){const e=make({}, {missingHearing});assert.equal(state(e).state,'unknown');assert.doesNotMatch(focus(e),/必要な項目は保存されています/);assert.match(focus(e),/入力・保存状況を確認/);}
+ const submitted=make({state:'submitted'});assert.equal(state(submitted).state,'waiting');assert.match(focus(submitted),/運営の受領確認待ち/);assert.doesNotMatch(focus(submitted),/data-action="submit-task"/);assert.match(lower(submitted),/運営：提出された詳細を確認/);assert.doesNotMatch(lower(submitted),/詳細を提出して確認を依頼/);
+ for(const task of [{state:'submitted',needsReview:true},{state:'submitted',request:'修正依頼'},{state:'done',needsReview:true}]){const e=make(task);assert.equal(state(e).state,'revision');assert.match(focus(e),/詳細を再提出して確認を依頼/);assert.match(lower(e),/詳細を再提出/);assert.doesNotMatch(focus(e),/運営の受領確認待ち/);}
+ const corrected=make({request:'<script>unsafe</script>'});assert.ok(!focus(corrected).includes('<script>'));assert.match(focus(corrected),/&lt;script&gt;/);
+ const before=JSON.stringify(saved);focus(saved);lower(saved);assert.equal(JSON.stringify(saved),before,'rendering must not mutate tasks or consent');
+ assert.equal(state(make({state:'done'})).state,'done');assert.equal(state({...saved,tasks:[]}),null);
+ console.log('hearing next action: incomplete/saved/submitted/revision/unknown, upper-lower agreement, no auto-submit or consent mutation passed');
+}
+
+(async()=>{hearingNextActionRegression();await consentReadinessRegression();await feedbackLifecycle();await consentFeedback();await resumeReadWriteFeedback();await transport('applicant');await transport('resume');await otpFlow('applicant');await otpFlow('resume');for(const page of ['applicant','resume'])for(const interruption of ['pagehide','timeout'])await otpFlow(page,interruption);})().catch(e=>{console.error(e);process.exitCode=1;});
 

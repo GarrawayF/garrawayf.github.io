@@ -101,7 +101,7 @@ class PublicEventPreviewTests(unittest.TestCase):
         self.assertIn('デモ版', html)
         self.assertIn('staff-login-form', html)
         self.assertIn('staff-app-body', html)
-        self.assertIn('./catalog/concierge.html', html)
+        self.assertIn('id="staff-catalog-open"', html)
         self.assertIn('credentials: \'omit\'', html)
         self.assertIn('/api/github/staff/', html)
         self.assertIn('request: { action: \'bootstrap\' }', html)

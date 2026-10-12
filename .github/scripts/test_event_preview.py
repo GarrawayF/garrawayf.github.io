@@ -80,16 +80,18 @@ class PublicEventPreviewTests(unittest.TestCase):
         self.assertEqual([g[1] for g in groups], [['E'], ['G', 'H', 'J', 'K', 'L', 'M'], [], ['P', 'Q', 'S', 'T', 'U', 'V', 'W', 'X'], [], ['AA']])
         self.assertIn('審査フォーム回答', self.text)
 
-    def test_applicant_entry_preserves_current_verified_destination(self):
-        # Applicant transport migration is released separately after GAS review.
-        from urllib.parse import urlparse, parse_qs
-        html = (ROOT / 'public/event-management-demo/index.html').read_text()
-        entries = [a for t, a in Page(html).tags if t == 'a' and 'data-entry' in a]
-        self.assertEqual(len(entries), 1)
-        url = urlparse(entries[0]['href'])
-        self.assertEqual(url.netloc, 'script.google.com')
-        self.assertEqual(parse_qs(url.query), {'access': ['apply']})
-        self.assertIn('デモ版', html)
+    def test_github_applicant_hosts_actual_secure_ui(self):
+        import subprocess
+        for filename, script in [('index.html', 'applicant.js'), ('resume.html', 'resume.js')]:
+            html = (ROOT / 'public/event-management-demo' / filename).read_text()
+            self.assertIn('デモ版', html)
+            self.assertNotIn('script.google.com', html)
+            self.assertNotIn('google.script', html)
+            self.assertNotIn('<iframe', html)
+            self.assertIn('script-src \'self\'', html)
+            self.assertIn('form-action \'none\'', html)
+            self.assertIn('./' + script, html)
+        subprocess.run(['node', str(ROOT / '.github/scripts/test_github_applicant.mjs')], check=True)
 
     def test_github_management_hosts_actual_secure_ui(self):
         import base64

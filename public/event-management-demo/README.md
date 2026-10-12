@@ -19,3 +19,9 @@
 - `staff.html`：既存v33の3役割を維持した、架空6案件の表示専用プレビュー。役割切替は認証・権限変更ではなく、実際の承認・保存・通知は行いません。
 - これらの確認画面には、実際の個人情報や機密情報を入力しないでください。
 
+
+## GitHub applicant release (2026-10-12)
+
+The index and resume pages now host the actual OTP, draft, receipt and applicant workflow UI on GitHub Pages. They call the narrowly allowed applicant API on the existing server, never navigate or embed Google Apps Script. Session tokens and form state remain in tab memory. Drafts and submissions use the existing private server-side storage and ownership checks.
+
+The demo label remains. Use only fictional event/person details with a mailbox you control. Publishing the UI is not evidence of mail delivery or authenticated end-to-end success; those checks are recorded separately during release.

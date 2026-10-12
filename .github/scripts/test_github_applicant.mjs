@@ -122,4 +122,32 @@ async function consentFeedback(){
  console.log('consent: delayed review/request/write, duplicates, request-not-delivery acknowledgement, retained unknown same-command/proof retry, saved-but-refresh-failed, close cleanup passed');
 }
 
-(async()=>{await feedbackLifecycle();await consentFeedback();await resumeReadWriteFeedback();await transport('applicant');await transport('resume');await otpFlow('applicant');await otpFlow('resume');for(const page of ['applicant','resume'])for(const interruption of ['pagehide','timeout'])await otpFlow(page,interruption);})().catch(e=>{console.error(e);process.exitCode=1;});
+async function consentReadinessRegression(){
+ const source=fs.readFileSync(root+'resume.js','utf8');
+ const moduleEnd=source.indexOf('root.GarrawayConsent='),moduleStart=source.lastIndexOf('(function(root){',moduleEnd),moduleClose=source.indexOf('})(window);',moduleEnd)+'})(window);'.length;
+ const h=domHarness(),timers=timerHarness(),c={...timers,document:h.document,Set,Map,JSON,Error,Date,URL,crypto:{randomUUID:()=> 'fictional-readiness'}};c.window=c;vm.createContext(c);vm.runInContext(source.slice(moduleStart,moduleClose),c);
+ const document={version:'fictional-v1',hash:'a'.repeat(64),fullText:'Fictional full text',clauses:Array.from({length:30},(_,i)=>({id:'clause'+i,group:'group',text:'Fictional original '+i}))};
+ const event={id:'fictional-event',version:1,outcome:'active',common:{},hearing:{},canAgreeConsent:true,canProvideOperationalDetails:true,tasks:[{id:'screening',state:'done',needsReview:false}],consentWorkflow:{version:1,current:false,missingHearing:[],records:[],explanation:null,document}};
+ const render=e=>c.GarrawayConsent.render(e,{applicant:true});
+ assert.equal(c.GarrawayConsent.readiness(event).ready,true);assert.match(render(event),/data-consent-start/);assert.match(render(event),/個別説明は必要/);assert.match(render(event),/基本規約の確認/);
+ const pending={...event,canProvideOperationalDetails:false,tasks:[{id:'screening',state:'submitted',needsReview:true}]};assert.equal(c.GarrawayConsent.readiness(pending).ready,false);assert.match(render(pending),/運営の事前確認待ち/);assert.doesNotMatch(render(pending),/data-consent-start/);assert.match(render(pending),/data-consent-reference/);for(const clause of document.clauses)assert.ok(render(pending).includes(clause.text));
+ const fallback={...pending,canProvideOperationalDetails:undefined};assert.equal(c.GarrawayConsent.readiness(fallback).ready,false);
+ assert.equal(c.GarrawayConsent.readiness({...pending,canProvideOperationalDetails:true}).ready,true,'server operational acceptance is authoritative');
+ const missing={...event,consentWorkflow:{...event.consentWorkflow,missingHearing:['架空の不足項目']}};assert.match(render(missing),/あなたの詳細入力・確認待ち/);assert.doesNotMatch(render(missing),/data-consent-start/);
+ const changed={...event,consentWorkflow:{...event.consentWorkflow,records:[{documentVersion:'old'}]}};assert.match(render(changed),/変更後の条件への再同意待ち/);assert.match(render(changed),/data-consent-start/);
+ assert.match(render({...event,canAgreeConsent:false}),/本人確認の状態/);assert.doesNotMatch(render({...event,canAgreeConsent:false}),/data-consent-start/);
+ assert.equal(c.GarrawayConsent.readiness({...event,outcome:'cancelled'}).ready,false);
+ assert.match(render({...event,consentWorkflow:{...event.consentWorkflow,current:true}}),/最終同意は記録済み/);
+ assert.equal(c.GarrawayConsent.validReview({eventId:event.id,eventVersion:1,conditionsHash:'b'.repeat(64),conditions:{},document,missingHearing:[]},event.id),true);
+ assert.equal(c.GarrawayConsent.validReview({eventId:event.id,eventVersion:1,conditionsHash:'b'.repeat(64),conditions:{},document:{...document,clauses:document.clauses.slice(1)},missingHearing:[]},event.id),false);
+ // Exercise actual save handlers: business prerequisites and expired auth never become uncertain saves.
+ for(const [code,expected] of [['VALIDATION',/運営の事前確認待ち/],['SESSION_EXPIRED',/本人確認の期限/],['OTP_DISABLED',/確認コード機能を利用できません。運営へ確認/],['FORBIDDEN',/権限/],['OUTCOME_UNKNOWN',/保存結果を確認できません/],['VERSION_CONFLICT',/条件または文書が更新/]]){
+  const local=domHarness(),ctx={...timerHarness(),document:local.document,Set,Map,JSON,Error,Date,URL,crypto:{randomUUID:()=> 'fictional-error'}};ctx.window=ctx;vm.createContext(ctx);vm.runInContext(source.slice(moduleStart,moduleClose),ctx);
+  const controller=ctx.GarrawayConsent.bind(local.get('container'),pending,{onSaveHearing:async()=>{throw Object.assign(Error('Generic authentication text must not leak'),{code});}});
+  await local.get('[data-hearing-form]').onsubmit({preventDefault(){}});assert.match(local.get('[data-hearing-status]').textContent,expected,code);assert.doesNotMatch(local.get('[data-hearing-status]').textContent,/Generic authentication/);assert.equal(controller.hasUnresolved(),code==='OUTCOME_UNKNOWN',code);controller.dispose();
+ }
+ console.log('consent readiness: explanation optional, 30 original clauses, screening/review waits, authoritative gate, missing details, changed conditions, auth expiry, unknown save and version conflict passed');
+}
+
+(async()=>{await consentReadinessRegression();await feedbackLifecycle();await consentFeedback();await resumeReadWriteFeedback();await transport('applicant');await transport('resume');await otpFlow('applicant');await otpFlow('resume');for(const page of ['applicant','resume'])for(const interruption of ['pagehide','timeout'])await otpFlow(page,interruption);})().catch(e=>{console.error(e);process.exitCode=1;});
+

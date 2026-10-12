@@ -165,5 +165,20 @@ function hearingNextActionRegression(){
  console.log('hearing next action: incomplete/saved/submitted/revision/unknown, upper-lower agreement, no auto-submit or consent mutation passed');
 }
 
-(async()=>{hearingNextActionRegression();await consentReadinessRegression();await feedbackLifecycle();await consentFeedback();await resumeReadWriteFeedback();await transport('applicant');await transport('resume');await otpFlow('applicant');await otpFlow('resume');for(const page of ['applicant','resume'])for(const interruption of ['pagehide','timeout'])await otpFlow(page,interruption);})().catch(e=>{console.error(e);process.exitCode=1;});
+async function resumeRequestFeedbackRegression(){
+ const all=fs.readFileSync(root+'resume.js','utf8'),source=helperSource(all)+'\n'+all.slice(all.lastIndexOf("(()=>{'use strict';"));
+ const ack={accepted:true,challengeId:'b'.repeat(64),expiresInSeconds:600,resendAfterSeconds:60,message:'Generic backend acknowledgement'};
+ const cases=[['accepted',{ok:true,data:ack},'success',/依頼を受け付けました/],['malformed-ack',{ok:true,data:{accepted:true}},'unknown',/依頼の受付結果を確認できません/],['bad-ttl',{ok:true,data:{...ack,expiresInSeconds:601}},'unknown',/依頼の受付結果を確認できません/],['backend-unavailable',{ok:false,error:{code:'OTP_UNAVAILABLE'}},'unknown',/依頼の受付結果を確認できません/],['unknown-envelope',{unexpected:true},'unknown',/依頼の受付結果を確認できません/],['network',null,'unknown',/依頼の受付結果を確認できません/],['disabled',{ok:false,error:{code:'OTP_DISABLED'}},'error',/確認コード機能を利用できません/],['rate-limit',{ok:false,error:{code:'RATE_LIMIT'}},'error',/依頼回数が上限/]];
+ for(const [label,response,state,expected] of cases){
+  const h=domHarness(),timers=timerHarness(),calls=[];const c={...timers,document:h.document,addEventListener:h.addEventListener,location:{href:'https://garrawayf.github.io/event-management-demo/resume.html',reload(){}},crypto:{randomUUID:()=> 'fictional-request'},AbortController,URL,Error,Date,JSON,Set,Map,fetch:async(_url,opts)=>{calls.push(JSON.parse(opts.body).request);if(response===null)throw Error('network');return {ok:response.ok!==false,redirected:false,headers:{get:()=> 'application/json'},text:async()=>JSON.stringify(response)};}};c.window=c;vm.createContext(c);vm.runInContext(source,c);
+  const form=h.get('#applicant-request-form');form.hidden=false;form.elements.eventId.value='fictional-event';form.elements.email.value='fictional@example.invalid';form.onsubmit({preventDefault(){}});await tick();await tick();
+  assert.equal(calls.length,1,label);assert.equal(calls[0].action,'request-resume',label);assert.equal(h.get('#async-feedback').dataset.state,state,label);assert.match(h.get('#async-feedback').textContent,expected,label);assert.doesNotMatch(h.get('#applicant-status').textContent,/新しい確認コードをお確かめください/,label);
+  if(state!=='success'){assert.doesNotMatch(h.get('#async-feedback').textContent,/依頼を受け付けました/,label);assert.doesNotMatch(h.get('#applicant-status').textContent,/コード.*間違|コード.*誤り/,label);}
+  // No verify request, automatic retry, or resend occurs from a request failure.
+  [...timers.timers.values()].filter(t=>t.ms===1000).forEach(t=>t.fn());assert.equal(calls.length,1,label);
+ }
+ console.log('resume OTP request: valid v13 ACK, invalid ACK/TTL, unavailable/network, disabled/rate-limit, no false success or automatic resend passed');
+}
+
+(async()=>{await resumeRequestFeedbackRegression();hearingNextActionRegression();await consentReadinessRegression();await feedbackLifecycle();await consentFeedback();await resumeReadWriteFeedback();await transport('applicant');await transport('resume');await otpFlow('applicant');await otpFlow('resume');for(const page of ['applicant','resume'])for(const interruption of ['pagehide','timeout'])await otpFlow(page,interruption);})().catch(e=>{console.error(e);process.exitCode=1;});
 

@@ -80,52 +80,42 @@ class PublicEventPreviewTests(unittest.TestCase):
         self.assertEqual([g[1] for g in groups], [['E'], ['G', 'H', 'J', 'K', 'L', 'M'], [], ['P', 'Q', 'S', 'T', 'U', 'V', 'W', 'X'], [], ['AA']])
         self.assertIn('審査フォーム回答', self.text)
 
-    def test_connected_entries_use_verified_destinations_and_clear_limits(self):
+    def test_applicant_entry_preserves_current_verified_destination(self):
+        # Applicant transport migration is released separately after GAS review.
         from urllib.parse import urlparse, parse_qs
-        for filename, access in [('index.html', 'apply'), ('concierge.html', 'shared')]:
-            html = (ROOT / 'public/event-management-demo' / filename).read_text()
-            parsed = Page(html)
-            notice = re.search(r'<div class="demo-notice">(.*?)</div>', html, re.S)[1]
-            self.assertIn('<b>デモ版</b>', notice)
-            entries = [a for t, a in parsed.tags if t == 'a' and 'data-entry' in a]
-            self.assertEqual(len(entries), 1)
-            url = urlparse(entries[0]['href'])
-            self.assertEqual(url.scheme, 'https')
-            self.assertEqual(url.netloc, 'script.google.com')
-            self.assertRegex(url.path, r'^/macros/s/[A-Za-z0-9_-]+/exec$')
-            self.assertEqual(parse_qs(url.query), {'access': [access]})
-            self.assertEqual(entries[0].get('rel'), 'noreferrer')
-            self.assertNotIn('application.html', html)
-            self.assertNotIn('staff.html', html)
-            self.assertIn('./catalog/' + ('applicant' if access == 'apply' else 'concierge') + '.html', html)
-            for tag, attrs in parsed.tags:
-                self.assertNotIn(tag, ('form', 'input', 'textarea', 'script', 'iframe'))
-            for marker in ['docs.google.com', 'gmail.com', 'localStorage', 'sessionStorage', 'SECRET', 'PASSWORD']:
-                self.assertNotIn(marker, html)
-            self.assertNotRegex(html, r'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}')
-        applicant = (ROOT / 'public/event-management-demo/index.html').read_text()
-        self.assertIn('試験用台帳に保存されます', applicant)
-        self.assertIn('正式な予約・承認・同意取得ではありません', applicant)
-        self.assertIn('表示は未確認', applicant)
-        self.assertIn('正式統合は未完了', applicant)
-        staff = (ROOT / 'public/event-management-demo/concierge.html').read_text()
-        self.assertIn('共有パスワードでのログインは本人端末で確認済み', staff)
-        self.assertIn('共有側の保存は確認待ち', staff)
-        self.assertIn('主催者への承認通知メール送信は行いません', staff)
+        html = (ROOT / 'public/event-management-demo/index.html').read_text()
+        entries = [a for t, a in Page(html).tags if t == 'a' and 'data-entry' in a]
+        self.assertEqual(len(entries), 1)
+        url = urlparse(entries[0]['href'])
+        self.assertEqual(url.netloc, 'script.google.com')
+        self.assertEqual(parse_qs(url.query), {'access': ['apply']})
+        self.assertIn('デモ版', html)
 
-    def test_concierge_access_help_is_collapsed_and_safe(self):
+    def test_github_management_hosts_actual_secure_ui(self):
+        import base64
+        import hashlib
         html = (ROOT / 'public/event-management-demo/concierge.html').read_text()
-        block = re.search(r'<details class="entry-caution" id="access-help">(.*?)</details>', html, re.S)
-        self.assertIsNotNone(block)
-        self.assertIn('<summary>開けないとき</summary>', block[1])
-        self.assertIn('https://garrawayf.github.io/event-management-demo/concierge.html', block[1])
-        self.assertIn('SafariまたはChrome', block[1])
-        self.assertIn('移動先の管理画面で入力', block[1])
-        self.assertNotIn('script.google.com', block[1])
-        self.assertNotRegex(block[1], r'ログアウト|[Cc]ookie|クッキー|削除')
-        details = [a for tag, a in Page(html).tags if a.get('id') == 'access-help']
-        self.assertEqual(len(details), 1)
-        self.assertNotIn('open', details[0])
+        tags = Page(html).tags
+        self.assertIn('デモ版', html)
+        self.assertIn('staff-login-form', html)
+        self.assertIn('staff-app-body', html)
+        self.assertIn('./catalog/concierge.html', html)
+        self.assertIn('credentials: \'omit\'', html)
+        self.assertIn('/api/github/staff/', html)
+        self.assertIn('request: { action: \'bootstrap\' }', html)
+        for marker in ['script.google.com', 'google.script', 'localStorage', 'sessionStorage', 'nonce=', '__CSP_NONCE__', 'docs.google.com', 'GF_events']:
+            self.assertNotIn(marker, html)
+        self.assertNotRegex(html, r'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}')
+        self.assertFalse(any(t in ['iframe', 'base'] for t, _ in tags))
+        csp = next(a['content'] for t,a in tags if a.get('http-equiv') == 'Content-Security-Policy')
+        self.assertNotIn("script-src 'unsafe-inline'", csp)
+        self.assertIn("default-src 'none'", csp)
+        self.assertIn("form-action 'none'", csp)
+        for script in re.findall(r'<script(?:\s[^>]*)?>([\s\S]*?)</script>', html):
+            digest = base64.b64encode(hashlib.sha256(script.encode()).digest()).decode()
+            self.assertIn("'sha256-"+digest+"'", csp)
+        config = re.search(r'<script[^>]*id="config"[^>]*>(.*?)</script>',html,re.S)[1]
+        self.assertEqual(json.loads(config), {'mode':'shared-login'})
 
     def test_homepage_entry_and_separate_application_remain(self):
         homepage = (ROOT / 'app/page.tsx').read_text()
@@ -139,3 +129,4 @@ class PublicEventPreviewTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+

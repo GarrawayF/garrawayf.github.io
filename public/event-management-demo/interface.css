@@ -19,7 +19,7 @@ body.gf-concierge { --accent:#ff4fc3; --accent-strong:#972560; --tint:#fff0f8; -
 .gf-ui textarea { min-height:118px; line-height:1.7; }
 .gf-ui :focus-visible { outline:3px solid var(--accent-strong); outline-offset:4px; }
 .gf-ui button.primary,.gf-ui a.primary { background:var(--accent-strong); color:#fff; border:1px solid var(--ink); border-radius:0; }
-.gf-concierge button.primary { background:var(--accent); color:#111; }
+.gf-ui.gf-concierge button.primary { background:var(--accent); color:#111; }
 .gf-ui button:not(:disabled):hover,.gf-ui a.primary:hover { filter:brightness(.95); }
 .gf-ui button:disabled { cursor:not-allowed; }
 .gf-ui .eyebrow { color:var(--ink); font-size:12px; letter-spacing:.09em; font-weight:700; }

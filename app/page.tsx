@@ -481,18 +481,19 @@ export default function Home() {
             <div><span>OPEN</span><b>10:00–20:00</b><small>MON–FRI</small></div>
             <div><span>ADDRESS</span><p>〒810-0021<br />福岡市中央区今泉1丁目19番22号<br /><b>天神CLASS 3階</b></p></div>
           </div>
-          <a href="https://www.google.com/maps/search/?api=1&query=%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E4%BB%8A%E6%B3%891%E4%B8%81%E7%9B%AE19%E7%95%AA22%E5%8F%B7" target="_blank" rel="noreferrer">
+          {/* Pin the building itself: address-only search resolves to a different nearby point. */}
+          <a href="https://www.google.com/maps/search/?api=1&query=%E8%A5%BF%E9%89%84%E5%A4%A9%E7%A5%9E%E3%82%AF%E3%83%A9%E3%82%B9&query_place_id=ChIJhQIoVISRQTURPcTyX-bnkeE" target="_blank" rel="noreferrer">
             GOOGLE MAPSで開く <span>↗</span>
           </a>
         </div>
         <div className="mapWrap">
           <iframe
-            title="Garraway F Google Map"
-            src="https://www.google.com/maps?q=%E7%A6%8F%E5%B2%A1%E5%B8%82%E4%B8%AD%E5%A4%AE%E5%8C%BA%E4%BB%8A%E6%B3%891%E4%B8%81%E7%9B%AE19%E7%95%AA22%E5%8F%B7&output=embed"
+            title="天神CLASS（Garraway F 3階）Google Map"
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4358.592782791401!2d130.39517494962772!3d33.586862699923024!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3541918454280285%3A0xe191e7e65ff2c43d!2z44CSODEwLTAwMjEg56aP5bKh55yM56aP5bKh5biC5Lit5aSu5Yy65LuK5rOJ77yR5LiB55uu77yR77yZ4oiS77yS77ySIOilv-mJhOWkqeelnuOCr-ODqeOCuQ!5e0!3m2!1sja!2sjp!4v1771985739365!5m2!1sja!2sjp"
             loading="lazy"
             referrerPolicy="no-referrer"
           />
-          <span>FUKUOKA / 33.587°N</span>
+          <span>FUKUOKA / 33.586°N</span>
         </div>
         <div className="accessPhoto">
           <a

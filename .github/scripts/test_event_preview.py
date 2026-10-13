@@ -119,6 +119,12 @@ class PublicEventPreviewTests(unittest.TestCase):
         config = re.search(r'<script[^>]*id="config"[^>]*>(.*?)</script>',html,re.S)[1]
         self.assertEqual(json.loads(config), {'mode':'shared-login'})
 
+    def test_management_scripts_parse_before_publication(self):
+        import subprocess
+        html = (ROOT / 'public/event-management-demo/concierge.html').read_text()
+        scripts = [body for attrs, body in re.findall(r'<script([^>]*)>([\s\S]*?)</script>', html) if 'application/json' not in attrs]
+        subprocess.run(['node', '--input-type=module', '-e', "import vm from 'node:vm'; import fs from 'node:fs'; for (const code of JSON.parse(fs.readFileSync(0,'utf8'))) new vm.Script(code);"], input=json.dumps(scripts), text=True, check=True)
+
     def test_homepage_entry_and_separate_application_remain(self):
         homepage = (ROOT / 'app/page.tsx').read_text()
         self.assertIn('/event-management-demo/concierge.html', homepage)

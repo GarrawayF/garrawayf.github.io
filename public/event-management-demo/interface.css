@@ -1,0 +1,174 @@
+/* Garraway F / task-first interface. Typography follows Oita Mobility Atlas. */
+body.gf-ui {
+  --ink:#111; --accent:#0870c4; --accent-strong:#07569a;
+  --tint:#edf6ff; --accent-soft:#bcdfff; --rule:#222; --muted:#53616e;
+  --blue:var(--accent-strong); --role:var(--accent-strong); --pale:var(--tint);
+  font-family:"Helvetica Neue",Arial,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif;
+  color:var(--ink); background:var(--tint); line-height:1.7;
+  -webkit-text-size-adjust:100%;
+}
+body.gf-concierge { --accent:#ff4fc3; --accent-strong:#972560; --tint:#fff0f8; --accent-soft:#ffc5e9; --muted:#665360; }
+.gf-ui *, .gf-ui *::before, .gf-ui *::after { box-sizing:border-box; }
+.gf-ui [hidden] { display:none!important; }
+.gf-ui h1,.gf-ui h2,.gf-ui h3 { color:var(--ink); font-weight:750; letter-spacing:-.035em; text-wrap:pretty; }
+.gf-ui h1 { font-size:clamp(30px,3.2vw,46px); line-height:1.3; }
+.gf-ui button,.gf-ui input,.gf-ui select,.gf-ui textarea { font-family:inherit; }
+.gf-ui button,.gf-ui a { touch-action:manipulation; }
+.gf-ui button { min-height:48px; border-radius:0; box-shadow:none; font-size:15px; line-height:1.5; }
+.gf-ui input:not([type=checkbox]):not([type=radio]),.gf-ui select,.gf-ui textarea { font-size:16px; min-height:50px; border-radius:0; border:1px solid #8d98a0; padding:12px; max-width:100%; }
+.gf-ui textarea { min-height:118px; line-height:1.7; }
+.gf-ui :focus-visible { outline:3px solid var(--accent-strong); outline-offset:4px; }
+.gf-ui button.primary,.gf-ui a.primary { background:var(--accent-strong); color:#fff; border:1px solid var(--ink); border-radius:0; }
+.gf-concierge button.primary { background:var(--accent); color:#111; }
+.gf-ui button:not(:disabled):hover,.gf-ui a.primary:hover { filter:brightness(.95); }
+.gf-ui button:disabled { cursor:not-allowed; }
+.gf-ui .eyebrow { color:var(--ink); font-size:12px; letter-spacing:.09em; font-weight:700; }
+.gf-ui .header,.gf-ui .site-header { background:var(--tint); border-bottom:1px solid var(--rule); padding:20px clamp(16px,3vw,40px); }
+.gf-ui .header .brand { letter-spacing:-.065em; font-size:28px; }
+.gf-ui .header nav { gap:20px; }
+.gf-ui .header nav a { font-size:14px; color:var(--ink); }
+.gf-ui .demo-notice,.gf-ui .demo-banner { background:#111; color:#fff; font-size:12px; }
+.gf-ui .wrap { max-width:1120px; padding:32px clamp(16px,3vw,36px); }
+.gf-ui .card { border:1px solid var(--rule); border-radius:0; padding:clamp(20px,3vw,36px); box-shadow:none; }
+.gf-ui .progress { gap:0; margin-bottom:20px; }
+.gf-ui .progress li { padding:12px 10px; border-top:2px solid #a8bbcb; font-size:13px; }
+.gf-ui .progress li[aria-current=step] { border-color:var(--ink); background:var(--accent-soft); color:var(--ink); }
+.gf-ui .context { font-size:14px; }
+.gf-ui .context strong { color:var(--accent-strong); }
+.gf-ui .gf-overview { padding:0; background:transparent; border:0; }
+.gf-hero { margin:0 0 28px; }
+.gf-purpose { margin:0 0 24px; }
+.gf-purpose h2 { font-size:24px; margin:8px 0; }
+.gf-purpose>p { max-width:48em; }
+.gf-hero h1 { margin:12px 0; }
+.gf-highlight { box-shadow:inset 0 -.23em var(--accent-soft); }
+.gf-hero p:last-child { font-size:16px; max-width:46em; }
+.gf-entry { background:#fff; border:1px solid var(--rule); padding:clamp(20px,3vw,32px); }
+.gf-entry h2 { font-size:24px; margin-bottom:8px; }
+.gf-entry .actions { display:grid; grid-template-columns:1.1fr 1fr; gap:16px; margin:22px 0 0; align-items:stretch; }
+.gf-entry .actions button,.gf-entry .actions a { min-height:58px; padding:14px 18px; font-size:17px; font-weight:700; display:flex; align-items:center; justify-content:space-between; text-decoration:none; }
+.gf-entry .gf-secondary { border:1px solid var(--ink); background:#fff; color:var(--ink); }
+.gf-entry .hint { font-size:13px; margin-bottom:0; }
+.gf-ui .gf-essential { margin:20px 0; padding:0; list-style:none; display:flex; gap:12px 28px; flex-wrap:wrap; font-size:14px; }
+.gf-essential li::before { content:'✓'; margin-right:7px; font-weight:700; color:var(--accent-strong); }
+.gf-ui .gf-purpose .principles { margin:24px 0; gap:1px; background:#bac7d0; border:1px solid #bac7d0; }
+.gf-ui .principles section { background:#fff; border-radius:0; padding:22px; }
+.gf-ui .principles p { font-size:14px; }
+.gf-ui details { border-radius:0; background:#fff; }
+.gf-ui summary { min-height:44px; display:list-item; align-content:center; font-size:15px; }
+.gf-ui .lifecycle { margin:0; padding:10px 0; border:0; }
+.gf-ui .lifecycle h2 { font-size:20px; }
+.gf-ui .notice { font-size:14px; line-height:1.8; border-radius:0; }
+.gf-ui .step-nav { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:0; border:1px solid var(--rule); }
+.gf-ui .step-nav button { border:0; border-right:1px solid var(--rule); border-radius:0; font-size:15px; min-height:52px; }
+.gf-ui .step-nav button:last-child { border-right:0; }
+.gf-ui .step-nav button[aria-current=step] { background:var(--accent-soft); color:#111; }
+.gf-ui .field-step>legend { font-size:27px; letter-spacing:-.03em; }
+.gf-ui label { font-size:15px; }
+.gf-ui .field-step label:has([required]):not(:has([readonly]))::after { content:'必須'; display:block; color:var(--muted); font-size:11px; font-weight:400; margin-top:3px; }
+.gf-ui .field-step label:has([readonly])::after { content:'確認済み・再入力は不要です'; display:block; color:var(--accent-strong); font-size:12px; margin-top:3px; }
+.gf-ui .gf-field-help { display:block; font-size:13px; color:var(--muted); line-height:1.7; margin-top:7px; font-weight:400; }
+.gf-ui .gf-copy-tools { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin:12px 0; }
+.gf-ui .gf-copy-tools button { color:var(--accent-strong); border:1px solid var(--accent-strong); background:var(--tint); }
+.gf-ui .gf-copy-tools p { margin:0; font-size:13px; }
+.gf-ui .review-summary { grid-template-columns:1fr 1fr; }
+.gf-ui .review-summary section { background:var(--tint); border-radius:0; border-top:2px solid var(--accent-strong); }
+.gf-review-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.gf-review-heading h3 { margin:0; }
+.gf-ui .gf-review-edit { font-size:14px; padding:8px 12px; min-height:44px; color:var(--accent-strong); border:1px solid var(--accent-strong); }
+.gf-ui .save-state { border-radius:0; }
+.gf-ui #preapp-save-state[data-state=saved] { display:flex; flex-wrap:wrap; gap:4px 18px; padding:10px 14px; font-size:13px; }
+.gf-ui #preapp-save-state[data-state=saved] p { margin:0; }
+.gf-ui .gf-actionbar { position:sticky; bottom:0; padding:14px 0 max(14px,env(safe-area-inset-bottom)); background:#fff; border-top:1px solid #b7c7d6; z-index:5; }
+.gf-ui .gf-actionbar button { min-height:52px; }
+.gf-ui [data-form-step] { scroll-margin-top:24px; }
+.gf-ui .applicant-login,.gf-ui .staff-login { width:calc(100% - 32px); max-width:520px; margin:clamp(24px,7vh,72px) auto; padding:clamp(22px,4vw,40px); border:1px solid var(--rule); border-top:7px solid var(--accent); background:#fff; border-radius:0; }
+.gf-ui .applicant-login h1,.gf-ui .staff-login h1 { font-size:32px; margin:16px 0; }
+.gf-ui .staff-login b { font-size:24px; letter-spacing:-.05em; }
+.gf-ui .applicant-login .entry-links { display:flex; flex-wrap:wrap; gap:8px 20px; }
+.gf-ui .applicant-login .entry-links a { min-height:44px; display:inline-flex; align-items:center; font-size:14px; }
+.gf-ui #staff-app-body header { margin:0; max-width:none; background:var(--tint); border:0; border-bottom:1px solid var(--rule); padding:18px 28px; gap:18px; }
+.gf-ui #staff-app-body main { max-width:1440px; padding:28px; }
+.gf-ui #staff-app-body .page-heading { min-height:48px; height:auto; max-height:none; margin:0 0 20px; }
+.gf-ui #staff-app-body .page-heading h1 { font-size:32px; line-height:1.4; }
+.gf-ui #staff-app-body .page-heading button { height:auto; min-height:44px; }
+.gf-ui #staff-app-body .brand { font-size:28px; }
+.gf-ui #staff-app-body .list-summary { gap:8px; margin:0 0 20px; display:flex; flex-wrap:wrap; align-items:center; }
+.gf-ui #staff-app-body .list-summary>strong { font-size:22px; margin-right:12px; }
+.gf-ui #staff-app-body .list-summary button { min-height:46px; padding:10px 14px; font-size:14px; background:#fff; border:1px solid #ba9aaa; border-radius:0; }
+.gf-ui #staff-app-body .list-summary button[aria-pressed=true] { background:var(--accent); color:#111; border-color:#111; }
+.gf-ui .gf-search { display:block; max-width:620px; margin:0 0 16px; }
+.gf-ui .gf-search input { width:100%; background:#fff; }
+.gf-ui #staff-app-body .event-table-wrap { max-height:none; border:1px solid #6b5360; background:#fff; }
+.gf-ui #staff-app-body .event-table-header { background:#ffe0f3; }
+.gf-ui #staff-app-body .event-table-header button { font-size:13px; min-height:48px; }
+.gf-ui #staff-app-body .event-row { min-height:76px; }
+.gf-ui #staff-app-body .event-title { font-size:15px; font-weight:700; line-height:1.6; }
+.gf-ui #staff-app-body .date-button { min-height:44px; }
+.gf-ui #staff-app-body .shared-staff-filters { gap:0; margin-bottom:20px; }
+.gf-ui #staff-app-body .shared-staff-filters button { border-radius:0; min-height:46px; font-size:14px; }
+.gf-ui #staff-app-body .event-management-sheet { background:#fff; border:1px solid var(--rule); border-radius:0; padding:24px; }
+.gf-ui #staff-app-body .sheet-event-heading h2 { font-size:28px; line-height:1.5; }
+.gf-ui #staff-app-body .sheet-task>.actions button.primary { background:var(--accent); color:#111; font-size:16px; min-height:52px; border:1px solid #111; }
+.gf-ui #staff-app-body .sheet-primary-actions button { font-size:15px; min-height:48px; border-radius:0; }
+.gf-ui #staff-app-body .sheet-task>h3 { font-size:20px; }
+.gf-ui #staff-app-body .sheet-task>p { font-size:14px; }
+.gf-ui #staff-app-body .process-flow li[aria-current=step] { background:#ffe0f3; border-color:var(--accent-strong); }
+.gf-ui #staff-app-body .list-tools-toggle { min-height:46px; font-size:14px; }
+.gf-ui .sheet-pane,.gf-ui .panel { border-radius:0; }
+.gf-ui .footer { border-top:1px solid var(--rule); font-size:13px; margin-top:32px; }
+@media(max-width:700px) {
+ .gf-ui .header { padding:14px 16px; gap:12px; align-items:center; }
+ .gf-ui .header nav { gap:6px 12px; }
+ .gf-ui .header nav a { font-size:12px; }
+ .gf-ui .wrap { padding:22px 16px; }
+ .gf-ui .card { padding:22px 18px; }
+ .gf-ui .gf-overview { padding:0; }
+ .gf-hero { margin-bottom:22px; }
+ .gf-hero h1 { font-size:32px; }
+ .gf-entry { padding:22px 18px; }
+ .gf-entry h2 { font-size:22px; }
+ .gf-entry .actions { grid-template-columns:1fr; gap:10px; margin-top:16px; }
+ .gf-entry .actions button,.gf-entry .actions a { min-height:54px; font-size:16px; }
+ .gf-ui .gf-essential { gap:8px; display:grid; }
+ .gf-ui .progress li { font-size:12px; padding:10px 4px; }
+ .gf-ui .context { font-size:13px; }
+ .gf-ui .gf-purpose .principles { grid-template-columns:1fr; }
+ .gf-ui .field-grid,.gf-ui .signature-grid,.gf-ui .review-summary { grid-template-columns:1fr; }
+ .gf-ui .step-nav button { font-size:14px; padding:10px 4px; }
+ .gf-ui .gf-actionbar { flex-wrap:nowrap; gap:10px; }
+ .gf-ui .gf-actionbar button { flex:1; font-size:15px; padding:12px 10px; }
+ .gf-ui .gf-actionbar button.primary { flex:1.6; }
+ .gf-ui .gf-copy-tools button { width:100%; }
+ .gf-ui #staff-app-body header { padding:14px 16px; gap:8px 12px; flex-wrap:wrap; }
+ .gf-ui #staff-app-body main { padding:20px 16px; }
+ .gf-ui #staff-app-body .page-heading h1 { font-size:27px; }
+ .gf-ui #staff-app-body .list-summary { gap:8px; }
+ .gf-ui #staff-app-body .list-summary>strong { flex:1 1 100%; }
+ .gf-ui #staff-app-body .list-summary button { flex:1 1 28%; padding:8px; font-size:13px; }
+ .gf-ui #staff-app-body .event-table-wrap { border:0; background:transparent; overflow:visible; }
+ .gf-ui #staff-app-body .event-table-header { display:none; }
+ .gf-ui #staff-app-body .event-table.one-line-table .event-row { display:grid; grid-template-columns:minmax(0,1fr) minmax(80px,auto); gap:8px 12px; border:1px solid #b899aa; padding:18px; margin:0 0 12px; background:#fff; }
+ .gf-ui #staff-app-body .event-table.one-line-table .event-row [role=cell] { width:auto; max-width:none; min-width:0; font-size:14px!important; line-height:1.6; height:auto; max-height:none; white-space:normal; overflow:visible; }
+ .gf-ui #staff-app-body .event-table.one-line-table .event-row .event-title-cell { grid-column:1/-1; grid-row:1; }
+ .gf-ui #staff-app-body .event-table.one-line-table .event-row .event-title { font-size:17px!important; line-height:1.6; white-space:normal; height:auto; min-height:44px; overflow:visible; text-align:left; }
+ .gf-ui #staff-app-body .event-table.one-line-table .event-row .event-progress-cell { grid-column:1; grid-row:2; }
+ .gf-ui #staff-app-body .event-table.one-line-table .event-row .event-deadline-cell { grid-column:2; grid-row:2; }
+ .gf-ui #staff-app-body .event-table.one-line-table .event-row .event-schedule-cell { grid-column:1/-1; grid-row:3; }
+ .gf-ui #staff-app-body .event-table.one-line-table .event-row .event-space-cell { grid-column:1; grid-row:4; display:block; }
+ .gf-ui #staff-app-body .event-table.one-line-table .event-row .event-count-cell { grid-column:2; grid-row:4; display:block; text-align:right; }
+ .gf-ui #staff-app-body .event-table.one-line-table .event-row .event-next-cell { grid-column:1/-1; grid-row:5; display:block; padding-top:8px; border-top:1px solid #ecd8e3; }
+ .gf-ui #staff-app-body .event-table.one-line-table .event-row .event-next-cell span { white-space:normal; }
+ .gf-ui #staff-app-body .event-table.one-line-table .event-row .event-organizer-cell { display:none; }
+ .gf-ui #staff-app-body .event-table.one-line-table .event-row .event-actor-cell { grid-column:1/-1; grid-row:6; display:block; color:var(--muted); }
+ .gf-ui #staff-app-body .event-table.one-line-table .event-time { display:inline; }
+ .gf-ui #staff-app-body .event-row .list-badge { font-size:12px; }
+ .gf-ui #staff-app-body .event-management-sheet { padding:20px 16px; }
+ .gf-ui #staff-app-body .sheet-event-heading h2 { font-size:24px; }
+ .gf-ui #staff-app-body .sheet-task>h3 { font-size:18px; }
+ .gf-ui #staff-app-body .sheet-primary-actions { grid-template-columns:1fr; }
+ .gf-ui #staff-app-body .sheet-utility-actions button { font-size:13px; min-height:44px; }
+ .gf-ui #staff-app-body .process-flow li strong { font-size:12px; }
+ .gf-ui #staff-app-body .list-footnote,.gf-ui #staff-app-body .list-explainer { font-size:12px; }
+}
+@media(prefers-reduced-motion:reduce) { .gf-ui * { scroll-behavior:auto!important; } }

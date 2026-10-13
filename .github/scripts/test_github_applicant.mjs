@@ -69,6 +69,27 @@ async function otpFlow(name,interruptVerify=null){
   editor.elements.eventTitle.value='Conflicting change';responses.push({ok:false,error:{code:'VERSION_CONFLICT'}});await assert.rejects(c.__testing.saveOnce(),e=>e.code==='VERSION_CONFLICT');assert.equal(h.get('#async-feedback').dataset.state,'error');assert.equal(h.get('#preapp-save-state').dataset.state,'conflict');assert.equal(editor.elements.eventTitle.value,'Conflicting change');
   c.__testing.mountDraft(draftValue);
 
+  // Copy fills only empty secondary values, preserves its date, and never submits.
+  const callsBeforeCopy=calls.length;
+  editor.elements.secondSetup.value='';editor.elements.secondSpace.value='';
+  editor.elements.secondStart.value='10:30';
+  h.get('#preapp-copy-times').onclick();
+  assert.equal(editor.elements.secondSetup.value,values.firstSetup);
+  assert.equal(editor.elements.secondSpace.value,values.firstSpace);
+  assert.equal(editor.elements.secondStart.value,'10:30');
+  assert.equal(editor.elements.secondDate.value,values.secondDate);
+  assert.match(h.get('#preapp-copy-status').textContent,/2項目/);
+  assert.equal(h.get('#preapp-save-state').dataset.state,'dirty');
+  assert.equal(calls.length,callsBeforeCopy);
+  // Review shortcuts return directly to the requested section without mutation.
+  c.__testing.mountDraft(draftValue);const beforeReviewNodes=h.created.length;
+  c.__testing.setStep(4);
+  const editOrganizer=h.created.slice(beforeReviewNodes).find(n=>n.attributes['aria-label']==='主催者を修正する');
+  assert.ok(editOrganizer);editOrganizer.onclick();
+  assert.equal(h.get('#preapp-next-step').textContent,'希望日時を入力 →');
+  assert.equal(calls.length,callsBeforeCopy);
+  c.__testing.mountDraft(draftValue);
+  console.log('applicant: copy preserves existing values and date; direct review editing does not submit');
   editor.elements.trialConfirmed.checked=true;c.__testing.setStep(4);
   const receipt={id:eventId,version:2,stage:'01',isTrial:true};responses.push({ok:true,data:receipt});const before=calls.length;
   const submission=c.__testing.submitDraft();assert.equal(h.get('#async-feedback').dataset.state,'busy');await Promise.all([submission,c.__testing.submitDraft()]);assert.equal(h.get('#async-feedback').dataset.state,'success');assert.match(h.get('#async-feedback').textContent,/受付を確認/);assert.equal(calls.length,before+1);assert.equal(calls.at(-1).action,'submit-draft');assert.equal(calls.at(-1).draftId,'fictional-draft');assert.equal(calls.at(-1).trialConfirmed,true);

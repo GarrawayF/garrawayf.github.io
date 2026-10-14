@@ -19,8 +19,8 @@ class EventCatalogTests(unittest.TestCase):
         # Measured from the protected PDFs released on 2026-10-14.
         # PDF bytes remain in the authenticated server bundle, never this repo.
         expected = {
-            'overview': {'size': 100030, 'pages': 5, 'title': '概要版'},
-            'detailed': {'size': 234794, 'pages': 29, 'title': '詳細版'},
+            'overview': {'size': 1054273, 'pages': 8, 'title': '概要版'},
+            'detailed': {'size': 2208142, 'pages': 53, 'title': '詳細版'},
         }
         match = re.search(r'const manuals = (\{[^\n]+\});', html)
         self.assertIsNotNone(match, 'Both manual editions need size/page metadata')

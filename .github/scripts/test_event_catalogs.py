@@ -2,6 +2,7 @@
 import re
 import hashlib
 import base64
+import json
 import unittest
 from html.parser import HTMLParser
 from pathlib import Path
@@ -13,19 +14,46 @@ class Tags(HTMLParser):
     def handle_starttag(self, tag, attrs):
         self.items.append((tag, dict(attrs)))
 class EventCatalogTests(unittest.TestCase):
-    def test_staff_catalog_metadata_and_inline_csp_stay_in_sync(self):
+    def test_staff_manual_editions_match_verified_private_pdf_metadata(self):
         html = (ROOT / 'concierge.html').read_text()
-        self.assertIn('file.size !== 151467', html)
-        self.assertNotIn('file.size !== 186788', html)
-        self.assertIn('2026年10月13日更新', html)
+        # Measured from the protected PDFs released on 2026-10-14.
+        # PDF bytes remain in the authenticated server bundle, never this repo.
+        expected = {
+            'overview': {'size': 100030, 'pages': 5, 'title': '概要版'},
+            'detailed': {'size': 234794, 'pages': 29, 'title': '詳細版'},
+        }
+        match = re.search(r'const manuals = (\{[^\n]+\});', html)
+        self.assertIsNotNone(match, 'Both manual editions need size/page metadata')
+        self.assertEqual(json.loads(match[1]), expected)
+        self.assertIn("file.size !== manual.size || file.type !== 'application/pdf'", html)
+        self.assertNotRegex(html, r'file\.size !== (?:151467|186788)')
+        self.assertIn('body: JSON.stringify({edition})', html)
+        for edition, button in [('overview', 'staff-catalog-open'),
+                                ('detailed', 'staff-catalog-detailed')]:
+            self.assertIn('id="' + button + '"', html)
+            self.assertIn("openManual('" + edition + "')", html)
+            self.assertIn(str(expected[edition]['pages']) + ' PAGES', html)
+        self.assertIn('2026年10月14日版', html)
+        self.assertIn("'_20261014.pdf'", html)
         self.assertNotIn('保存〜管理反映の実操作は未確認', html)
+
+    def test_every_inline_script_has_an_exact_csp_hash(self):
+        html = (ROOT / 'concierge.html').read_text()
         csp = next(attrs['content'] for tag, attrs in Tags(html).items
                    if tag == 'meta' and attrs.get('http-equiv') == 'Content-Security-Policy')
+        directives = dict((part.strip().split()[0], part.strip().split()[1:])
+                          for part in csp.split(';') if part.strip())
+        self.assertEqual(directives['default-src'], ["'none'"])
+        self.assertEqual(directives['form-action'], ["'none'"])
+        self.assertEqual(directives['frame-src'], ['blob:'])
+        allowed = directives['script-src']
+        self.assertTrue(all(re.fullmatch(r"'sha256-[A-Za-z0-9+/]{43}='", value)
+                            for value in allowed), 'Only exact hashes may authorize scripts')
         scripts = re.findall(r'<script(?:\s[^>]*)?>([\s\S]*?)</script>', html)
         self.assertTrue(scripts)
-        for script in scripts:
-            digest = base64.b64encode(hashlib.sha256(script.encode()).digest()).decode()
-            self.assertIn("'sha256-" + digest + "'", csp)
+        expected = {"'sha256-" + base64.b64encode(hashlib.sha256(script.encode()).digest()).decode() + "'"
+                    for script in scripts}
+        self.assertEqual(set(allowed), expected, 'Missing or stale CSP hashes')
     def test_public_catalog_links_resolve_and_staff_catalog_is_only_login_stub(self):
         for role in ['applicant', 'concierge']:
             html = (ROOT / 'catalog' / (role+'.html')).read_text()

@@ -61,3 +61,50 @@ CIの別リポジトリからのコンテンツ取込みも隔離ビルドで再
 HP本文・イベントアプリ・API接続先・認証・CSP・CI・公開設定のソースは変更していない。変更はpackage.json、package-lock.json、本レポートに限定。業務ロジックの回帰はモックで確認し、実環境の申請・メール・カレンダー登録は実行していない。運用APIのエンドツーエンド試験は今回の実施範囲外。
 
 ドラフトPRのまま結果を報告し、ユーザーが公開を指示するまではmainへマージしない。現在の監査0件は実施時点のnpm advisory databaseに対する結果であり、将来の指摘を保証するものではない。
+
+## 2026-10-27 再確認（今回の依頼）
+
+同一作業の既存ドラフトPR #13を引き継ぎ、重複する依存変更は追加していない。取得時のmainは引き続き `b7a1975382fd79fd7cbe91a78cbbf63a5d92e29d`、検証した修正は `f7420bfb08c306378425c3b48d7152e3bbf8b3de`。初期チェックアウトの未コミット・未追跡変更は0件。最終差分は引き続きpackage.json、package-lock.json、本レポートのみ。
+
+### 依存と実行経路の再照合
+
+`dev`はNext、`build`/`build:github`はNext webpackによる静的export。公開先にNode・Vite・Workersの常駐サーバーはない。CIはmainのpush・定期・手動実行だけで、ドラフトPRの更新は公開を開始しない。
+
+| 削除した開発用の直接依存 | 間接参照・削除の根拠 |
+|---|---|
+| vinext | ソース・ビルド設定・CIから参照されない |
+| vite | 削除対象のCloudflare/Vite/Vinext系およびその配下だけがpeer参照。実際のNextビルド経路では使わない |
+| @cloudflare/vite-plugin | 使用設定・importなし。wranglerを依存・peerで参照していた入口 |
+| wrangler | @cloudflare/vite-plugin配下と直接指定に限られ、Workersの設定・デプロイ経路なし |
+| @vitejs/plugin-react | vinextからのpeer参照に閉じ、Nextのwebpack設定から使われない |
+| @vitejs/plugin-rsc | vinextからのpeer参照に閉じ、RSC plugin設定なし |
+| react-server-dom-webpack | @vitejs/plugin-rscとvinextのpeer参照に閉じる。Next内部のRSC実装と区別し、Next自体は維持 |
+| drizzle-kit | 設定・スクリプト・CI・ソースに参照がなく追加削除。drizzle-ormを削除する変更はしていない |
+
+修正後lock内にはこの8パッケージのレコードが0件。必要な間接依存4系統は開発用のまま修正版へ更新し、既存の指定範囲内で依存閉包を整合している。公式の修正版・影響範囲も再確認した：[Babel](https://github.com/babel/babel/security/advisories/GHSA-4x5r-pxfx-6jf8)、[brace-expansion](https://github.com/juliangruber/brace-expansion/security/advisories/GHSA-q2hr-2g5m-vwhr)、[Browserslist](https://github.com/browserslist/browserslist/security/advisories/GHSA-c83g-rgw3-j3cx)、[js-yaml](https://github.com/nodeca/js-yaml/security/advisories/GHSA-2883-xcg3-v3hh)。共有するブラウザー情報データ2件が実行用lockにも含まれる点は、上記の更新表・説明のとおり。
+
+### 今回実行した検証
+
+CIと同じNode 22.13.0／npm 10.9.2を使用。mainと修正側を別の作業ツリーでクリーンインストールし、同一の連携コンテンツ `09206a6218012278077a79514a86675abe24441b` をCIの手順で組み立てた。航空ダイヤのオンライン更新・配信・公開版への運用API試験は実行していない。
+
+| 項目 | 今回の結果 |
+|---|---|
+| クリーンインストール | main・修正側とも成功。修正側538パッケージ |
+| npm ls --all | 成功、依存不整合なし |
+| 全依存の監査 | main 19件（Critical 0／High 13／Moderate 5／Low 1）→修正側0件 |
+| 実行用依存の監査 | main・修正側とも0件 |
+| lint | 両方エラー0・既存警告34件。検査設定・除外・警告レベルは変更なし |
+| TypeScript noEmit・ビルド・CI静的スモーク | main・修正側とも成功 |
+| 既存回帰 | Python39件、申請・再開・同意・認証・通信等のNodeモック回帰、RAMEN Node3系統・時刻表269行、九州Python5件、JS構文7件が成功 |
+| 公開資産 | 215ファイルすべて生成結果とSHA256一致。Nextが生成したCSS3件も変更前後で一致 |
+| PC・スマホ幅のブラウザー表示 | 9画面×2幅、18組の本文・最終寸法・PNGが一致。表示中の画像切れ・横はみ出しなし |
+| ページ遷移 | PCのEVENTSリンク、スマホメニュー開閉・EVENTSへの遷移を確認 |
+| PDF | 生成済みガイドのPDF署名・内容の一致を確認。今回のプレビューURLからの取得はexecutorとブラウザーのダウンロード待機でタイムアウトし、配信取得の再確認は未完了 |
+
+今回の表示確認は、実ブラウザー内の同一オリジンiframeを1280×900／390×844に設定したレスポンシブ確認。実機・タッチ端末のエミュレーションとは区別する。スクロールバーのある画面の内側の幅はその分だけ小さい。管理ログインのスマホ幅だけ初回にスクロールバー有無による寸法差があったため、接続遮断後の案内表示とdocumentの読み込み完了を待ち、再比較してPNGも一致した。該当するHTML・CSS・JSは変更前後でバイト単位に同一。QA用コピーにだけ外部通信を拒否するCSPと比較用ファイルを加え、リポジトリや配信用生成物には混入させていない。
+
+### 残件・公開境界
+
+Critical／Highを含むnpm監査の残件は0件。既存lint警告34件は本作業の依存整理で増加していない。API契約は実際のURL・要求形式・認証境界・再試行等を既存モックで検証し、運用APIの接続、ログイン後の実データ、メール送信、実申請、カレンダー更新は実施していない。外部フォント・Facebook埋込みの実配信、Safari、実機も未確認。PDF取得の再確認には、ダウンロードが利用できる通常ブラウザーまたは公開承認後の実URLでの確認が必要。
+
+HP内容・デザイン・アプリ実装・認証・公開範囲・DNS・既存データ・API設定・CIは変更していない。mainへのマージ・本番への再デプロイは未実施。ユーザーが今回の結果を確認して公開を承認するまでドラフトPRのまま維持する。

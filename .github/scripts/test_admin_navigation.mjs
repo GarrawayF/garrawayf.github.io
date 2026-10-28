@@ -18,7 +18,8 @@ function setup({role='shared-concierge'}={}){
 // Actual render code, with the same serialized dispatch shape as production.
 let t=setup();t.remember();let p=t.run({navigationOnly:true});await t.settle();await p;check(t.calls,['/A']);check(t.paint[0].version,9);check(t.paint[0].canManage,false);
 t=setup();t.remember();p=t.run();await t.settle();await t.settle();await p;check(t.calls,['','/A']);
-t=setup();t.remember();t.c.clock+=30000;p=t.run({navigationOnly:true});await t.settle();await t.settle();await p;check(t.calls,['','/A']);
+t=setup();t.remember();t.c.clock+=30000;p=t.run({navigationOnly:true});await t.settle();await p;check(t.calls,['/A']);
+t=setup();t.remember();t.c.clock+=600000;p=t.run({navigationOnly:true});await t.settle();await t.settle();await p;check(t.calls,['','/A']);
 t=setup();t.remember();t.c.selected='unknown';p=t.run({navigationOnly:true});await t.settle();await p;check(t.calls,['']);check(t.paint.length,0);
 t=setup({role:'applicant'});t.remember();p=t.run({navigationOnly:true});await t.settle();await t.settle();await p;check(t.calls,['','/A']);
 for(const code of ['FORBIDDEN','NOT_FOUND','UNAUTHENTICATED','OUTCOME_UNKNOWN']){
@@ -43,6 +44,9 @@ const oldRows=[{id:'A',title:'A',eventDate:'2026-01-01',dateBasis:'confirmed'}];
 check(pickerContext.casePicker({id:'A',common:{attendance:3}},oldRows,true).includes('2026-01-01'),false);
 check(pickerContext.casePicker({id:'A',common:{attendance:3}},oldRows,false).includes('2026-01-01'),true);
 assert.match(html,/renderRolePage\(e,row,cases,Boolean\(navigationCases\)\)/);checks++;
+assert.match(html,/beforeWrite:\(\)=>\{navigationIndex.clear\(\);\+\+renderGeneration;/);checks++;
+assert.match(html,/navigationIndex.clear\(\);\+\+renderGeneration;busy=true;lockForSave\(\);/);checks++;
+assert.doesNotMatch(helper,/setTimeout|setInterval/);checks++;
 // Exercise production transport duplicate suppression and same-key failure behavior.
 const bridge=html.slice(html.indexOf('function createAppsScriptTransport'),html.indexOf('// Navigation metadata only.'));
 const transportContext={Promise,Map,Error,JSON,setTimeout,clearTimeout,crypto:{randomUUID:()=>"fixture-key"}};vm.createContext(transportContext);vm.runInContext(bridge,transportContext);

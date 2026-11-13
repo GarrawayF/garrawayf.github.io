@@ -10,7 +10,7 @@
 | HPの公開失敗 | 公式リポジトリの `Deploy Garraway F website` | ビルド、公開、公開後照合の各ステップを確認。入力エラーは修正し、障害時は直前の正常版からやり直す |
 | SNSの表示やリンク先の異常 | 各公式アカウントの個別リンク | Instagram、Facebook、X、note、LINEの経路ごとに切り分け。リンク変更時は `app/site-links.ts` を編集 |
 
-現行の公開GitHub Pagesと標準ランナーを使う範囲で、追加のサービス契約はありません。作業は既存のサイト編集に含まれます。
+現行の公開GitHub Pagesと標準ランナーを使う範囲で、追加のサービス利用料は0円です。編集と週次照合の作業時間は必要です。最初の1か月は、公開が決まった情報の掲載漏れと日時・中止変更にかかった反映時間を記録します。
 
 ## Instagramの取得履歴
 
@@ -20,7 +20,7 @@
 - [11月14日の失敗](https://github.com/MDL20241119/GarrawayFapp.github.io/actions/runs/43516839039)
 - [旧取得ワークフロー](https://github.com/MDL20241119/GarrawayFapp.github.io/actions/workflows/instagram-feed.yml)
 
-公式HPから旧取得元のSNSデータ・画像・状態の取り込みを外しています。旧ワークフローを停止する場合は、権限のある既存担当が Actions の「Update Instagram Feed」メニューで Disable workflow を選びます。停止中は手動実行もできません。再有効化した利用者が以降の定期実行通知の対象になる場合があります。通知ルートを再開する際は既存受信設定を確認します。 [GitHubの停止手順](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/disable-and-enable-workflows) [通知の仕様](https://docs.github.com/en/actions/concepts/workflows-and-actions/notifications-for-workflow-runs)
+公式HPから旧取得元のSNSデータ・画像・状態の取り込みを外しています。旧ワークフローを停止する場合は、権限のある既存担当が Actions の「Update Instagram Feed」メニューで Disable workflow を選びます。これで旧リポジトリへの新しいコミットを伴わずに停止できます。停止中は手動実行も止まります。最後に確認した定期実行の主体は `MDL20241119` です。実際の通知の受信者・受信設定は運用担当が確認します。再有効化した利用者が以降の定期実行通知の対象になる場合があります。 [GitHubの停止手順](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/disable-and-enable-workflows) [通知の仕様](https://docs.github.com/en/actions/concepts/workflows-and-actions/notifications-for-workflow-runs)
 
 ## 自動取得の再開を決めた場合
 

@@ -74,7 +74,7 @@ export default function PrivacyPage() {
           <span className="privacySectionNo">02</span>
           <div>
             <h2><Phrase parts={["Cookie・", "外部送信"]} /></h2>
-            <p>本サイトは独自のアクセス解析や広告配信を行いません。サイト配信、Google Fonts・Google マップおよびFacebookコンテンツの表示に伴い、IPアドレス、端末・ブラウザ情報、Cookie等が各サービス提供者へ送信されることがあります。Instagram等の外部リンクを開いた場合は、移動先サービスの方針が適用されます。</p>
+            <p>本サイトは独自のアクセス解析や広告配信を行いません。サイト配信、Google Fonts・Google マップの利用に伴い、IPアドレス、端末・ブラウザ情報、Cookie等が各サービス提供者へ送信されることがあります。Facebook・Instagram等の外部リンクを開いた場合は、移動先サービスの方針が適用されます。</p>
             <p>
               {externalTransmissions.map((item, index) => (
                 <span key={item.service}>

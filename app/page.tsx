@@ -1,4 +1,4 @@
-import SocialLive from "./social-live";
+import OfficialUpdates from "./official-updates";
 import Link from "next/link";
 import { withBasePath } from "./base-path";
 import { SITE_LINKS } from "./site-links";
@@ -399,7 +399,7 @@ export default function Home() {
         </div>
       </section>
 
-      <SocialLive />
+      <OfficialUpdates />
 
       <section className="floorSection" id="floor">
         <header className="floorHead">

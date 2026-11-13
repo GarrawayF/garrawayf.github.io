@@ -76,3 +76,20 @@ export function formatEventDate(event: EventSchedule): string {
     day: "2-digit",
   }).format(time);
 }
+
+const japanClock = new Intl.DateTimeFormat("ja-JP", {
+  timeZone: "Asia/Tokyo",
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+});
+
+export function formatEventHours(event: EventSchedule): string | null {
+  const start = parseEventDate(event.start_time);
+  if (start === null) return null;
+  const end = parseEventDate(event.end_time);
+  if (end === null || end < start) return japanClock.format(start);
+  const endDay = formatEventDate({ start_time: event.end_time });
+  const day = endDay === formatEventDate(event) ? "" : `${endDay} `;
+  return `${japanClock.format(start)}–${day}${japanClock.format(end)}`;
+}

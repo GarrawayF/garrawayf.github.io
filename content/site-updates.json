@@ -1,0 +1,34 @@
+{
+  "notices": [],
+  "events": [
+    {
+      "id": "2026-11-23-claude-workshop",
+      "date": "2026-11-23",
+      "start_time": "2026-11-23T16:00:00+09:00",
+      "end_time": "2026-11-23T19:00:00+09:00",
+      "title": "Fukuoka | Claude Workshop For Beginners",
+      "organizer": "Claude Community Events",
+      "venue": "Garraway F（天神CLASS 3F）",
+      "description": "Claudeを使ってウェブアプリを作る、初心者向けのワークショップです。",
+      "url": "https://luma.com/claude-zu7g"
+    },
+    {
+      "id": "2026-09-05-social-entrepreneurship",
+      "date": "2026-09-05",
+      "title": "高校生∞チャレンジ 定期交流会②『社会起業家5名が大集合！』",
+      "category": "交流会 / SOCIAL ENTREPRENEURSHIP"
+    },
+    {
+      "id": "2026-08-18-ouen",
+      "date": "2026-08-18",
+      "title": "応援カイギ",
+      "category": "COMMUNITY / CHALLENGE"
+    },
+    {
+      "id": "2026-08-08-internship",
+      "date": "2026-08-08",
+      "title": "（一社）九州インターンシップ推進協議会 事前研修会",
+      "category": "LEARNING / INTERNSHIP"
+    }
+  ]
+}

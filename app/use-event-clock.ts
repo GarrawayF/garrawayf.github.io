@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { eventEndsAt, type EventSchedule } from "./event-schedule";
 
-export function useEventClock(events?: readonly EventSchedule[]): number {
-  const [now, setNow] = useState(0);
+export function useEventClock(events: readonly EventSchedule[], initialNow: number): number {
+  const [now, setNow] = useState(initialNow);
 
   useEffect(() => {
     let timer: number;
@@ -12,7 +12,7 @@ export function useEventClock(events?: readonly EventSchedule[]): number {
       const current = Date.now();
       setNow(current);
       const nextEnd = Math.min(
-        ...(events ?? []).map(eventEndsAt).filter((end): end is number => end !== null && end > current),
+        ...events.map(eventEndsAt).filter((end): end is number => end !== null && end > current),
       );
       // Re-render at the next end time even when the feed hasn't changed.
       timer = window.setTimeout(update, Math.min(nextEnd - current + 50, 24 * 60 * 60 * 1000));

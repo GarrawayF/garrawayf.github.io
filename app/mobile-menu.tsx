@@ -34,7 +34,7 @@ export default function MobileMenu({ subpage = false }: MobileMenuProps) {
         <Link href={`${home}#about`} onClick={close}>ABOUT</Link>
         <Link href={`${home}#how`} onClick={close}>HOW IT WORKS</Link>
         <Link href={`${home}#people`} onClick={close}>PEOPLE</Link>
-        <Link href={`${home}#news`} onClick={close}>SOCIAL LIVE</Link>
+        <Link href={`${home}#news`} onClick={close}>NEWS &amp; EVENTS</Link>
         <Link href="/events" onClick={close}>EVENTS</Link>
         <Link href={`${home}#floor`} onClick={close}>FLOOR</Link>
         <Link href={`${home}#join`} onClick={close}>JOIN</Link>

@@ -28,23 +28,18 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           path: site
-      - name: Checkout approved social feed and RAMEN TECH guide
+      - name: Checkout RAMEN TECH guide
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           repository: MDL20241119/GarrawayFapp.github.io
           ref: main
           path: published
-          sparse-checkout: |
-            data
-            images/instagram
-            ramen-tech-2026
+          sparse-checkout: ramen-tech-2026
           sparse-checkout-cone-mode: false
-      - name: Prepare published content
+      - name: Prepare RAMEN TECH guide
         shell: bash
         run: |
-          mkdir -p site/public/data site/public/images site/public/ramen-tech-2026
-          cp -R published/data/. site/public/data/
-          if [ -d published/images/instagram ]; then cp -R published/images/instagram site/public/images/; fi
+          mkdir -p site/public/ramen-tech-2026
           cp -R published/ramen-tech-2026/. site/public/ramen-tech-2026/
           find site/public/ramen-tech-2026 -type f \( -name '*.html' -o -name '*.js' -o -name '*.css' -o -name '*.json' -o -name '*.md' \) -print0 | xargs -0 sed -i \
             -e 's#https://mobilitydlab.com/GarrawayFapp.github.io/ramen-tech-2026/#https://garrawayf.github.io/ramen-tech-2026/#g' \
@@ -136,6 +131,12 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           out=Path('out'); ramen=out/'ramen-tech-2026'
+          for route in ('index.html', 'events/index.html'):
+              page=(out/route).read_text(encoding='utf-8')
+              assert 'id="upcoming-events"' in page, route
+              assert 'facebook.com/plugins/page.php' not in page, route
+          for retired in ('data/instagram.json', 'data/instagram-sync-status.json', 'data/facebook-events.json', 'images/instagram'):
+              assert not (out/retired).exists(), retired
           html=(ramen/'index.html').read_text(encoding='utf-8',errors='ignore')
           assert 'RAMEN TECH 2026 非公式回遊ガイド｜Garraway F' in html
           assert 'window.GUIDE_CONFIG={preview:false' in html

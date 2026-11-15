@@ -28,13 +28,17 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           path: site
-      - name: Checkout RAMEN TECH guide
+      - name: Checkout RAMEN TECH guide and Instagram snapshot
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           repository: MDL20241119/GarrawayFapp.github.io
           ref: main
           path: published
-          sparse-checkout: ramen-tech-2026
+          sparse-checkout: |
+            ramen-tech-2026/
+            data/instagram.json
+            data/instagram-sync-status.json
+            images/instagram/
           sparse-checkout-cone-mode: false
       - name: Prepare RAMEN TECH guide
         shell: bash
@@ -62,6 +66,8 @@ jobs:
           if old not in text and new not in text: raise SystemExit('Same-venue rule missing')
           planner.write_text(text.replace(old,new),encoding='utf-8')
           PY
+      - name: Prepare the verified Instagram snapshot
+        run: python3 site/.github/scripts/prepare_instagram.py site published "$(git -C published rev-parse HEAD)"
       - name: Test publication verifier
         run: python3 -m unittest discover -s site/.github/scripts -p 'test_*.py' -v
       - name: Verify and refresh flight timetables
@@ -137,6 +143,7 @@ jobs:
               assert 'facebook.com/plugins/page.php' not in page, route
           for retired in ('data/instagram.json', 'data/instagram-sync-status.json', 'data/facebook-events.json', 'images/instagram'):
               assert not (out/retired).exists(), retired
+          assert (out/'instagram-feed/status.json').is_file()
           html=(ramen/'index.html').read_text(encoding='utf-8',errors='ignore')
           assert 'RAMEN TECH 2026 非公式回遊ガイド｜Garraway F' in html
           assert 'window.GUIDE_CONFIG={preview:false' in html

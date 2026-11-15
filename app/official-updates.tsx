@@ -1,4 +1,5 @@
 import Link from "next/link";
+import InstagramFeed from "./instagram-feed";
 import OfficialListings from "./official-listings";
 import Phrase from "./phrase";
 import SocialLinks from "./social-links";
@@ -20,6 +21,7 @@ export default function OfficialUpdates() {
         <span>イベント情報を一覧で見る</span><b aria-hidden="true">→</b>
       </Link>
 
+      <InstagramFeed />
       <h3 className={styles.channelTitle}>公式SNS</h3>
       <SocialLinks />
     </section>

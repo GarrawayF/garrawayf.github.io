@@ -2,10 +2,12 @@
 """Verify the deployed bytes, allowing a bounded GitHub Pages cache refresh."""
 
 import hashlib
+from html.parser import HTMLParser
 import http.client
 import json
 import os
 from pathlib import Path
+import re
 import time
 import urllib.error
 import urllib.parse
@@ -21,6 +23,74 @@ DIAGNOSTIC_HEADERS = (
     "x-served-by", "x-github-request-id", "x-fastly-request-id",
 )
 RAMEN = "ramen-tech-2026/"
+INSTAGRAM = "instagram-feed/"
+
+
+class InstagramCards(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.cards = {}
+        self.card = None
+        self.in_caption = False
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        if tag == "li" and "data-instagram-post" in attrs:
+            self.card = {"caption": ""}
+            assert attrs["data-instagram-post"] not in self.cards
+            self.cards[attrs["data-instagram-post"]] = self.card
+        if self.card is None:
+            return
+        if tag == "a":
+            self.card["permalink"] = attrs.get("href")
+        if tag == "time":
+            self.card["timestamp"] = attrs.get("datetime")
+        if tag == "img":
+            self.card["image"] = attrs.get("src")
+        if "data-instagram-caption" in attrs:
+            self.in_caption = True
+
+    def handle_data(self, text):
+        if self.in_caption:
+            self.card["caption"] += text
+
+    def handle_endtag(self, tag):
+        if tag == "li":
+            self.card = None
+        if tag == "span":
+            self.in_caption = False
+
+
+def load_instagram_expected(out, home):
+    status_route = INSTAGRAM + "status.json"
+    status_file = out / status_route
+    if not status_file.exists():  # The pre-Instagram artifact fixtures have no social data.
+        return {}
+    expected = {status_route: status_file.read_bytes()}
+    status = json.loads(expected[status_route])
+    assert status["schema_version"] == 1
+    cards = InstagramCards()
+    cards.feed(home.decode("utf-8"))
+    feed_route = INSTAGRAM + "feed.json"
+    if status["state"] in {"fresh", "stale"}:
+        expected[feed_route] = (out / feed_route).read_bytes()
+        assert hashlib.sha256(expected[feed_route]).hexdigest() == status["feed_sha256"]
+        feed = json.loads(expected[feed_route])
+        assert feed["last_fetch_succeeded_at"] == status["last_fetch_succeeded_at"]
+        assert 1 <= len(feed["posts"]) <= 4
+        assert list(cards.cards) == [post["id"] for post in feed["posts"]]
+        for post in feed["posts"]:
+            route = post["image"].removeprefix("/")
+            assert re.fullmatch(r"instagram-feed/[0-9]{4,25}-[0-9a-f]{16}\.jpg", route)
+            image = (out / route).read_bytes()
+            assert hashlib.sha256(image).hexdigest() == post["image_sha256"]
+            expected[route] = image
+            card = cards.cards[post["id"]]
+            assert all(card[key] == post[key] for key in ("image", "permalink", "timestamp", "caption"))
+    else:
+        assert status["state"] in {"unavailable", "expired", "suppressed"}
+        assert not cards.cards and not (out / feed_route).exists()
+    return expected
 
 
 def load_expected(out):
@@ -64,6 +134,7 @@ def load_expected(out):
         image = (out / route).read_bytes()
         assert len(image) > 1000 and hashlib.sha256(image).hexdigest() == asset["sha256"]
         expected[route] = image
+    expected.update(load_instagram_expected(out, expected[""]))
     return expected
 
 

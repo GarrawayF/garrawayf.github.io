@@ -187,6 +187,30 @@ class ArtifactTests(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             verifier.load_expected(self.out)
 
+    def test_instagram_assets_and_cards_match_the_same_export(self):
+        folder = self.out / "instagram-feed"
+        folder.mkdir()
+        image = b"verified fixture image"
+        image_name = "1234-0123456789abcdef.jpg"
+        (folder / image_name).write_bytes(image)
+        post = {"id": "1234", "image": f"/instagram-feed/{image_name}", "timestamp": "2026-11-15T08:00:00Z",
+                "caption": "Fish & chips <3", "permalink": "https://www.instagram.com/p/test/",
+                "image_sha256": hashlib.sha256(image).hexdigest()}
+        feed = json.dumps({"last_fetch_succeeded_at": post["timestamp"], "posts": [post]}).encode()
+        (folder / "feed.json").write_bytes(feed)
+        (folder / "status.json").write_text(json.dumps({
+            "schema_version": 1, "state": "fresh", "last_fetch_succeeded_at": post["timestamp"],
+            "feed_sha256": hashlib.sha256(feed).hexdigest(),
+        }))
+        home = ('<li data-instagram-post="1234"><a href="' + post["permalink"] + '">'
+                '<img src="' + post["image"] + '"><time datetime="' + post["timestamp"] + '">date</time>'
+                '<span data-instagram-caption>Fish &amp; chips &lt;3</span></a></li>')
+        (self.out / "index.html").write_text(home)
+        self.assertEqual(len(verifier.load_expected(self.out)), 33)
+        (self.out / "index.html").write_text(home.replace("chips", "wrong"))
+        with self.assertRaises(AssertionError):
+            verifier.load_expected(self.out)
+
 
 if __name__ == "__main__":
     unittest.main()

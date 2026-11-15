@@ -1,32 +1,44 @@
 # Garraway FのSNS運用・復旧手順
 
-## 公式案内の公開
+トヨタ自動車株式会社が運営主体です。株式会社Serendipityのサイト更新担当は、公開が決まった営業案内・イベントを [公式HPの更新手順](../README.md#お知らせイベントの更新) に従って掲載します。運営側でMetaアプリと公式Instagramの管理担当・代理、GitHub PagesとActionsの担当・代理、失敗通知の受信者を確定します。
 
-株式会社Serendipityは公開用の情報を [公式HPの更新手順](../README.md#お知らせイベントの更新) に従って編集し、GitHub Pagesの公開結果を確認します。公開可否は既存の運営フローに従います。トヨタ自動車株式会社が運営主体です。更新担当と代理の個人名、GitHub Actionsの通知受信者は運営側で確認します。
+## Instagramの公開経路
 
-| 事象 | 確認先 | 対応 |
+| 段階 | 確認先 | 対応 |
 |---|---|---|
-| 営業案内・イベントの掲載や変更 | 公式HPトップとイベントページ | 公開決定後にHPの掲載データを編集。日時、会場、申込先を確認 |
-| HPの公開失敗 | 公式リポジトリの `Deploy Garraway F website` | ビルド、公開、公開後照合の各ステップを確認。入力エラーは修正し、障害時は直前の正常版からやり直す |
-| SNSの表示やリンク先の異常 | 各公式アカウントの個別リンク | Instagram、Facebook、X、note、LINEの経路ごとに切り分け。リンク変更時は `app/site-links.ts` を編集 |
+| 取得・保存 | [Update Instagram Feed](https://github.com/MDL20241119/GarrawayFapp.github.io/actions/workflows/instagram-feed.yml) と [取得状態](https://github.com/MDL20241119/GarrawayFapp.github.io/blob/main/data/instagram-sync-status.json) | Meta公式APIで `@garrawayf_lounge` とアカウントIDを照合し、通常投稿と画像を検証。一式を同じコミットに保存 |
+| 公開 | [Deploy Garraway F website](https://github.com/GarrawayF/garrawayf.github.io/actions/workflows/deploy-pages.yml) と [公開状態](https://garrawayf.github.io/instagram-feed/status.json) | 取得元の同じコミットからJSONと画像を読み、トップの投稿とともにビルド。デプロイ後に公開HTML・JSON・画像のバイト列を照合 |
+| 監視 | [Monitor Instagram sync](https://github.com/GarrawayF/garrawayf.github.io/actions/workflows/monitor-instagram-sync.yml) | 定期起動、取得成功、公開反映を独立判定。GitHub全体の停止は別の場所から確認 |
 
-現行の公開GitHub Pagesと標準ランナーを使う範囲で、追加のサービス利用料は0円です。編集と週次照合の作業時間は必要です。最初の1か月は、公開が決まった情報の掲載漏れと日時・中止変更にかかった反映時間を記録します。
+サイト担当は週次で開催予定と掲載内容を照合します。Instagramは別枠で最大4件を掲載します。動画はサムネイル、カルーセルは先頭の画像または動画サムネイルを表示し、残りは元投稿で見られます。公式アカウントが投稿者として通常投稿一覧に返る共同投稿が対象です。共同投稿への招待で掲載されるだけの投稿、タグ付け、Storiesはこの経路の対象外です。停止中は公式アカウントへのリンクから新しい投稿を案内します。
 
-## Instagramの取得履歴
+`checked_at` は取得確認、`last_fetch_succeeded_at` は最後に認証と投稿・画像の検証が成功した時刻、`content_updated_at` は内容が変更された時刻、`latest_post_at` は元投稿日時です。公開状態の `published_at` は配信済み成果物の準備時刻です。実際の公開時刻とソースSHAはPagesの実行記録を参照します。障害時は最後の検証済み投稿に短い案内を表示し、取得成功から72時間で投稿欄を外します。最後の取得から12時間以上経過した場合も保存済み表示に切り替えます。
 
-旧取得元の最後に確認できた正常取得・保存は **2026年10月27日14:33:25 JST**。最新の保存投稿は **同日14:08:08 JST** です。**11月14日7:08 JST** に始まった取得は、10月27日16:56:55 JSTに失効した認証で `OAuthException 190` を返しました。
+GitHubの定期実行は遅延することがあります。公開処理は取得元の正常スナップショットを次のPages実行で使用します。管理者は必要に応じてPagesを手動実行できます。過去の正常取得は2026年10月27日14:33 JSTで、2026年11月15日17:25 JSTにも同じ失効で失敗しました。 [旧取得の確認](https://github.com/MDL20241119/GarrawayFapp.github.io/actions/runs/43694404234)
 
-- [最後の正常取得](https://github.com/MDL20241119/GarrawayFapp.github.io/actions/runs/40455962887)
-- [11月14日の失敗](https://github.com/MDL20241119/GarrawayFapp.github.io/actions/runs/43516839039)
-- [旧取得ワークフロー](https://github.com/MDL20241119/GarrawayFapp.github.io/actions/workflows/instagram-feed.yml)
+## 再認証と期限管理
 
-公式HPから旧取得元のSNSデータ・画像・状態の取り込みを外しています。旧ワークフローを停止する場合は、権限のある既存担当が Actions の「Update Instagram Feed」メニューで Disable workflow を選びます。これで旧リポジトリへの新しいコミットを伴わずに停止できます。停止中は手動実行も止まります。最後に確認した定期実行の主体は `MDL20241119` です。実際の通知の受信者・受信設定は運用担当が確認します。再有効化した利用者が以降の定期実行通知の対象になる場合があります。 [GitHubの停止手順](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/disable-and-enable-workflows) [通知の仕様](https://docs.github.com/en/actions/concepts/workflows-and-actions/notifications-for-workflow-runs)
+1. Metaアプリの既存管理者が [Meta App Dashboard](https://developers.facebook.com/apps/) の既存アプリを開きます。Instagram → **API setup with Instagram business login** で、承認済みの `@garrawayf_lounge` がBusiness／Creatorとして登録され、読み取りの `instagram_business_basic` があることを確認します。対象アカウントの **Generate token** で再認証します。Metaがより広い権限や別方式を求める場合は運営主体に内容を確認します。 [Metaの設定手順](https://developers.facebook.com/documentation/instagram-platform/instagram-api-with-instagram-login/get-started)
+2. 発行した値は [取得元のActions Secrets](https://github.com/MDL20241119/GarrawayFapp.github.io/settings/secrets/actions) の既存 `INSTAGRAM_ACCESS_TOKEN` に直接保存します。`INSTAGRAM_USER_ID` はMetaの `/me` が返すプロアカウントの `user_id` と照合します。最初の自動更新を設定する場合は、Actions Variable `INSTAGRAM_TOKEN_BOOTSTRAPPED_AT` を今回の生成日時のUnix秒に更新します。値や認証URLは担当者の非公開の管理先で扱います。
+3. 取得元の **Update Instagram Feed → Run workflow → main** を実行します。認証エラーを記録した後の定期実行は同じ資格情報でのAPI呼び出しを控えます。新しいトークンの検証を手動起動で開始してください。取得成功後、投稿のID・日時・本文・画像・元リンクを公式Instagramの既存投稿と突き合わせ、Pages実行後に公開HTML・画像とPC／スマホを確認します。現在のMetaメディア資料には `caption` に方式別の制約が記載されています。本文のある実投稿で照合できることが受入条件です。 [Metaのメディア仕様](https://developers.facebook.com/documentation/instagram-platform/reference/instagram-media)
+4. 更新は長期トークンが発行・前回更新から24時間以上経過し、失効前に行います。担当者が既存のGitHub CLI権限を使う場合、取得元の最新 `main` で `python scripts/instagram_credentials.py --force --use-gh-auth` を実行し、保護入力欄に現在の値と照合済みIDを入力します。Metaが返した `expires_in` から期限を計算し、返却されたトークンと期限を1つのActions Secretへ保存します。次回の別実行で `credential.refreshed_at`・`expires_at` が一致し、取得も成功したことを確認します。担当者は確定した期限の15日前に更新します。 [Metaの長期トークン仕様](https://developers.facebook.com/documentation/instagram-platform/instagram-api-with-instagram-login/business-login)
+5. 自動書き戻しを採用する場合は、運営主体の承認後に、取得元リポジトリだけを対象とする GitHub `Secrets: write` の資格情報を `INSTAGRAM_SECRET_WRITER_TOKEN` に設定します。この権限の対象は取得元の全Actions Secretsです。設定後は、Metaの更新、Secretへの保存、別実行での読込を確認します。書き戻し手段が未設定の場合は担当者が手順4を実施します。 [GitHub Secretsの権限](https://docs.github.com/en/rest/actions/secrets#create-or-update-a-repository-secret)
 
-## 自動取得の再開を決めた場合
+## 故障時の対応
 
-1. 既存Metaアプリの管理者と代替担当を決め、Instagram Login、プロアカウント `garrawayf_lounge`、読み取り権限 `instagram_business_basic` をダッシュボードで照合します。現行コードは `graph.instagram.com` を使用しており、ダッシュボードの権限と実効APIバージョンは管理者による確認が必要です。
-2. 失効時は管理者がMetaの公式画面で再認証し、取得環境のGitHub Actions Secretsへ直接登録します。長期トークンの有効期間は60日です。発行後24時間以上かつ失効前なら更新できます。発行日・有効期限を担当者の非公開の管理先に記録し、45日目を目安に更新し、更新後の値と期限を保存します。トークン、認証URL、個人情報をチャット、ログ、リポジトリに記録しません。 [Metaの認証仕様](https://developers.facebook.com/documentation/instagram-platform/overview) [長期トークンの更新](https://developers.facebook.com/documentation/instagram-platform/reference/refresh_access_token)
-3. `/me` でユーザーIDとアカウント名を照合し、`/media` の投稿日時、パーマリンク、保存した画像とそのハッシュを照合します。公開HPへの表示は別の確認項目です。公式HPと切り離した取得を検証してから、補助表示を追加するかを判断します。
-4. 補助表示を追加する場合は最終正常取得時刻と投稿時刻を区別します。失効や権限エラーは担当者へ回し、429・5xx・タイムアウトは上限付きで再試行します。画像欠落やデータなしの場合もアカウントへのリンクを使えます。元投稿が削除・非公開になった場合の削除手順と、認証失敗・取得途絶の通知先を運用開始前に確認します。 [Metaの利用条件](https://developers.facebook.com/terms/)
+- **認証・権限**。コード190や期限超過はMeta担当が再認証し、Secret更新後に手動実行します。その後の定期実行を少なくとも1回確認します。権限不足は対象アカウントと読み取り権限を確認します。主担当が不在なら既存の権限を持つ代理が操作します。
+- **一時障害**。429・5xx・通信断は上限付きで再試行します。空・不足・不正な一覧や画像エラーが続く場合は取得元ログと元投稿を確認します。削除・非公開化の確認には認証済みの正常な一覧を使います。
+- **削除・非公開化**。認証済みの正常な次回一覧で対象が外れると、次回公開から本文と画像が外れます。急ぎの場合は `content/instagram-hidden-posts.json` に対象IDを文字列で追加し、公式HPを再公開します。削除依頼がある場合は旧配信とGit履歴、CDN反映を運営管理者が確認します。
+- **公開不一致・ロールバック**。取得元の状態が成功しても、公開状態やHTMLが異なる場合はPagesを確認します。コード起因の場合は該当コミットをrevertして再公開します。保存済み画像とJSONは同じ版を使います。
 
-URLが分かっている公開投稿は、公式のoEmbedによる個別表示が可能です。自動で投稿一覧を取得する場合は認証済みの投稿一覧APIを使います。 [Meta oEmbed](https://developers.facebook.com/documentation/instagram-platform/oembed) [投稿一覧APIの手順](https://developers.facebook.com/documentation/instagram-platform/instagram-api-with-instagram-login/get-started)
+## 各SNSの現行運用
+
+| SNS | 公式アカウント | 公開経路・運用 |
+|---|---|---|
+| Instagram | [Garraway F](https://www.instagram.com/garrawayf_lounge/)・[GarrawayF図書館](https://www.instagram.com/garrawayf_toshokan/) | ラウンジのみAPIの対象。公式oEmbedは管理者がURLを把握している個別投稿に利用可能。URLの手動掲載は緊急時の代替 |
+| Facebook | [Garraway F](https://www.facebook.com/garrawayf/) | リンク。自動取得はPages用のAPIと認証を個別確認 |
+| X | [Garraway F](https://x.com/garraway_f) | リンク。自動取得はX APIの認証・契約を個別確認 |
+| note | [Garraway F](https://note.com/garraway_f) | リンク。[公式RSS](https://note.com/garraway_f/rss) から公開記事一覧を取得可能 |
+| LINE | [Garraway F](https://line.me/R/ti/p/%40014fhkuy) | 公式アカウントや会員登録のリンク。Messaging APIは公式アカウントの配信・受信に使用 |
+
+現行の公開GitHub Pagesと標準ランナーで運用します。SNSのリンク先が変わった場合は `app/site-links.ts` を編集します。

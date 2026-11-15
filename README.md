@@ -25,7 +25,7 @@ npm run build
 
 ## お知らせ・イベントの更新
 
-トップの「お知らせ・イベント」と `/events/` は、いずれも [content/site-updates.json](content/site-updates.json) から公開します。Instagram、Facebook、X、note、LINEなどは公式アカウントへのリンクです。
+トップの「お知らせ・イベント」と `/events/` は、いずれも [content/site-updates.json](content/site-updates.json) から公開します。公式Instagramの投稿欄は、取得・検証済みの投稿データがあるときにトップに表示します。各アカウントへのリンクは「公式SNS」で案内します。
 
 1. サイト更新担当は、公開が決まった内容をGitHubで編集します。既存のイベント管理の「HPイベント情報を更新」タスクでこの作業を行います。公開用の内容だけを使い、申込者の情報や内部カレンダーのデータは入力しません。
 2. `notices` には `id`、画面に表示する日付 `date`、`title`、`description` を入れます。掲載開始は `main` への反映後に公開処理が完了した時点です。必要に応じて公開リンク `url` と掲載終了日 `expires_on` を付けます。期限を設定すると日本時間の当日末まで表示されます。
@@ -33,7 +33,7 @@ npm run build
 4. `id` は英小文字・数字・ハイフンを使い、全体で重複させません。変更・中止は当日中に同じ項目を更新します。Actions の公開確認が成功したら、公式HPの日時・会場・リンクを実際に開いて確認します。
 5. 担当者は週次で公開予定と掲載内容を照合します。公開失敗時は `Deploy Garraway F website` の実行結果で失敗箇所を確認し、入力を修正して再公開します。
 
-過去のInstagram取得状況と、再開する場合の確認項目は [SNS運用・復旧手順](docs/social-operations.md) を参照してください。
+Instagramの認証更新、公開確認、障害時の対応は [SNS運用・復旧手順](docs/social-operations.md) を参照してください。
 
 ## 本公開時の確認
 

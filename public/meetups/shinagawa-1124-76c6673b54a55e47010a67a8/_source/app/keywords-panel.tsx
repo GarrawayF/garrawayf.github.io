@@ -27,7 +27,8 @@ type Props<T extends Source> = {
   presentation?: boolean;
 };
 
-const visibleLimit = 12;
+const standardVisibleLimit = 12;
+const projectionVisibleLimit = 24;
 const teamOrder = ["A","B","C","D","E"];
 const participatingTeams = (sources: readonly Source[]) => teamOrder.filter(t => sources.some(s => s.team === t));
 
@@ -43,6 +44,7 @@ export default function KeywordsPanel<T extends Source>({ ideas, onReply, presen
   const heading = useRef<HTMLHeadingElement>(null);
   const list = useRef<HTMLDivElement>(null);
   const restore = useRef("");
+  const visibleLimit = presentation ? projectionVisibleLimit : standardVisibleLimit;
   const displayed = all ? groups : groups.slice(0, visibleLimit);
 
   useEffect(() => {
@@ -87,7 +89,7 @@ export default function KeywordsPanel<T extends Source>({ ideas, onReply, presen
         {onReply && <button className="kw-reply" type="button" onClick={() => onReply(idea)}><CornerDownRight size={14} aria-hidden="true" />この案から発想</button>}
       </article>)}</div>
     </> : <>
-      <p className="kw-hint">{groups.length ? "言葉を選ぶと、その言葉が出た投稿を読めます。" : "読みたい投稿に含まれる言葉を検索できます。"}</p>
+      <p className="kw-hint" data-empty={!groups.length || undefined}>{groups.length ? "言葉を選ぶと、その言葉が出た投稿を読めます。" : "読みたい投稿に含まれる言葉を検索できます。"}</p>
       <div className="kw-list" ref={list}>{displayed.map(group => {
         const teams = participatingTeams(group.sources);
         return <button className="kw-term" type="button" key={group.key} data-term={group.key}

@@ -153,11 +153,11 @@
     void (async ()=>{
       try {
         const [pdfjs,data]=await Promise.all([
-          import(new URL('vendor/pdfjs/pdf.min.mjs',scriptBase).href),
+          import(new URL('vendor/pdfjs/pdf.min.mjs?v=6.2.108',scriptBase).href),
           fetchPdf(),
         ]);
         if(manual!==current)return;
-        pdfjs.GlobalWorkerOptions.workerSrc=new URL('vendor/pdfjs/pdf.worker.min.mjs',scriptBase).href;
+        pdfjs.GlobalWorkerOptions.workerSrc=new URL('vendor/pdfjs/pdf.worker.min.mjs?v=6.2.108',scriptBase).href;
         // Give the worker its own copy so the original bytes stay available for download.
         current.pdf=pdfjs.getDocument({data:data.slice(0),isEvalSupported:false,useSystemFonts:false,standardFontDataUrl:new URL("vendor/pdfjs/standard_fonts/",scriptBase).href});
         const doc=await current.pdf.promise;

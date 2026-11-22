@@ -1,0 +1,18 @@
+Mozilla PDF.js pdfjs-dist@6.2.108
+
+Release: https://github.com/mozilla/pdf.js/releases/tag/v6.2.108
+Advisory: https://github.com/mozilla/pdf.js/security/advisories/GHSA-hq66-cqwq-w95j
+Tarball: https://registry.npmjs.org/pdfjs-dist/-/pdfjs-dist-6.2.108.tgz
+Registry integrity: sha512-YxFb+SQcodN2rnX9Tn3dHYlqfb7NjlzzfONPpJd+AKoKtUjEdevTfbC07d5TcczzOK6261auRkP/M8OBHs9vFQ==
+
+The two legacy browser build modules below are unmodified. No generic viewer, scripting
+sandbox, or evaluate-WebAssembly module is shipped. LICENSE and the two
+Liberation fonts with their license are unchanged and match this release.
+
+SHA-256:
+9fab0c910bf1484835c5c2aeb68f7eb3dfce7f9eb435a004526c5af86d70890c  pdf.min.mjs
+bc0d1b88ea0b66196b1d36a58ac243c6d92adfe725624e2a9fdd381bdf8ef434  pdf.worker.min.mjs
+0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594  LICENSE
+93fed46019c38bbe566b479d22148e2e8a1e85ada614accb0211c37b2c61c19b  standard_fonts/LICENSE_LIBERATION
+f8ace1f892b2bd9dc1792ba7f097fa7588f84fed48321480e04de5390828221f  standard_fonts/LiberationSans-Regular.ttf
+361c61b82d575c5c35fd9157fda8b0194bcfcd0d88ea8521a4fb5dd53d33dddc  standard_fonts/LiberationSans-Bold.ttf

@@ -257,8 +257,8 @@ const staticLink = () => () => {};
 const serverThread = () => "";
 const linkedThread = () => new URL(window.location.href).searchParams.get("thread") || "";
 
-export function PostComments({ targetType, targetId, tone = "dark" }: {
-  targetType: Target; targetId: string; tone?: "dark" | "light";
+export function PostComments({ targetType, targetId, tone = "dark", compact = false }: {
+  targetType: Target; targetId: string; tone?: "dark" | "light"; compact?: boolean;
 }) {
   const api = useContext(CommentsContext);
   const [opened, setExpanded] = useState<boolean | null>(null);
@@ -273,7 +273,23 @@ export function PostComments({ targetType, targetId, tone = "dark" }: {
   const sending = api.busy.has(key);
   const offline = api.status === "offline";
 
-  return <div className={"post-comments comments-" + tone}>
+  const composer = <div className="comments-composer">
+      <label htmlFor={id + "-text"}>コメントを書く</label>
+      <textarea id={id + "-text"} value={draft.text} rows={3} maxLength={400} disabled={sending}
+        aria-describedby={id + "-audience"} placeholder={compact ? "コメントを書く" : undefined} onChange={e => api.edit(key, "text", e.target.value)}/>
+      <label htmlFor={id + "-name"}>呼ばれたい名前（任意）</label>
+      <input id={id + "-name"} type="text" autoComplete="off" maxLength={40} value={draft.name} disabled={sending} placeholder={compact ? "名前（任意）" : undefined}
+        onKeyDown={e => { if (e.key === "Enter" && !e.nativeEvent.isComposing) { e.preventDefault(); e.stopPropagation(); } }}
+        onChange={e => api.edit(key, "name", e.target.value)}/>
+      <p id={id + "-audience"} className="comments-audience">コメントと記入した名前は、このボードを見る全員に共有されます。</p>
+      <button type="button" className="comments-send" disabled={sending || offline || !draft.text.trim()}
+        onClick={() => void api.send(targetType, targetId)}><Send size={15} aria-hidden="true"/>{sending ? "共有中…" : "コメントを共有"}</button>
+      {compact && offline && !expanded && <p role="status">オフラインです。入力は残ります。</p>}
+      {notice && <p className={notice.error ? "comments-error" : "comments-sent"} role="status">{notice.text}</p>}
+  </div>;
+
+  return <div className={"post-comments comments-" + tone + (compact ? " comments-compact" : "")}>
+    {compact && composer}
     <button type="button" className="comments-toggle" aria-expanded={expanded} aria-controls={id + "-thread"}
       onClick={() => { setExpanded(!expanded); if (!expanded && api.status !== "ready") void api.refresh(); }}>
       <MessageCircle size={16} aria-hidden="true"/>コメント
@@ -287,17 +303,7 @@ export function PostComments({ targetType, targetId, tone = "dark" }: {
         <div className="comments-by"><strong>{row.name || "匿名"}</strong><time dateTime={row.createdAt}>{dateFormat.format(new Date(row.createdAt))}</time></div>
         <p>{row.text}</p>
       </li>)}</ol> : api.loaded && <p>まだコメントはありません。</p>}
-      <label htmlFor={id + "-text"}>コメントを書く</label>
-      <textarea id={id + "-text"} value={draft.text} rows={3} maxLength={400} disabled={sending}
-        aria-describedby={id + "-audience"} onChange={e => api.edit(key, "text", e.target.value)}/>
-      <label htmlFor={id + "-name"}>呼ばれたい名前（任意）</label>
-      <input id={id + "-name"} type="text" autoComplete="off" maxLength={40} value={draft.name} disabled={sending}
-        onKeyDown={e => { if (e.key === "Enter" && !e.nativeEvent.isComposing) { e.preventDefault(); e.stopPropagation(); } }}
-        onChange={e => api.edit(key, "name", e.target.value)}/>
-      <p id={id + "-audience"} className="comments-audience">コメントと記入した名前は、このボードを見る全員に共有されます。</p>
-      <button type="button" className="comments-send" disabled={sending || offline || !draft.text.trim()}
-        onClick={() => void api.send(targetType, targetId)}><Send size={15} aria-hidden="true"/>{sending ? "共有中…" : "コメントを共有"}</button>
-      {notice && <p className={notice.error ? "comments-error" : "comments-sent"} role="status">{notice.text}</p>}
+      {!compact && composer}
     </section>}
   </div>;
 }

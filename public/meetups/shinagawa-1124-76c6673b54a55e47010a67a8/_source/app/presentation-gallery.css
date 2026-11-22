@@ -306,3 +306,13 @@
   .board-app.screen-mode .pg-grid-stack[data-projection-deck] .pg-grid .pg-quick-visual {font-size:10px;gap:2px}
   .board-app.screen-mode .pg-grid-stack[data-projection-deck] .pg-grid .pg-quick-visual svg {width:16px;height:16px}
 }
+
+.pg-detail .pg-original-sheet .pg-sheet-feedback {
+  display:flex; flex-wrap:wrap; gap:.4rem .7rem; align-items:start;
+  margin-top:.5rem; padding-top:.45rem; border-top:1px solid #e7c8d7;
+}
+.pg-detail .pg-sheet-feedback .post-comments { flex:1 1 520px; }
+.pg-detail .pg-sheet-feedback .reaction-buttons { margin:0; }
+@media(max-width:600px) {
+  .pg-detail .pg-sheet-feedback .post-comments { flex-basis:100%; }
+}

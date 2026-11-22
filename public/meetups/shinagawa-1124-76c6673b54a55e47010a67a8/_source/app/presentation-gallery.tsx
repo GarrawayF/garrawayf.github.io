@@ -260,6 +260,10 @@ function Detail({ item, source, keyword, previous, next, position, all, onOpen, 
             </div>;
           })}
         </dl>
+        <div className="pg-sheet-feedback" aria-label="このアイデアへのリアクションとコメント">
+          <ReactionButtons targetType={kind} targetId={row.id}/>
+          <PostComments key={item.key} targetType={kind} targetId={row.id} tone="light" compact/>
+        </div>
       </section>
       </div>
       <div ref={diagram} className="pg-diagram-target" tabIndex={-1}>
@@ -278,11 +282,10 @@ function Detail({ item, source, keyword, previous, next, position, all, onOpen, 
             <span><small>元の個人案 · {groupLabel(parent.row.team)}</small>{parent.title}</span><ArrowRight size={15}/></button> :
             <a className="pg-parent" key={id} href={pageLink(source, { view:"screen", idea:id })}><CornerDownRight size={15}/>元の個人案を開く</a>;
         })}
-        <div className="pg-actions"><ReactionButtons targetType={kind} targetId={row.id}/>
+        <div className="pg-actions">
           {kind === "idea" ? <a href={pageLink(source, {reply:row.id})}><CornerDownRight size={15}/>この案に共感・ひと言</a> :
             <a href={pageLink(source,{view:"summary",write:"edit",themeId:row.id,team:row.team==="all"?"":row.team})}><Pencil size={15}/>まとめを編集</a>}
         </div>
-        <PostComments key={item.key} targetType={kind} targetId={row.id}/>
       </div>
     </div>
   </dialog>;

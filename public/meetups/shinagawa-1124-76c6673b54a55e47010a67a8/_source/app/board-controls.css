@@ -237,3 +237,33 @@
   .board-app.screen-mode .board-header .page-mode-nav .board-projection-manual svg {display:block;width:15px;height:15px;}
   .board-app.screen-mode .board-header .page-mode-nav .board-projection-manual span {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}
 }
+
+/* One writing workspace; the selected scope stays apparent above its fields. */
+.board-app .write-switch {
+  display:flex;align-items:center;flex-wrap:wrap;gap:8px 14px;
+  padding:9px 0 1px;color:var(--sh-ink);
+}
+.board-app .write-switch-title {margin:0;font-family:var(--sh-keyword);font-size:clamp(16px,2.1vw,28px);font-weight:900;line-height:1.15;}
+.board-app .write-switch nav {
+  display:inline-flex;align-items:stretch;gap:3px;padding:2px;
+  background:#fff;border:1px solid var(--sh-outline);border-radius:999px;
+}
+.board-app .write-switch nav a {
+  display:inline-flex;justify-content:center;align-items:center;gap:5px;min-height:36px;
+  padding:3px 12px;border-radius:999px;color:var(--sh-plum);
+  font-size:clamp(12px,1.08vw,15px);font-weight:850;line-height:1.2;text-decoration:none;white-space:nowrap;
+}
+.board-app .write-switch nav a[aria-current="page"] {background:#762546;color:#fff;}
+.board-app .write-switch nav a:not([aria-current="page"]):hover {background:#f9dce7;}
+.board-app .write-switch nav a:focus-visible {outline:3px solid #812e55;outline-offset:2px;}
+.board-app .write-switch nav a[aria-disabled="true"] {opacity:.56;cursor:wait;}
+.board-app .write-switch-owner {margin:0;color:#762546;font-size:.8rem;font-weight:800;}
+.board-app.personal-mode .sheet-routing {margin:0 0 11px;}
+.board-app.summary-mode .sw-editor .sw-scope {margin:0 0 9px;}
+.board-app.summary-mode .sw-round strong {color:#762546;font-size:.87rem;}
+@media(max-width:670px) {
+ .board-app .write-switch {gap:5px 9px;padding-top:7px;}
+ .board-app .write-switch-title {flex:1 0 100%;}
+ .board-app .write-switch nav a {min-height:42px;padding-inline:10px;}
+ .board-app .write-switch-owner {font-size:.71rem;}
+}

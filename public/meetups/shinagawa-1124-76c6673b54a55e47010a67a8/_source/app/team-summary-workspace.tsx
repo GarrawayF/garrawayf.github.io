@@ -21,6 +21,7 @@ type Scope = { team: Group; round: Stage };
 type Props = {
   ideas: readonly MapIdea[]; hasLoaded: boolean; loadError?: boolean;
   initialTeam?: string; initialRound?: string | number; source?: string;
+  onBusyChange?: (busy:boolean)=>void;
   onScopeChange?: (team: Group, round: number) => void;
 };
 type StoredDraft = ThemeDraft & { pending?: boolean };
@@ -88,7 +89,7 @@ function ScopedEditor({ scope, existing, source, feed, ideas, hasLoaded, loadErr
   const stageMode = scope.team === "all" ? "plenary" : scope.round === 5 ? "summary" : "work";
   const label = scope.team === "all" ? "会場で生まれた案" : "班で試してみたいこと";
   const selectedThemes = feed.themes.filter(row => row.team === scope.team && row.round === scope.round);
-  const readyMessage = editMode ? "変更を保存" : scope.team === "all" ? "全体の案を共有" : "班のまとめを共有";
+  const readyMessage = editMode ? "変更を保存" : scope.team === "all" ? "全体の案を共有" : "班の発表案を共有";
   const canSave = draft.text.trim() || hasWorksheetContent(draft.worksheet);
 
   function change(changes: Partial<StoredDraft>) {
@@ -137,10 +138,10 @@ function ScopedEditor({ scope, existing, source, feed, ideas, hasLoaded, loadErr
   return <section className="sw-editor" aria-label={scope.team === "all" ? "全体対話の案を書く" : "班のまとめを書く"}>
         <p className="sw-stage">{scope.team ? scope.team === "all" ? "全体対話の記録" : scope.team + "班のまとめ" : "班のまとめ"}{editMode ? " · 編集中" : ""}</p>
         <form onSubmit={share}>
+          {routing}
           <IdeaWorksheet values={draft.worksheet} text={draft.text} onChange={worksheet => change({ worksheet })}
             onTextChange={text => change({ text })} inputRef={mainInput} disabled={frozen} label={label}
             help="まず一言。書きやすい欄に一つだけでも共有できます。" />
-          {routing}
           {error && <p className="sw-error" role="alert">{error}</p>}
           {conflict && <div className="sw-conflict"><strong>現在共有されている内容</strong><p>{conflict.enteredText ?? conflict.text}</p>
             <WorksheetReadout mode={stageMode} values={conflict.worksheet}/>
@@ -180,7 +181,7 @@ function ScopedEditor({ scope, existing, source, feed, ideas, hasLoaded, loadErr
   </section>;
 }
 
-export default function TeamSummaryWorkspace({ ideas, hasLoaded, loadError, initialTeam, initialRound, source = "", onScopeChange }: Props) {
+export default function TeamSummaryWorkspace({ ideas, hasLoaded, loadError, initialTeam, initialRound, source = "", onScopeChange, onBusyChange }: Props) {
   const firstTeam = groupValue(initialTeam);
   const [scope, setScope] = useState<Scope>({ team: firstTeam, round: stageValue(initialRound, firstTeam) });
   const [editId, setEditId] = useState("");
@@ -192,6 +193,7 @@ export default function TeamSummaryWorkspace({ ideas, hasLoaded, loadError, init
   const init = useRef({ initialTeam, initialRound });
   const workspace = useRef<HTMLDivElement>(null);
   const viewingUnassigned = useRef(false);
+  const setWriting=useCallback((busy:boolean)=>{setBlocked(busy);onBusyChange?.(busy);},[onBusyChange]);
   const existing = editId ? feed.themes.find(row => row.id === editId) : undefined;
 
   useEffect(() => {
@@ -270,14 +272,15 @@ export default function TeamSummaryWorkspace({ ideas, hasLoaded, loadError, init
       <a href={pageLink(address, { view: "screen", team: team === "all" ? "" : team, round: String(round) })}>発表画面に戻る</a></div> :
       !ready ? <div className="sw-empty"><h2>班のまとめを準備しています…</h2></div> :
       <ScopedEditor key={editId || team + ":" + round} scope={{ team, round }} existing={existing}
-        source={address} feed={availableFeed} ideas={ideas} hasLoaded={hasLoaded} loadError={loadError} onBusy={setBlocked} onSaved={receive}
+        source={address} feed={availableFeed} ideas={ideas} hasLoaded={hasLoaded} loadError={loadError} onBusy={setWriting} onSaved={receive}
         routing={<div className="sw-scope">
       <fieldset disabled={!ready || blocked}><legend>まとめる班</legend>
         <div className="sw-groups">{mapGroups.map(group => <button key={group} type="button" aria-pressed={group === team}
           onClick={() => navigate({ team: group, round: stageValue(round, group) })}>{group === "all" ? "全体対話" : groupLabel(group)}</button>)}</div>
       </fieldset>
-      {team && team !== "all" && <label className="sw-round"><span>対象の回</span><span><select value={round} disabled={!ready || blocked}
+      {team !== "all" && <label className="sw-round"><span>対象の回</span><span><select value={round} disabled={!ready || blocked}
         onChange={event => navigate({ team, round: stageValue(event.target.value, team) })}>{stages.map(stage => <option key={stage} value={stage}>{stageLabel(stage)}</option>)}</select><ChevronDown size={15}/></span></label>}
+      {team === "all" && <div className="sw-round"><span>対象の回</span><strong>全体対話</strong></div>}
       {team && unassignedDraftRound && <button className="sw-unassigned" type="button" disabled={blocked}
         onClick={() => { viewingUnassigned.current = true; setEditId(""); setReceipt(null); setScope({ team: "", round: unassignedDraftRound }); }}>
         班を選ぶ前の下書きを確認する

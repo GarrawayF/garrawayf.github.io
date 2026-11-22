@@ -132,6 +132,8 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
     setSummaryScope(previous => previous.team === team && previous.round === round ? previous : { team, round });
   }, []);
   const summaryTeam = summaryScope.team === "all" ? "" : summaryScope.team;
+  const [summaryBusy,setSummaryBusy]=useState(false);
+  const writingRoutes=useRef<{personal?:string;summary?:string}>({});
   const [draft, setDraft] = useState<Draft>(emptyDraft);
   const [hydrated, setHydrated] = useState(false);
   const [extras, setExtras] = useState(false);
@@ -173,6 +175,7 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
     setSourceHref(page.href);
     const requested = boardViewOf(page.searchParams.get("view"), page.searchParams.get("write"), page.hash);
     setView(requested);
+    if(requested!=="screen")writingRoutes.current[requested]=page.href;
     const initialTab = page.searchParams.get("tab");
     const initialTeam = page.searchParams.get("team");
     const initialRound = Number(page.searchParams.get("round"));
@@ -229,10 +232,17 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
 
   const keywordReturn = useRef("");
   useEffect(() => {
-    if (!hydrated || !screen) return;
+    if (!hydrated) return;
     const restore = () => {
       const url = new URL(window.location.href);
-      if (boardViewOf(url.searchParams.get("view"),url.searchParams.get("write"),url.hash)!=="screen") return;
+      const current=boardViewOf(url.searchParams.get("view"),url.searchParams.get("write"),url.hash);
+      setView(current);
+      if(current!=="summary")setSummaryBusy(false);
+      if(current!=="screen"){
+        writingRoutes.current[current]=url.href;
+        if(current==="personal")setReplyId(url.searchParams.get("reply")||"");
+        return;
+      }
       const tab=url.searchParams.get("tab");
       setBoardView(tab==="words"||tab==="map"?tab:"list");
       setTeam(teams.find(t=>t===url.searchParams.get("team"))||"");
@@ -241,7 +251,7 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
     };
     window.addEventListener("popstate",restore);
     return ()=>window.removeEventListener("popstate",restore);
-  },[hydrated,screen]);
+  },[hydrated]);
 
   useEffect(() => {
     if(boardView!=="words"||!keywordReturn.current) return;
@@ -450,10 +460,23 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
   const feedReady = hasLoaded && themeFeed.loaded;
   const feedError = themeFeed.unavailable || sync === "error" || sync === "offline";
   const navTeam = screen ? team : personal ? draft.team : summaryTeam;
-  const summaryRound = screen ? round : personal ? (navTeam ? draft.round : 0) : summaryScope.round;
   const coverHref = new URL("../", publicBoardUrl);
   if (isDemoRoom(sourceHref)) coverHref.searchParams.set("room","demo");
-  const summaryHref = pageLink(sourceHref, { view: "summary", team: navTeam, round: summaryRound ? String(summaryRound) : "", write: view === "summary" && summaryScope.team === "all" ? "plenary" : "" });
+  const personalHref = pageLink(sourceHref, { view: "post", join: navTeam });
+  const summaryHref = writingRoutes.current.summary
+    || pageLink(sourceHref, { view: "summary", team: draft.team, round: draft.team ? String(draft.round) : "" });
+  function chooseWriter(event: MouseEvent<HTMLAnchorElement>,next:"personal"|"summary") {
+    if(event.button!==0||event.defaultPrevented||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey) return;
+    if(view===next||sending||summaryBusy){event.preventDefault();return;}
+    if(screen || location.protocol==="file:")return;
+    const target=event.currentTarget.href;
+    writingRoutes.current[view]=location.href;
+    try {history.pushState(null,"",target);}
+    catch {return;}
+    event.preventDefault();
+    if(next==="personal")setReplyId(new URL(target).searchParams.get("reply")||"");
+    setView(next);
+  }
 
   return <div className={screen ? "board-app screen-mode" : personal ? "board-app personal-mode" : "board-app summary-mode"}>
     <header className="topbar board-header"><div className="shell nav-inner">
@@ -466,8 +489,9 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
       </nav>
     </div><nav className="shell page-mode-nav" aria-label="会場の画面">
       <a className="board-page-cover" href={coverHref.href}><BookOpen size={16} aria-hidden="true"/>表紙</a>
-      <a aria-current={personal ? "page" : undefined} href={pageLink(sourceHref, { join: navTeam })}><Pencil size={16}/>個人で書く</a>
-      <a aria-current={view === "summary" ? "page" : undefined} href={summaryHref} onClick={e => { if (view === "summary" && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) e.preventDefault(); }}><Users size={16}/>班でまとめる</a>
+      <a aria-current={!screen ? "page" : undefined} href={personalHref} onClick={e=>{
+        if(!screen&&!e.metaKey&&!e.ctrlKey&&!e.shiftKey&&!e.altKey)e.preventDefault();
+      }}><Pencil size={16}/>アイデアを書く</a>
       <a aria-current={screen ? "page" : undefined} href={pageLink(sourceHref, { view: "screen", team: view === "summary" ? summaryTeam : "", round: view === "summary" && summaryScope.round ? String(summaryScope.round) : "" })}><Monitor size={17}/>発表を見る</a>
       <FullscreenToggle where="topbar"/>
       {screen&&<a className="board-manual-link board-projection-manual" href={new URL("/guide.pdf",boardApiUrl).href}
@@ -475,6 +499,14 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
     </nav></header>
 
     <main className="shell">
+      {!screen&&<section className="write-switch" aria-label="アイデアを書く">
+        <h1 className="write-switch-title">アイデアを書く</h1>
+        <nav aria-label="書く内容">
+          <a href={writingRoutes.current.personal||personalHref} aria-current={personal?"page":undefined} aria-disabled={sending||summaryBusy||undefined} onClick={e=>chooseWriter(e,"personal")}><Pencil size={15} aria-hidden="true"/>個人の案</a>
+          <a href={summaryHref} aria-current={!personal?"page":undefined} aria-disabled={sending||summaryBusy||undefined} onClick={e=>chooseWriter(e,"summary")}><Users size={15} aria-hidden="true"/>班の発表案</a>
+        </nav>
+        {!personal&&<p className="write-switch-owner">品川担当者が入力</p>}
+      </section>}
       <div className={screen ? "workspace" : personal ? "workspace sheet-workspace" : "summary-layout"}>
         {personal && <form className="composer" ref={form} onSubmit={send} id="compose">
           <fieldset disabled={sending} className="compose-fields">
@@ -485,8 +517,6 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
               <button type="button" onClick={clearReplyLink}>引用せずに続ける</button>
             </div>}
             {draft.parentId && <div className="reply-preview"><CornerDownRight size={15} /><span><small>もとになった投稿</small>{draft.parentText}</span><button type="button" onClick={() => update({ parentId: null, parentText: "" })} aria-label="参照を外す"><X size={16} /></button></div>}
-            <IdeaWorksheet values={draft.worksheet} text={draft.text} onTextChange={text => update({ text })}
-              onChange={worksheet => update({ worksheet })} inputRef={input} isReply={Boolean(draft.parentId)} />
             <div className="sheet-routing">
             <fieldset className="team-picker">
               <legend>自分の班</legend>
@@ -503,6 +533,8 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
               </SelectField>
             </div>
             </div>
+            <IdeaWorksheet values={draft.worksheet} text={draft.text} onTextChange={text => update({ text })}
+              onChange={worksheet => update({ worksheet })} inputRef={input} isReply={Boolean(draft.parentId)} />
             <button className="extras-trigger" type="button" aria-expanded={extras} aria-controls="personal-sheet-fields" onClick={() => setExtras(!extras)}><ChevronRight className={extras ? "turn" : ""} size={16} />名前・共感した理由を添える <span>任意</span></button>
             {extras && <div id="personal-sheet-fields" className="extras-panel">
               <label className="field"><span>きっかけ・共感した理由</span><textarea rows={2} maxLength={400} data-worksheet-key="context" value={draft.context} onChange={e => update({ context: e.target.value })} /></label>
@@ -510,7 +542,7 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
             </div>}
             {error && <p className="error-message" role="alert"><CircleAlert size={15} />{error}</p>}
             <p className="sharing-cue" id="posting-audience">投稿すると、全員がこの内容を読めます。</p>
-            <button className="post-button" type="submit" aria-describedby="posting-audience submit-hint" disabled={sending || !hydrated || Boolean(submitHint)}><Send size={17} /><span>{sending ? "投稿中…" : error ? "もう一度投稿する" : "投稿する"}</span></button>
+            <button className="post-button" type="submit" aria-describedby="posting-audience submit-hint" disabled={sending || !hydrated || Boolean(submitHint)}><Send size={17} /><span>{sending ? "投稿中…" : error ? "もう一度投稿する" : "個人の案を投稿"}</span></button>
             <p id="submit-hint" className="submit-hint" aria-live="polite">{!sending && submitHint}</p>
           </fieldset>
           <div className="personal-resources" ref={eventTools} role="group" aria-label="個人メモと資料">
@@ -521,7 +553,7 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
         </form>}
         {view === "summary" && <>
           <TeamSummaryWorkspace ideas={ideas} hasLoaded={hasLoaded} loadError={sync === "error" || sync === "offline"}
-            initialTeam={initialTeam || draft.team} initialRound={initialRound || draft.round} source={sourceHref} onScopeChange={onSummaryScope} />
+            initialTeam={draft.team || undefined} initialRound={draft.round} source={sourceHref} onScopeChange={onSummaryScope} onBusyChange={setSummaryBusy} />
           <div className="personal-resources sw-resources" role="group" aria-label="班の参考資料">
             <button type="button" onClick={() => setTool("slides")}><Presentation size={16} />スライド・記入シート</button>
             <button type="button" onClick={() => setTool("guide")}><BookOpen size={16} />今日の進め方</button>

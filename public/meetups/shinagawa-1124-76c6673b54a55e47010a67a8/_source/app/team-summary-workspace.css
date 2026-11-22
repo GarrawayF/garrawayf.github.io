@@ -87,3 +87,29 @@
   .sw-open-reference { display:inline-flex; color:var(--sw-action); font-size:.85rem; text-decoration:underline; padding:3px 5px; }
   .sw-submit-row { display:grid; }.sw-submit-row button { width:100%; }
 }
+
+/* The team follows the same order as the personal composer: write, choose the scope, share. */
+.summary-mode .summary-layout { padding-top: 10px; }
+.team-summary-workspace { width: min(100%, 900px); margin-inline: auto; gap: 9px; padding-block-end: 0; }
+.sw-editor { padding: clamp(13px, 2.35vw, 27px); }
+.sw-stage { margin: 0 0 5px; color: #75364e; font-size: .83rem; font-weight: 750; }
+.sw-editor form { gap: 8px; }
+.sw-editor .sw-scope { padding: 1px 0; border: 0; border-radius: 0; gap: 7px 17px; }
+.sw-editor .sw-groups { display: flex; flex-wrap: wrap; }
+.sw-editor .sw-groups button { min-height: 38px; }
+.sw-editor .sw-round select { max-width: 100%; min-height: 38px; }
+.sw-submit-row { display: grid; grid-template-columns: minmax(0,1fr) auto; }
+.sw-submit-row button { grid-column: 2; min-width: min(100%, 9rem); }
+.sw-reference-details { margin-top: 9px; border-top: 1px solid var(--sw-line); }
+.sw-reference-details > summary { min-height: 44px; display: list-item; padding: 11px 0; cursor: pointer; color: #703049; font-weight: 650; }
+.sw-reference-details > .sw-references { position: static; max-height: none; overflow: visible; padding: 12px; scrollbar-gutter: auto; }
+.sw-reference-details .sw-switch-write { display: flex; width: fit-content; margin-top: 8px; }
+.sw-unassigned { border: 0; padding: 4px 0; background: transparent; color: var(--sw-action); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; min-height: 36px; }
+.summary-layout .sw-resources { width: min(100%, 900px); margin-inline: auto; margin-top: 9px; }
+@media (max-width: 670px) {
+  .sw-editor .sw-groups { gap: 4px; }
+  .sw-editor .sw-groups button { min-width: 36px; min-height: 40px; padding: 4px 6px; }
+  .sw-submit-row { grid-template-columns: minmax(0,1fr); gap: 4px; }
+  .sw-submit-row button { grid-column: 1; }
+  .sw-stage { margin-bottom: 4px; }
+}

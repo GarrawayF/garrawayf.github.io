@@ -5,15 +5,15 @@ import type { Worksheet, WorksheetKey, WorksheetMode } from "./worksheet";
 import "./worksheet-fields.css";
 
 type ReadProps = { mode: WorksheetMode; values?: Worksheet; };
-type EditProps = ReadProps & { onChange: (values: Worksheet) => void; disabled?: boolean; inline?: boolean; };
+type EditProps = ReadProps & { onChange: (values: Worksheet) => void; disabled?: boolean; inline?: boolean; exclude?: readonly WorksheetKey[]; summaryLabel?: string; };
 function keysFor(mode: WorksheetMode, values: Worksheet) {
   const main = worksheetGroups[mode];
   return [...main, ...WORKSHEET_KEYS.filter(key => !main.includes(key) && values[key]?.trim())];
 }
 
-export default function WorksheetFields({ mode, values = {}, onChange, disabled = false, inline = false }: EditProps) {
+export default function WorksheetFields({ mode, values = {}, onChange, disabled = false, inline = false, exclude = [], summaryLabel = "シートの項目から書く" }: EditProps) {
   const id = useId();
-  const keys = keysFor(mode, values);
+  const keys = keysFor(mode, values).filter(key => !exclude.includes(key));
   const count = keys.filter(key => values[key]?.trim()).length;
   const setValue = (key: WorksheetKey, value: string) => {
     const next = { ...values };
@@ -37,7 +37,7 @@ export default function WorksheetFields({ mode, values = {}, onChange, disabled 
     </div>;
   if (inline) return inputs;
   return <details className="sheet-fields">
-    <summary>シートの項目から書く <span>{count ? count + "項目を記入" : "任意"}</span></summary>
+    <summary>{summaryLabel} <span>{count ? count + "項目を記入" : "任意"}</span></summary>
     {inputs}
   </details>;
 }

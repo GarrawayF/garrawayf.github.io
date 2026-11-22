@@ -426,20 +426,10 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
     </div><nav className="shell page-mode-nav" aria-label="入力と発表の画面">
       <a aria-current={personal ? "page" : undefined} href={pageLink(sourceHref, { join: navTeam })}><Pencil size={16}/>個人で書く</a>
       <a aria-current={view === "summary" ? "page" : undefined} href={summaryHref} onClick={e => { if (view === "summary" && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) e.preventDefault(); }}><Users size={16}/>班でまとめる</a>
-      <a aria-current={screen ? "page" : undefined} href={pageLink(sourceHref, { view: "screen", team: view === "summary" ? summaryTeam : "" })}><Monitor size={17}/>発表を見る</a>
+      <a aria-current={screen ? "page" : undefined} href={pageLink(sourceHref, { view: "screen", team: view === "summary" ? summaryTeam : "", round: view === "summary" && summaryScope.round ? String(summaryScope.round) : "" })}><Monitor size={17}/>発表を見る</a>
     </nav></header>
 
     <main className="shell">
-      {view === "summary" && <section className="hero">
-        <div className="hero-copy"><div className="event-meta"><span className="event-rule" />2026.11.24 <span>TUE</span><i /> WOVEN CITY</div>
-          <h1>班のまとめ</h1>
-          <div className="event-tools">
-            <button type="button" onClick={() => setTool("slides")}><Presentation size={15} />スライド・記入シート</button>
-            <button type="button" onClick={() => setTool("guide")}><BookOpen size={15} />今日の進め方</button>
-          </div>
-        </div>
-        <div className="hero-graphic" aria-hidden="true"><div className="hero-print"><i className="print-track track-a"/><i className="print-track track-b"/><i className="print-track track-c"/><i className="speech speech-back"/><i className="speech speech-front"><b/><b/></i></div></div>
-      </section>}
       <div className={screen ? "workspace" : personal ? "workspace sheet-workspace" : "summary-layout"}>
         {personal && <form className="composer" ref={form} onSubmit={send} id="compose">
           <fieldset disabled={sending} className="compose-fields">
@@ -484,8 +474,14 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
             <button type="button" onClick={() => setTool("guide")}><BookOpen size={16} />今日の進め方</button>
           </div>
         </form>}
-        {view === "summary" && <TeamSummaryWorkspace ideas={ideas} hasLoaded={hasLoaded} loadError={sync === "error" || sync === "offline"}
-          initialTeam={initialTeam || draft.team} initialRound={initialRound || draft.round} source={sourceHref} onScopeChange={onSummaryScope} />}
+        {view === "summary" && <>
+          <TeamSummaryWorkspace ideas={ideas} hasLoaded={hasLoaded} loadError={sync === "error" || sync === "offline"}
+            initialTeam={initialTeam || draft.team} initialRound={initialRound || draft.round} source={sourceHref} onScopeChange={onSummaryScope} />
+          <div className="personal-resources sw-resources" role="group" aria-label="班の参考資料">
+            <button type="button" onClick={() => setTool("slides")}><Presentation size={16} />スライド・記入シート</button>
+            <button type="button" onClick={() => setTool("guide")}><BookOpen size={16} />今日の進め方</button>
+          </div>
+        </>}
         {screen && <section className="ideas-section" tabIndex={-1} aria-label="アイデアの一覧">
           <div className="projection-title">
             <h1>{(team ? team + "班" : "全体") + "のアウトプット"}</h1>

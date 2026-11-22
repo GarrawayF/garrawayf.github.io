@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { FormEvent } from "react";
+import type { FormEvent, ReactNode } from "react";
 import { ArrowRight, BookOpen, Check, ChevronDown, CornerDownRight, Monitor, Pencil, Send, X } from "lucide-react";
 import { pageLink, publicBoardUrl, roomStorageKey } from "./board-room";
 import { eventRoundAt } from "./event-round";
@@ -10,8 +10,9 @@ import RoundSummarySheet from "./round-summary-sheet";
 import TeamThemes, { type ThemeFeed } from "./team-themes";
 import TeamReference from "./team-reference";
 import { draftFromTheme, saveTheme, type SavedTheme, type ThemeDraft } from "./theme-writer";
+import IdeaWorksheet from "./idea-worksheet";
 import WorksheetFields, { WorksheetReadout } from "./worksheet-fields";
-import { cleanWorksheet, hasWorksheetContent } from "./worksheet";
+import { cleanWorksheet, hasWorksheetContent, worksheetGroups } from "./worksheet";
 import "./team-summary-workspace.css";
 
 type Group = MapGroup | "";
@@ -24,6 +25,7 @@ type Props = {
 };
 type StoredDraft = ThemeDraft & { pending?: boolean };
 const cache = new Map<string, StoredDraft>();
+const draftKey = (scope: Scope) => roomStorageKey("shinagawa:summary-workspace:draft:" + scope.team + ":" + scope.round);
 const stages = [1, 2, 3, 5] as const;
 const scopeStore = "shinagawa:summary-workspace:scope";
 const groupValue = (s: unknown): Group => mapGroups.find(t => t === s) || "";
@@ -57,20 +59,19 @@ function keep(key: string, draft: StoredDraft | null) {
 
 type EditorProps = Pick<Props, "ideas" | "hasLoaded" | "loadError"> & {
   scope: Scope; existing?: SavedTheme; source: string; feed: ThemeFeed;
+  routing: ReactNode;
   onBusy: (busy: boolean) => void; onSaved: (theme: SavedTheme) => void;
 };
-function ScopedEditor({ scope, existing, source, feed, ideas, hasLoaded, loadError, onBusy, onSaved }: EditorProps) {
-  const key = roomStorageKey("shinagawa:summary-workspace:draft:" + (existing ? "edit:" + existing.id : scope.team + ":" + scope.round));
+function ScopedEditor({ scope, existing, source, feed, ideas, hasLoaded, loadError, routing, onBusy, onSaved }: EditorProps) {
+  const key = existing ? roomStorageKey("shinagawa:summary-workspace:draft:edit:" + existing.id) : draftKey(scope);
   const [draft, setDraft] = useState<StoredDraft>(() => existing ? draftFromTheme(existing) : blank(scope));
   const [ready, setReady] = useState(false);
-  const [tab, setTab] = useState<"references" | "write">("write");
   const [saving, setSaving] = useState(false);
   const writing = useRef(false);
   const [conflict, setConflict] = useState<SavedTheme | null>(null);
   const [error, setError] = useState("");
   const [memoryOnly, setMemoryOnly] = useState(false);
-  const panel = useRef<HTMLElement>(null);
-  const columns = useRef<HTMLDivElement>(null);
+  const mainInput = useRef<HTMLTextAreaElement>(null);
   const seed = useRef(draft);
   const alive = useRef(true);
 
@@ -85,7 +86,7 @@ function ScopedEditor({ scope, existing, source, feed, ideas, hasLoaded, loadErr
   const editMode = draft.version !== null;
   const frozen = !ready || saving || Boolean(draft.pending);
   const stageMode = scope.team === "all" ? "plenary" : scope.round === 5 ? "summary" : "work";
-  const label = scope.team === "all" ? "会場で加えたい挑戦テーマ" : scope.round === 5 ? "発表で紹介したい挑戦テーマ" : "品川で、誰とどんなことを試してみたい？";
+  const label = scope.team === "all" ? "会場で生まれた案" : "班で試してみたいこと";
   const selectedThemes = feed.themes.filter(row => row.team === scope.team && row.round === scope.round);
   const readyMessage = editMode ? "変更を保存" : scope.team === "all" ? "全体の案を共有" : "班のまとめを共有";
   const canSave = draft.text.trim() || hasWorksheetContent(draft.worksheet);
@@ -102,17 +103,8 @@ function ScopedEditor({ scope, existing, source, feed, ideas, hasLoaded, loadErr
     change({ sourceIdeaId: next[0] || "", sourceIdeaId2: next[1] || "" });
   }
   function writeHere() {
-    setTab("write");
-    requestAnimationFrame(() => {
-      panel.current?.querySelector<HTMLTextAreaElement>(".sw-main-text")?.focus({ preventScroll: true });
-      panel.current?.scrollIntoView({ block: "start", behavior: "smooth" });
-    });
-  }
-  function switchPanel(next: "references" | "write") {
-    setTab(next);
-    requestAnimationFrame(() => {
-      if (columns.current && columns.current.getBoundingClientRect().top < 0) columns.current.scrollIntoView({ block: "start" });
-    });
+    mainInput.current?.focus({ preventScroll: true });
+    mainInput.current?.scrollIntoView({ block: "center" });
   }
   async function share(event: FormEvent) {
     event.preventDefault();
@@ -142,44 +134,42 @@ function ScopedEditor({ scope, existing, source, feed, ideas, hasLoaded, loadErr
     }
   }
 
-  return <>
-    <div className="sw-mobile-switch" role="group" aria-label="画面を切り替える">
-      <button type="button" aria-pressed={tab === "references"} onClick={() => switchPanel("references")}><BookOpen size={16}/>参考を見る</button>
-      <button type="button" aria-pressed={tab === "write"} onClick={() => switchPanel("write")}><Pencil size={16}/>まとめを書く</button>
-    </div>
-    <div className="sw-columns" data-panel={tab} ref={columns}>
-      <aside className="sw-references" aria-label="まとめに使う資料">
-        <TeamReference team={scope.team} round={scope.round} ideas={ideas} themes={feed.themes}
-          ideasLoaded={hasLoaded} themesLoaded={feed.loaded} loadError={Boolean(loadError || feed.unavailable)}
-          quotedIds={citeIds} onToggleQuote={quote} quotesLocked={frozen || editMode}/>
-        <button type="button" className="sw-switch-write" onClick={writeHere}>{citeIds.length ? "選んだ投稿で書く" : "まとめを書く"}<ArrowRight size={16}/></button>
-      </aside>
-      <section ref={panel} className="sw-editor" aria-labelledby="summary-form-title">
-        <h2 id="summary-form-title">{scope.team === "all" ? "全体の案" : scope.team + "班のまとめ"}{editMode ? "を編集" : "を書く"}</h2>
-        <p className="sw-stage">{stageLabel(scope.round)}</p>
+  return <section className="sw-editor" aria-label={scope.team === "all" ? "全体対話の案を書く" : "班のまとめを書く"}>
+        <p className="sw-stage">{scope.team ? scope.team === "all" ? "全体対話の記録" : scope.team + "班のまとめ" : "班のまとめ"}{editMode ? " · 編集中" : ""}</p>
         <form onSubmit={share}>
-          <label className="sw-main-label" htmlFor="summary-theme-text">{label}</label>
-          <textarea className="sw-main-text" id="summary-theme-text" value={draft.text} maxLength={800} rows={4} disabled={frozen}
-            placeholder="この欄、またはシートのどれか一つに書いてください。" onChange={e => change({ text: e.target.value })}/>
-          <WorksheetFields mode={stageMode} values={draft.worksheet} disabled={frozen} onChange={worksheet => change({ worksheet })}/>
-          <div className="sw-citations">
-            <div className="sw-citation-head"><b><CornerDownRight size={14}/>元になった個人案</b><small>{citeIds.length} / 2件</small></div>
-            {citeIds.length ? citeIds.map(id => {
-              const item = ideas.find(row => row.id === id);
-              return <div className="sw-citation" key={id}><span>{item ? item.team + "班 · " + (item.analysis?.title || item.text) : "元の投稿"}</span>
-                {!editMode && <button type="button" disabled={frozen} aria-label="引用から外す" onClick={() => quote(id)}><X size={16}/></button>}</div>;
-            }) : <p>参考一覧から2件まで選べます。<button type="button" className="sw-open-reference" onClick={() => switchPanel("references")}>参考を見る</button></p>}
-          </div>
+          <IdeaWorksheet values={draft.worksheet} text={draft.text} onChange={worksheet => change({ worksheet })}
+            onTextChange={text => change({ text })} inputRef={mainInput} disabled={frozen} label={label}
+            help="まず一言。書きやすい欄に一つだけでも共有できます。" />
+          {routing}
           {error && <p className="sw-error" role="alert">{error}</p>}
           {conflict && <div className="sw-conflict"><strong>現在共有されている内容</strong><p>{conflict.enteredText ?? conflict.text}</p>
             <WorksheetReadout mode={stageMode} values={conflict.worksheet}/>
             <button type="button" onClick={() => { change(draftFromTheme(conflict)); setConflict(null); }}>共有中の内容を使う</button>
             <button type="button" onClick={() => { change({ version: conflict.version }); setConflict(null); }}>自分の下書きから続ける</button>
           </div>}
-          <div className="sw-submit-row"><small>{saving ? "保存中…" : memoryOnly ? "このタブで下書きを保持しています。閉じる前に共有してください。" : draft.pending ? "確認が終わるまで入力内容を保管します。" : canSave || citeIds.length ? "下書きをこの端末に保存" : "共有すると、発表画面に追加されます。"}</small>
-            <button type="submit" disabled={!ready || saving || !canSave || Boolean(conflict)}><Send size={16}/>{saving ? "保存中…" : draft.pending ? "保存結果を確認" : readyMessage}</button>
+          <div className="sw-submit-row"><small>{saving ? "保存中…" : memoryOnly ? "このタブで下書きを保持しています。閉じる前に共有してください。" : draft.pending ? "確認が終わるまで入力内容を保管します。" : !scope.team ? "共有する班を選んでください。" : canSave || citeIds.length ? "下書きをこの端末に保存" : "共有すると、発表画面に追加されます。"}</small>
+            <button type="submit" disabled={!ready || !scope.team || saving || !canSave || Boolean(conflict)}><Send size={16}/>{saving ? "保存中…" : draft.pending ? "保存結果を確認" : readyMessage}</button>
           </div>
+          {scope.team && <WorksheetFields mode={stageMode} values={draft.worksheet} disabled={frozen} onChange={worksheet => change({ worksheet })}
+            exclude={worksheetGroups.personal} summaryLabel={scope.team === "all" ? "全体対話の記録項目" : "班の記録項目"} />}
+          {citeIds.length > 0 && <div className="sw-citations">
+            <div className="sw-citation-head"><b><CornerDownRight size={14}/>元になった個人案</b><small>{citeIds.length} / 2件</small></div>
+            {citeIds.length ? citeIds.map(id => {
+              const item = ideas.find(row => row.id === id);
+              return <div className="sw-citation" key={id}><span>{item ? item.team + "班 · " + (item.analysis?.title || item.text) : "元の投稿"}</span>
+                {!editMode && <button type="button" disabled={frozen} aria-label="引用から外す" onClick={() => quote(id)}><X size={16}/></button>}</div>;
+            }) : null}
+          </div>}
         </form>
+        {scope.team && <details className="sw-reference-details">
+          <summary>個人案・これまでのまとめを参照{citeIds.length ? "（" + citeIds.length + "件選択）" : ""}</summary>
+          <aside className="sw-references" aria-label="まとめに使う資料">
+            <TeamReference team={scope.team} round={scope.round} ideas={ideas} themes={feed.themes}
+              ideasLoaded={hasLoaded} themesLoaded={feed.loaded} loadError={Boolean(loadError || feed.unavailable)}
+              quotedIds={citeIds} onToggleQuote={quote} quotesLocked={frozen || editMode}/>
+            <button type="button" className="sw-switch-write" onClick={writeHere}>{citeIds.length ? "選んだ投稿で書く" : "まとめを書く"}<ArrowRight size={16}/></button>
+          </aside>
+        </details>}
         {selectedThemes.length > 0 && <details className="sw-saved-list"><summary>この回の共有済みテーマ（{selectedThemes.length}件）</summary>
           {selectedThemes.map(row => <a key={row.id} href={pageLink(source, { view: "summary", write: "edit", team: row.team === "all" ? "" : row.team, themeId: row.id, round: String(row.round) })}><span>{row.analysis?.title || row.text}</span><span><Pencil size={13}/>編集</span></a>)}
         </details>}
@@ -187,9 +177,7 @@ function ScopedEditor({ scope, existing, source, feed, ideas, hasLoaded, loadErr
           {citeIds.length > 0 && <p className="sw-rows-caption">新しく共有する行に、選択した{citeIds.length}件の元案を紐づけます。</p>}
           <RoundSummarySheet team={scope.team} round={scope.round === 5 ? 4 : scope.round} onPickTeam={() => {}} sourceIds={citeIds}/>
         </details>}
-      </section>
-    </div>
-  </>;
+  </section>;
 }
 
 export default function TeamSummaryWorkspace({ ideas, hasLoaded, loadError, initialTeam, initialRound, source = "", onScopeChange }: Props) {
@@ -200,8 +188,10 @@ export default function TeamSummaryWorkspace({ ideas, hasLoaded, loadError, init
   const [blocked, setBlocked] = useState(false);
   const [feed, setFeed] = useState<ThemeFeed>({ themes: [], loaded: false, unavailable: false });
   const [receipt, setReceipt] = useState<SavedTheme | null>(null);
+  const [unassignedDraftRound, setUnassignedDraftRound] = useState<Stage | null>(null);
   const init = useRef({ initialTeam, initialRound });
   const workspace = useRef<HTMLDivElement>(null);
+  const viewingUnassigned = useRef(false);
   const existing = editId ? feed.themes.find(row => row.id === editId) : undefined;
 
   useEffect(() => {
@@ -218,6 +208,12 @@ export default function TeamSummaryWorkspace({ ideas, hasLoaded, loadError, init
     const url = new URL(window.location.href);
     let previous: Partial<Scope> = {};
     try { previous = JSON.parse(localStorage.getItem(roomStorageKey(scopeStore)) || "{}") || {}; } catch { /* Optional saved choice. */ }
+    const retained = stages.find(stage => {
+      const candidate: Scope = { team: "", round: stage };
+      const pending = stored(draftKey(candidate), blank(candidate));
+      return Boolean(pending.text.trim() || Object.keys(pending.worksheet).length);
+    });
+    setUnassignedDraftRound(retained ?? null);
     const team = url.searchParams.get("write") === "plenary" ? "all" : groupValue(url.searchParams.get("team")) || groupValue(init.current.initialTeam) || groupValue(previous.team);
     const round = url.searchParams.get("round") || (previous.team === team ? previous.round : undefined) || init.current.initialRound || eventRoundAt();
     setScope({ team, round: stageValue(round, team) });
@@ -226,7 +222,7 @@ export default function TeamSummaryWorkspace({ ideas, hasLoaded, loadError, init
   }, []);
   useEffect(() => {
     const inherited = groupValue(initialTeam);
-    if (ready && !scope.team && !editId && inherited) {
+    if (ready && !scope.team && !editId && inherited && !viewingUnassigned.current) {
       setScope({ team: inherited, round: stageValue(initialRound, inherited) });
     }
   }, [ready, scope.team, editId, initialTeam, initialRound]);
@@ -238,6 +234,17 @@ export default function TeamSummaryWorkspace({ ideas, hasLoaded, loadError, init
 
   function navigate(next: Scope) {
     if (blocked) return;
+    if (!scope.team && next.team) {
+      const origin = stored(draftKey(scope), blank(scope));
+      const target = stored(draftKey(next), blank(next));
+      if ((origin.text.trim() || hasWorksheetContent(origin.worksheet)) && !target.text.trim() && !Object.keys(target.worksheet).length && !target.id) {
+        keep(draftKey(next), { ...target, text: origin.text, worksheet: origin.worksheet });
+        keep(draftKey(scope), null);
+        setUnassignedDraftRound(null);
+      } else if (origin.text.trim() || Object.keys(origin.worksheet).length) {
+        setUnassignedDraftRound(scope.round);
+      }
+    }
     setEditId(""); setScope(next); setReceipt(null);
     try { localStorage.setItem(roomStorageKey(scopeStore), JSON.stringify(next)); } catch { /* The URL also records the scope. */ }
     const href = pageLink(window.location.href, { view: "summary", team: next.team === "all" ? "" : next.team, round: String(next.round), write: next.team === "all" ? "plenary" : "" });
@@ -255,23 +262,26 @@ export default function TeamSummaryWorkspace({ ideas, hasLoaded, loadError, init
   const loadingEdit = editId && !existing;
   return <div className="team-summary-workspace" ref={workspace}>
     <TeamThemes projection feedOnly team="all" onFeedChange={setFeed}/>
-    <div className="sw-scope">
+    {receipt && <div className="sw-receipt" role="status"><Check size={17}/>
+      <span>{groupLabel(receipt.team)}の{receipt.team === "all" ? "案" : "まとめ"}を共有しました。</span>
+      <a href={pageLink(address, { view: "screen", team: receipt.team === "all" ? "" : receipt.team, round: String(receipt.round) }, "theme-" + receipt.id)}><Monitor size={15}/>発表を見る</a>
+    </div>}
+    {loadingEdit ? <div className="sw-empty" role="status"><h2>{feed.loaded ? "編集するまとめが見つかりません" : feed.unavailable ? "まとめを読み込めません" : "編集するまとめを読み込み中…"}</h2>
+      <a href={pageLink(address, { view: "screen", team: team === "all" ? "" : team, round: String(round) })}>発表画面に戻る</a></div> :
+      !ready ? <div className="sw-empty"><h2>班のまとめを準備しています…</h2></div> :
+      <ScopedEditor key={editId || team + ":" + round} scope={{ team, round }} existing={existing}
+        source={address} feed={availableFeed} ideas={ideas} hasLoaded={hasLoaded} loadError={loadError} onBusy={setBlocked} onSaved={receive}
+        routing={<div className="sw-scope">
       <fieldset disabled={!ready || blocked}><legend>まとめる班</legend>
         <div className="sw-groups">{mapGroups.map(group => <button key={group} type="button" aria-pressed={group === team}
           onClick={() => navigate({ team: group, round: stageValue(round, group) })}>{group === "all" ? "全体対話" : groupLabel(group)}</button>)}</div>
       </fieldset>
       {team && team !== "all" && <label className="sw-round"><span>対象の回</span><span><select value={round} disabled={!ready || blocked}
         onChange={event => navigate({ team, round: stageValue(event.target.value, team) })}>{stages.map(stage => <option key={stage} value={stage}>{stageLabel(stage)}</option>)}</select><ChevronDown size={15}/></span></label>}
-    </div>
-    {receipt && <div className="sw-receipt" role="status"><Check size={17}/>
-      <span>{groupLabel(receipt.team)}の{receipt.team === "all" ? "案" : "まとめ"}を共有しました。</span>
-      <a href={pageLink(address, { view: "screen", team: receipt.team === "all" ? "" : receipt.team }, "theme-" + receipt.id)}><Monitor size={15}/>発表を見る</a>
-    </div>}
-    {loadingEdit ? <div className="sw-empty" role="status"><h2>{feed.loaded ? "編集するまとめが見つかりません" : feed.unavailable ? "まとめを読み込めません" : "編集するまとめを読み込み中…"}</h2>
-      <a href={pageLink(address, { view: "screen", team: team === "all" ? "" : team })}>発表画面に戻る</a></div> :
-      !team || !ready ? <div className="sw-empty"><BookOpen size={25}/><h2>{ready ? "まとめる班を選んでください" : "まとめる班を確認しています…"}</h2>
-        <p>班を選ぶと、投稿を見ながら挑戦テーマを書けます。</p></div> :
-      <ScopedEditor key={editId || team + ":" + round} scope={{ team, round }} existing={existing}
-        source={address} feed={availableFeed} ideas={ideas} hasLoaded={hasLoaded} loadError={loadError} onBusy={setBlocked} onSaved={receive}/>}
+      {team && unassignedDraftRound && <button className="sw-unassigned" type="button" disabled={blocked}
+        onClick={() => { viewingUnassigned.current = true; setEditId(""); setReceipt(null); setScope({ team: "", round: unassignedDraftRound }); }}>
+        班を選ぶ前の下書きを確認する
+      </button>}
+    </div>}/>}
   </div>;
 }

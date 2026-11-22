@@ -200,3 +200,9 @@
   .personal-mode .idea-cell-main textarea { min-height: 84px; height: 84px; }
   .personal-mode .optional-idea-sheet { margin-top: 5px; }
 }
+
+.board-cover-link { display: inline-flex; align-items: center; min-height: 42px; padding-inline: .55rem;
+  margin-inline-end: .35rem; color: inherit; text-decoration: underline; text-underline-offset: 3px; font-weight: 700; font-size: .82rem; white-space: nowrap; }
+.screen-mode .board-cover-link { color: var(--wall-text); }
+.board-cover-link:focus-visible { outline: 2px solid #a04260; outline-offset: 1px; }
+@media (max-width: 420px) { .board-cover-link { font-size: .72rem; padding-inline: .25rem; margin-inline-end: 0; } }

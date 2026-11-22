@@ -419,6 +419,7 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
     <header className="topbar board-header"><div className="shell nav-inner">
       <Brand source={sourceHref} />
       <nav aria-label="表示と共有">
+        <a className="board-cover-link" href={new URL("../", publicBoardUrl).href}>当日の表紙</a>
         <span className={"live-state live-" + sync} role="status"><i />{syncLabels[sync]}</span>
         <span className="nav-line" />
         <button type="button" className="nav-action" onClick={() => { setCopied(false); setShare(true); }} aria-label="参加用QRコードを表示"><QrCode size={17} /><span>共有</span></button>

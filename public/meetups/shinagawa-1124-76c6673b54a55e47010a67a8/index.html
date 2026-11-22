@@ -6,94 +6,104 @@
   <meta name="robots" content="noindex, nofollow, noarchive">
   <meta name="googlebot" content="noindex, nofollow, noarchive">
   <meta name="referrer" content="no-referrer">
-  <meta name="theme-color" content="#fff3f6">
-  <title>X-meetup品川｜参加者用ボード</title>
+  <meta name="theme-color" content="#211721">
+  <title>X-meetup品川｜当日の入口</title>
   <link rel="icon" href="data:,">
   <style>
-    :root {
-      color-scheme: light;
-      --paper: #fff3f6; --surface: #ffffff; --blush: #fbe2ea; --rose: #f5b6cc;
-      --berry: #a63c63; --ink: #30262c; --rule: #dabcc7; --dark: #171518;
-      --serif: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", YuMincho, Georgia, serif;
-      font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", system-ui, sans-serif;
-      background: var(--paper); color: var(--ink);
-    }
-    * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100dvh; -webkit-font-smoothing: antialiased; background: linear-gradient(152deg, #fff8f9 0, var(--paper) 53%, #fdecf1); }
-    a { color: inherit; text-decoration: none; }
-    a:focus-visible { outline: 3px solid #be456e; outline-offset: 4px; }
-    .shell { max-width: 1136px; padding: 0 max(24px, env(safe-area-inset-right)) 60px max(24px, env(safe-area-inset-left)); margin: auto; }
-    main { max-width: 966px; margin: auto; }
-    .intro { display: grid; grid-template-columns: 1fr minmax(160px, 26%); align-items: center; gap: clamp(22px, 5vw, 60px); border-bottom: 1px solid var(--rule); padding: clamp(24px, 4vw, 50px) 0 clamp(33px, 6vw, 66px); }
-    h1 { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: .09em; margin: 0; font-family: var(--serif); font-size: clamp(46px, 7.3vw, 93px); line-height: 1.15; font-weight: 900; letter-spacing: -.055em; }
-    h1 em { font-style: normal; color: var(--berry); white-space: nowrap; }
-    .lead { color: #594851; font-size: clamp(15px, 1.9vw, 21px); line-height: 1.75; margin: 15px 0 0; font-weight: 620; }
-    .calendar { position: relative; z-index: 0; isolation: isolate; aspect-ratio: 1.24; width: 95%; max-width: 228px; justify-self: end; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:"Archivo", Arial, sans-serif; color:var(--ink); }
-    .calendar::before { content:""; position:absolute; inset:0; z-index:-1; border-radius: 48% 52% 45% 52%; border: 1.5px solid #866172; background: #f5c5d6; box-shadow: 6px 6px 0 #eed4e0; transform:rotate(-5deg); }
-    .calendar .year,.calendar .day { font-weight:850; font-size:clamp(11px,1.05vw,15px); letter-spacing:.13em; line-height:1.15; }
-    .calendar strong { margin:2px 0 3px; line-height:1; font:1000 clamp(40px,5.7vw,76px)/1 "Arial Black",Arial,sans-serif; letter-spacing:-.095em; padding-right:.07em; color:#fffcfd; -webkit-text-stroke:1.15px #4b3340; text-shadow:2px 3px #7e5268; }
-    .choices { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:clamp(22px,3.4vw,39px); }
-    .card { display:flex; flex-direction:column; align-items:flex-start; min-width:0; padding:clamp(24px,3vw,35px); border:1.5px solid var(--ink); border-radius:25px; }
-    .input { background:var(--surface); box-shadow:4px 5px 0 #e9bdcd; }
-    .output { color:#fff; background:var(--dark); border-color:var(--dark); box-shadow:4px 5px 0 #ddadbf; }
-    h2 { margin:0 0 9px; font:800 clamp(24px,2.8vw,34px)/1.4 var(--serif); letter-spacing:-.055em; }
-    .card p { font-size:15px; line-height:1.75; color:#594851; margin:0 0 22px; }
-    .output p { color:#ded6dc; }
-    .join,.teams a,.all { display:inline-flex; justify-content:center; align-items:center; min-height:46px; border:1px solid var(--ink); font-size:16px; font-weight:750; }
-    .input-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:auto; width:100%; }
-    .join { background:var(--blush); color:#472636; border-radius:999px; padding:9px 18px; box-shadow:2px 3px 0 #d7a6b9; }
-    .join:hover { background:var(--rose); }
-    .teams { display:grid; width:100%; grid-template-columns:repeat(5,minmax(0,1fr)); gap:6px; }
-    .teams a { color:#fff; background:#2b262b; border-color:#766675; border-radius:13px; white-space:nowrap; }
-    .all { width:100%; margin-top:10px; color:#34232d; background:#f5d3e0; border-color:#f5d3e0; border-radius:999px; }
-    .teams a:hover,.all:hover { color:var(--dark); background:#fff5f8; }
-    @media(max-width:680px) {
-      .shell { padding:0 max(16px,env(safe-area-inset-right)) calc(35px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left)); }
-      .intro { grid-template-columns:1fr minmax(80px,23%); gap:15px; padding:24px 0 29px; }
-      h1 { font-size:clamp(34px,7.6vw,52px); }.lead { font-size:15px; line-height:1.65; margin-top:10px; }
-      .calendar { width:100%; }.calendar strong { font-size:clamp(30px,6.5vw,45px); -webkit-text-stroke:.8px #4b3340; text-shadow:1.5px 2px #7e5268; }.calendar .year,.calendar .day{font-size:9px;}
-      .choices { grid-template-columns:1fr; gap:14px; margin-top:20px; }.card{padding:22px;border-radius:21px;}.card p{margin-bottom:17px;}.join{width:100%;}
-    }
-    @media(max-width:370px) { .intro{grid-template-columns:1fr 73px;gap:9px;} .calendar{aspect-ratio:1.1;}.card{padding:19px 15px;}.teams{gap:4px;} }
+    :root{color-scheme:light;--ink:#29212a;--deep:#211721;--paper:#fff6f7;--pink:#f5bbcf;--berry:#952f54;--line:#e3cad3;--muted:#65545c;font-family:"Hiragino Sans","Yu Gothic",Meiryo,system-ui,sans-serif;background:var(--paper);color:var(--ink)}
+    *,*::before,*::after{box-sizing:border-box}body{margin:0}a{color:inherit;text-decoration:none}button{font:inherit}button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid #c75582;outline-offset:4px}.shell{width:min(100%,1240px);padding-inline:clamp(16px,4vw,50px);margin-inline:auto}.skip{position:absolute;left:12px;top:8px;padding:10px;background:#fff;transform:translateY(-150%);z-index:5}.skip:focus{transform:none}
+    .mast{background:var(--deep);color:#fff8fa}.mast-inner{display:flex;align-items:center;justify-content:space-between;min-height:55px;gap:12px}.mast-name{font-weight:850;font-size:.93rem;letter-spacing:.02em}.mast-name b{color:var(--pink)}.mast nav{display:flex;gap:clamp(12px,2.5vw,30px)}.mast nav a{display:inline-flex;align-items:center;min-height:44px;color:#f3dfe6;font-size:.82rem;font-weight:700}
+    .hero{position:relative;overflow:hidden;isolation:isolate;background:var(--deep);color:#fffbfc;border-top:1px solid #5a3b4c}.hero::before{position:absolute;z-index:-1;content:"";inset:0;background:repeating-linear-gradient(122deg,transparent 0 51px,#513647 52px 54px,transparent 55px 91px);mask-image:linear-gradient(90deg,transparent 35%,#000)}.hero-inner{display:grid;grid-template-columns:minmax(0,1fr) minmax(155px,auto);align-items:center;gap:16px;padding-block:clamp(21px,4vw,46px) clamp(30px,5vw,56px)}
+    .kicker{margin:0 0 8px;color:var(--berry);font-size:.73rem;letter-spacing:.12em;font-weight:850}.hero .kicker{color:var(--pink)}.hero h1{margin:0;font-size:clamp(42px,7.4vw,100px);line-height:1.06;font-weight:900;letter-spacing:-.075em}.hero h1 em{font-style:normal;color:var(--pink);white-space:nowrap}.lead{margin:10px 0 0;color:#f4dfe8;font-size:clamp(.93rem,1.7vw,1.19rem);font-weight:650;line-height:1.55}.hero-date{display:grid;gap:3px;padding-left:clamp(13px,2.8vw,30px);border-left:1px solid #9b6d85;min-width:0;font-variant-numeric:tabular-nums}.hero-date span{color:#f0c4d6;font-size:.75rem;letter-spacing:.12em;font-weight:750}.hero-date strong{font-size:clamp(36px,6.5vw,80px);line-height:1;letter-spacing:-.085em}.hero-date small{color:#f3dfe8;font-size:.79rem;font-weight:700}
+    .actions{position:relative;margin-top:-14px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.action{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;min-height:80px;padding:11px 16px;background:#fff;border:1px solid var(--line);border-radius:13px;box-shadow:0 3px 0 #ead1d8}.action:first-child{background:#f7cbda;border-color:#e3a4bb}.action:last-child{background:#332631;border-color:#604555;color:#fff8fa;box-shadow:0 3px 0 #d6adbc}.action:hover{outline:2px solid var(--berry);outline-offset:0}.action .step{font-variant-numeric:tabular-nums;color:var(--berry);font-size:.86rem;font-weight:850}.action:last-child .step,.action:last-child .arrow{color:var(--pink)}.action strong,.action small{display:block}.action strong{font-size:clamp(1.06rem,2.2vw,1.57rem);font-weight:850;line-height:1.25}.action small{color:var(--muted);font-size:.74rem;margin-top:3px;line-height:1.4}.action:last-child small{color:#e2ced9}.arrow{color:var(--berry);font-size:1.1rem}
+    .content{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:clamp(16px,4vw,43px);align-items:start;padding-block:24px 30px}.panel{min-width:0}.section-title{margin:0 0 8px;font-size:clamp(1.35rem,3vw,1.85rem);letter-spacing:-.04em;line-height:1.24}.flow{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}.flow li{display:grid;grid-template-columns:103px minmax(0,1fr);gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:.83rem;line-height:1.5}.flow .slot{font-weight:850;color:var(--berry);font-variant-numeric:tabular-nums}.flow strong{display:block;margin-bottom:2px;font-size:.97rem}.flow p{margin:0;color:var(--muted)}.team-links{margin-top:8px}.team-links summary{cursor:pointer;min-height:44px;padding:11px 0;font-size:.83rem;font-weight:750}.team-links nav{display:flex;gap:6px;flex-wrap:wrap}.team-links nav a{min-height:41px;min-width:54px;padding:8px;display:grid;place-items:center;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--berry);font-weight:750}
+    .materials{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 12px}.resource{display:flex;align-items:center;justify-content:space-between;min-height:46px;gap:4px;padding:7px 10px;background:#fff;border:1px solid var(--line);border-radius:9px;font-size:.85rem;font-weight:750}.resource:hover{border-color:var(--berry)}.resource small{font-size:.71rem;color:var(--berry)}
+    .film{background:#eecbd9;border:1px solid #c598aa;border-radius:13px;overflow:hidden}.film-copy{padding:11px 13px 10px}.film .kicker{margin-bottom:3px}.film h3{margin:0;font-size:1.03rem;line-height:1.35}.film p{font-size:.8rem;line-height:1.45;color:#563f4e;margin:4px 0 0}.film-actions{display:flex;align-items:center;gap:4px 13px;flex-wrap:wrap;padding:0 13px 11px}.film-actions a,.film-actions button{display:inline-flex;align-items:center;min-height:41px;font-size:.77rem;font-weight:750}.film-actions a{text-decoration:underline;text-underline-offset:3px}.film-actions button{gap:6px;cursor:pointer;padding:6px 11px;background:#392933;border:0;border-radius:7px;color:#fff}.film-actions button[hidden]{display:none}.film iframe{display:block;width:100%;aspect-ratio:16/9;height:auto;background:#291e26;border:0}.film iframe:focus{outline:3px solid #c75582;outline-offset:-4px}.footer{border-top:1px solid var(--line);padding-block:12px 22px;margin-bottom:env(safe-area-inset-bottom);font-size:.75rem;color:var(--muted)}
+    @media(max-width:760px){.mast-inner{min-height:45px}.mast nav{gap:13px}.mast nav a{font-size:.76rem}.hero-inner{grid-template-columns:minmax(0,1fr) auto;padding-block:20px 28px;gap:10px}.hero h1{font-size:clamp(34px,8.6vw,57px)}.hero-date strong{font-size:clamp(31px,7.9vw,50px)}.hero-date small{font-size:.64rem}.hero-date span,.hero .kicker{font-size:.65rem}.lead{font-size:.84rem;margin-top:7px}.actions{grid-template-columns:1fr;gap:6px;margin-top:-9px}.action{min-height:48px;padding:7px 10px;gap:8px}.action strong{font-size:1.05rem}.action small{font-size:.68rem;margin-top:2px}.action .step{font-size:.74rem}.content{grid-template-columns:1fr;gap:17px;padding-block:17px 23px}.flow li{grid-template-columns:91px minmax(0,1fr);gap:6px;padding:7px 0}.film-actions a,.film-actions button{min-height:44px}}
+    @media(max-width:350px){.mast-name{font-size:.8rem}.mast nav{gap:8px}.hero h1{font-size:32px}.hero-date strong{font-size:29px}.hero-date{padding-left:8px}.hero-date small{font-size:.62rem}.hero .lead{font-size:.77rem}}
   </style>
 </head>
 <body>
-  <div class="shell">
-    <main>
-      <section class="intro" aria-labelledby="title">
-        <div class="intro-copy">
-          <h1 id="title"><span>X-meetup</span><em>品川</em></h1>
-          <p class="lead">品川で試してみたいことを、<wbr>みんなで持ち寄る。</p>
-        </div>
-        <time class="calendar" datetime="2026-11-24" aria-label="2026年11月24日 火曜日">
-          <span class="year" aria-hidden="true">2026</span>
-          <strong aria-hidden="true">11.24</strong>
-          <span class="day" aria-hidden="true">TUE</span>
-        </time>
-      </section>
-      <div class="choices">
-        <section class="card input" aria-labelledby="participate">
-          <h2 id="participate">入力する</h2>
-          <p>個人の案は記入シートへ。班で出た挑戦テーマや、きっかけになった声は「班のまとめ」に書きます。</p>
-          <nav class="input-actions" aria-label="入力する内容を選ぶ">
-            <a class="join" href="board/" rel="noreferrer nofollow">個人の記入シートを開く</a>
-            <a class="join" href="board/?view=summary" rel="noreferrer nofollow">班のまとめを入力</a>
-          </nav>
-        </section>
-        <section class="card output" aria-labelledby="project">
-          <h2 id="project">発表を見る</h2>
-          <p>各班と会場全体の案を読み、マインドマップや人気順で見られます。</p>
-          <nav class="teams" aria-label="班別の発表">
+  <a class="skip" href="#main">本文にスキップ</a>
+  <header class="mast">
+    <div class="shell mast-inner"><a class="mast-name" href="./">X-meetup <b>品川</b></a><nav aria-label="当日の情報"><a href="#program">当日の流れ</a><a href="#materials">資料・映像</a></nav></div>
+  </header>
+  <main id="main">
+    <section class="hero" aria-labelledby="title">
+      <div class="shell hero-inner">
+        <div><p class="kicker">WOVEN CITY / PARTICIPANT GUIDE</p><h1 id="title">X-meetup<wbr> <em>品川</em></h1><p class="lead">品川で、誰と、何を試してみたいか。</p></div>
+        <time class="hero-date" datetime="2026-11-24" aria-label="2026年11月24日 火曜日"><span aria-hidden="true">2026</span><strong aria-hidden="true">11.24</strong><small aria-hidden="true">TUE ／ 火</small></time>
+      </div>
+    </section>
+    <div class="shell">
+      <nav class="actions" aria-label="当日のボードを開く">
+        <a class="action" href="board/" rel="noreferrer nofollow"><span class="step" aria-hidden="true">01</span><span><strong>個人で書く</strong><small>品川で試したいことを一言</small></span><span class="arrow" aria-hidden="true">↗</span></a>
+        <a class="action" href="board/?view=summary" rel="noreferrer nofollow"><span class="step" aria-hidden="true">02</span><span><strong>班でまとめる</strong><small>班の案・全体対話を記録</small></span><span class="arrow" aria-hidden="true">↗</span></a>
+        <a class="action" href="board/?view=screen" rel="noreferrer nofollow"><span class="step" aria-hidden="true">03</span><span><strong>発表を見る</strong><small>案を開き、コメントで対話</small></span><span class="arrow" aria-hidden="true">↗</span></a>
+      </nav>
+      <div class="content">
+        <section class="panel" id="program" aria-labelledby="program-title">
+          <p class="kicker">PROGRAM / AFTERNOON</p><h2 class="section-title" id="program-title">午後の流れ</h2>
+          <ol class="flow">
+            <li><span class="slot">13:00–16:30</span><div><strong>趣旨説明 → 講演と班の対話 × 3</strong><p>13:30 牧村和彦さん、14:30 宮代陽之さん、15:30 南奈津子さん。各回は講演30分・対話30分。</p></div></li>
+            <li><span class="slot">16:30–16:40</span><div><strong>班の発表案を選ぶ</strong><p>3回分を見渡して、試したいことをまとめる。</p></div></li>
+            <li><span class="slot">16:40–17:00</span><div><strong>5班の発表</strong><p>各班2分。質問や共感は、案ごとのコメントへ。</p></div></li>
+            <li><span class="slot">17:00–17:30</span><div><strong>会場全体でもう一案</strong><p>生まれた案は「班でまとめる」の「全体対話」へ。</p></div></li>
+            <li><span class="slot">17:30〜</span><div><strong>ネットワーキング</strong><p>続きを話したい人と、次の一歩を相談。</p></div></li>
+          </ol>
+          <details class="team-links"><summary>集合と午前の流れ</summary><ol class="flow">
+            <li><span class="slot">09:45</span><div><strong>御宿北ゲート集合</strong><p>午前から参加する方。</p></div></li>
+            <li><span class="slot">10:00</span><div><strong>Woven City内覧</strong></div></li>
+            <li><span class="slot">12:00</span><div><strong>昼食・交流</strong></div></li>
+            <li><span class="slot">12:45</span><div><strong>インベンター：IGピットステージ集合</strong></div></li>
+          </ol></details>
+          <details class="team-links"><summary>班別の発表を開く</summary><nav aria-label="班別の発表">
             <a href="board/?view=screen&amp;team=A" rel="noreferrer nofollow" aria-label="A班の発表を見る">A班</a>
             <a href="board/?view=screen&amp;team=B" rel="noreferrer nofollow" aria-label="B班の発表を見る">B班</a>
             <a href="board/?view=screen&amp;team=C" rel="noreferrer nofollow" aria-label="C班の発表を見る">C班</a>
             <a href="board/?view=screen&amp;team=D" rel="noreferrer nofollow" aria-label="D班の発表を見る">D班</a>
             <a href="board/?view=screen&amp;team=E" rel="noreferrer nofollow" aria-label="E班の発表を見る">E班</a>
-          </nav>
-          <a class="all" href="board/?view=screen" rel="noreferrer nofollow">全体の発表を見る</a>
+          </nav></details>
+        </section>
+        <section class="panel" id="materials" aria-labelledby="materials-title">
+          <p class="kicker">MATERIALS / VIDEO</p><h2 class="section-title" id="materials-title">資料・映像</h2>
+          <div class="materials">
+            <a class="resource" href="https://docs.google.com/presentation/d/1HD8Ye0WXKyWAZy4ZEQ7qarJm4AbzMdHfui2ba81fwSg/edit#slide=id.p1" target="_blank" rel="noreferrer nofollow">当日スライド <small aria-hidden="true">↗</small></a>
+            <a class="resource" href="https://docs.google.com/presentation/d/1uvth7xW2A3Ad7wqESeCwxSEOf3Hw0YF5VSFuT-cWjvU/edit#slide=id.p1" target="_blank" rel="noreferrer nofollow">記入シート <small aria-hidden="true">↗</small></a>
+          </div>
+          <article class="film" aria-labelledby="film-title">
+            <div class="film-copy"><p class="kicker">国土交通省・東京国道事務所 ／ 約3分</p><h3 id="film-title">国道15号・品川駅西口駅前広場の将来像</h3><p>デザインコンセプト2026.3版。国道上空デッキなどのイメージで、最終決定ではありません。</p></div>
+            <div class="film-actions">
+              <button type="button" id="load-film" hidden aria-controls="film-player"><span aria-hidden="true">▶</span> ここで再生</button>
+              <a href="https://www.youtube.com/watch?v=17CYyU9EeO0" target="_blank" rel="noreferrer nofollow">YouTubeで開く ↗</a>
+              <a href="https://www.ktr.mlit.go.jp/toukoku/toukoku_index021.html" target="_blank" rel="noreferrer nofollow">国交省の原典 ↗</a>
+            </div>
+            <div id="film-player"></div>
+          </article>
         </section>
       </div>
-    </main>
-  </div>
+      <footer class="footer">X-meetup 品川 ／ 2026.11.24　参加者用</footer>
+    </div>
+  </main>
+  <script>
+    const button = document.getElementById("load-film");
+    const player = document.getElementById("film-player");
+    button.hidden = false;
+    button.addEventListener("click", () => {
+      if (player.firstElementChild) {
+        player.replaceChildren();
+        button.lastChild.textContent = " ここで再生";
+        return;
+      }
+      const frame = document.createElement("iframe");
+      frame.title = "国道15号品川駅西口駅前広場デザインコンセプト2026.3版";
+      frame.referrerPolicy = "strict-origin-when-cross-origin";
+      frame.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
+      frame.allowFullscreen = true;
+      frame.src = "https://www.youtube-nocookie.com/embed/17CYyU9EeO0?autoplay=1";
+      player.append(frame);
+      button.lastChild.textContent = " 映像を閉じる";
+    });
+  </script>
 </body>
 </html>

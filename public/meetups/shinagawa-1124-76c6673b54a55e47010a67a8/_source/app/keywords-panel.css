@@ -151,3 +151,38 @@
 .kw-projection .kw-colour-legend li {display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:99px;background:var(--kw-category);color:var(--kw-category-ink);font-weight:800;white-space:nowrap}
 .kw-projection .kw-colour-legend li i {width:7px;height:7px;border-radius:50%;background:var(--kw-category-ink)}
 .kw-projection .kw-category-tag {color:var(--kw-category-ink);font-size:10px;line-height:14px;font-weight:850;margin-inline-end:2px;white-space:nowrap}
+
+/* Consistent projection rails; labels can wrap without shifting the badges or counts. */
+.board-app.screen-mode .kw-panel.kw-projection {
+  --projection-inset:clamp(8px,1.05vw,14px);
+  padding:var(--projection-inset);
+}
+.kw-projection .kw-entry {
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(13rem,18rem);
+  align-items:center;gap:8px 14px;margin-block-end:8px;min-width:0;
+}
+.kw-projection .kw-head {min-width:0;align-items:center;}
+.kw-projection .kw-search {min-width:0;width:100%;}
+.kw-projection .kw-search-field {min-width:0;}
+.kw-projection .kw-search-field input {min-width:0;box-sizing:border-box;}
+.kw-projection .kw-list {grid-auto-rows:1fr;column-gap:8px;row-gap:7px;}
+.board-app.screen-mode .kw-projection .kw-term {
+  box-sizing:border-box;width:100%;min-width:0;max-width:none;min-height:53px;height:100%;
+  grid-template-columns:minmax(0,1fr) max-content;grid-template-rows:minmax(0,1fr) 14px;
+  align-items:start;padding:5px 8px 4px;column-gap:5px;row-gap:3px;
+}
+.board-app.screen-mode .kw-projection .kw-term > b {align-self:center;font-size:clamp(16px,1.6vw,23px);}
+.kw-projection .kw-term .kw-count {grid-column:2;grid-row:1;align-self:start;text-align:right;line-height:1.12;}
+.kw-projection .kw-term .kw-teams {grid-column:1/-1;grid-row:2;min-width:0;min-height:14px;line-height:1;}
+.kw-projection .kw-category-tag {display:inline-flex;min-width:3em;align-items:center;line-height:1;text-align:start;}
+.kw-projection .kw-term small {margin-inline-start:.15em;}
+@media(max-width:640px) {
+  .kw-projection .kw-entry {grid-template-columns:minmax(0,1fr);gap:5px;}
+  .kw-projection .kw-search {max-width:none;}
+}
+@media(max-width:500px) {
+  .kw-projection .kw-list {gap:6px;}
+  .board-app.screen-mode .kw-projection .kw-term {min-height:60px;padding-inline:6px;column-gap:4px;}
+  .board-app.screen-mode .kw-projection .kw-term > b {font-size:clamp(15px,4.35vw,18px);}
+  .kw-projection .kw-term .kw-teams {gap:2px;}
+}

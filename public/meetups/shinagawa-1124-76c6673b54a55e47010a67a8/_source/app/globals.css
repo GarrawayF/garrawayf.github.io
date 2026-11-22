@@ -545,3 +545,18 @@ h1 { font-size: clamp(32px, 3.55vw, 57px); font-weight: 780; line-height: 1.25; 
 .board-app .pg-detail .pg-sheet-called-name {display:flex;justify-content:flex-end;align-items:baseline;flex-wrap:wrap;gap:2px .45em;line-height:1.18;margin:0}
 .board-app .pg-detail .pg-sheet-called-name span {font-size:.68rem;font-weight:750;color:#684555}
 .board-app .pg-detail .pg-sheet-called-name strong {font:900 clamp(.94rem,1.66vw,1.5rem)/1.15 var(--sh-keyword);color:#741a43;overflow-wrap:anywhere}
+
+/* Shared stage rails: full usable width on desktop, with safe gaps on phones. */
+.board-app{--sh-stage-rail:clamp(12px,1.7vw,32px)}
+.board-app > main.shell,.board-app .board-header .nav-inner{
+  box-sizing:border-box;width:100%;max-width:none;
+  padding-inline:max(var(--sh-stage-rail),env(safe-area-inset-left)) max(var(--sh-stage-rail),env(safe-area-inset-right));
+}
+.board-app > main.shell > :is(.workspace,.summary-layout){width:100%;min-width:0}
+.board-app.screen-mode .board-header .page-mode-nav{
+  width:calc(100% - max(var(--sh-stage-rail),env(safe-area-inset-left)) - max(var(--sh-stage-rail),env(safe-area-inset-right)));
+}
+@media(max-width:670px){
+  .board-app{--sh-stage-rail:11px}
+  .board-app .board-header .page-mode-nav{width:calc(100% - max(var(--sh-stage-rail),env(safe-area-inset-left)) - max(var(--sh-stage-rail),env(safe-area-inset-right)))}
+}

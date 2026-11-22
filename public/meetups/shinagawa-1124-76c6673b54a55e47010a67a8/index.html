@@ -97,6 +97,12 @@
     .cover-jumps{display:flex;justify-content:flex-end;gap:9px;margin:2px 0}
     .cover-jumps a{display:inline-flex;align-items:center;min-height:36px;padding:2px 5px;font-size:.75rem;font-weight:850;color:var(--berry);text-underline-offset:.23em;white-space:nowrap}
     @media(max-width:760px){html{scroll-padding-top:104px}.mast{border-radius:17px}.mast .mast-inner{display:grid;gap:1px;padding-block:3px}.mast .mast-name{min-height:25px}.mast .cover-primary{display:grid;grid-template-columns:minmax(33px,.64fr) repeat(3,minmax(0,1.25fr)) minmax(52px,auto);gap:2px;padding:0 0 2px}.mast .cover-primary a,.mast .cover-primary button{box-sizing:border-box;padding-inline:2px;min-width:0;min-height:41px;font-size:clamp(10px,3vw,13px)}.mast .cover-primary button{max-width:74px}.cover-jumps a{min-height:36px}}
+    /* Common content rails across the cover, board and presentation views. */
+    :root{--sh-stage-rail:clamp(12px,1.7vw,32px)}
+    .hero-inner,main > .shell{width:100%;max-width:none;padding-inline:max(var(--sh-stage-rail),env(safe-area-inset-left)) max(var(--sh-stage-rail),env(safe-area-inset-right))}
+    .mast{width:auto;max-width:none;margin-left:max(var(--sh-stage-rail),env(safe-area-inset-left));margin-right:max(var(--sh-stage-rail),env(safe-area-inset-right))}
+    .mast .mast-inner{width:100%;max-width:none}
+    @media(max-width:670px){:root{--sh-stage-rail:11px}}
   </style>
 </head>
 <body>

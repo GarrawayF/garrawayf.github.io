@@ -1,0 +1,75 @@
+.iv-trigger {
+  display:inline-flex; align-items:center; justify-content:center; gap:.45rem;
+  min-height:44px; padding:.45rem .85rem; border:1px solid currentColor; border-radius:999px;
+  font:inherit; font-weight:700; font-size:.9rem; background:transparent; color:inherit; cursor:pointer;
+}
+.iv-dialog {
+  --iv-ink:#352831; --iv-muted:#705660; --iv-pink:#f2a8c1; --iv-wash:#fbd9e3; --iv-accent:#8a3656;
+  position:fixed; inset:0; z-index:120; margin:0; padding:0; border:0; border-radius:0;
+  box-sizing:border-box; width:100%; max-width:none; height:100dvh; max-height:none; overflow:auto; overscroll-behavior:contain;
+  color:var(--iv-ink); background:#fffaf7; text-align:left;
+  font-family:"Hiragino Maru Gothic ProN","Yu Gothic",Meiryo,system-ui,sans-serif;
+}
+.iv-dialog::backdrop { background:#291c29a8; }
+.iv-paper { min-height:100%; background-color:#fffaf7; background-image:radial-gradient(ellipse at center,#b288942e .85px,transparent 1px); background-size:17px 17px; }
+.iv-toolbar {
+  display:flex; align-items:center; justify-content:space-between; gap:12px; position:sticky; top:0; z-index:3;
+  min-height:62px; padding:8px clamp(12px,4vw,68px); box-sizing:border-box;
+  background:#fffaf7f5; border-bottom:1px solid #e2cfd4;
+}
+.iv-section-title,.iv-toolbar>div,.iv-toolbar button { display:flex; align-items:center; gap:.5rem; }
+.iv-section-title strong { font-size:clamp(.9rem,1.6vw,1.12rem); letter-spacing:.035em; }
+.iv-section-title svg { color:var(--iv-accent); }
+.iv-toolbar button {
+  min-height:44px; padding:.4rem .7rem; border:1px solid #977481; border-radius:8px;
+  font:inherit; font-weight:650; font-size:.9rem; color:var(--iv-ink); background:#fff; cursor:pointer;
+}
+.iv-toolbar .iv-close { background:var(--iv-ink); border-color:var(--iv-ink); color:white; }
+.iv-content { box-sizing:border-box; width:min(100%,1390px); margin:auto; padding:clamp(16px,2.4vw,35px) clamp(14px,5vw,80px) 40px; container-type:inline-size; }
+.iv-meta { display:flex; align-items:center; flex-wrap:wrap; gap:.4rem 1rem; margin:0 0 clamp(17px,2.5vw,34px); color:var(--iv-muted); font-size:clamp(.86rem,1.55vw,1.12rem); font-weight:650; }
+.iv-meta span { padding:.25em .75em; border:1px solid #bf829b; border-radius:20% 61% 27% 43% / 72% 51% 69% 40%; background:#fce2eb; color:var(--iv-accent); }
+.iv-drawing { position:relative; isolation:isolate; min-width:0; }
+.iv-wires { position:absolute; inset:0; z-index:-1; overflow:visible; pointer-events:none; }
+.iv-wires path { fill:none; stroke:#af778b; stroke-width:2.5px; stroke-linejoin:round; stroke-linecap:round; }
+.iv-hub {
+  box-sizing:border-box; position:relative; margin:0 auto; display:flex; align-items:flex-start; justify-content:center;
+  gap:clamp(.45rem,1.1vw,1rem); width:fit-content; max-width:min(880px,91%); padding:clamp(14px,2vw,31px) clamp(22px,3.8vw,58px);
+  border:2.6px solid #624353; border-radius:46% 51% 45% 43% / 25% 39% 32% 40%;
+  background:#fff7f8; box-shadow:4px 5px 0 #edb4c755;
+}
+.iv-hub>svg { flex:none; width:clamp(23px,3.5vw,45px); height:auto; margin-top:.35em; color:#87364e; }
+.iv-dialog .iv-heading {
+  margin:0; padding:0; color:var(--iv-ink); font:inherit; font-size:clamp(1.43rem,3.6cqw,3.05rem);
+  font-weight:830; letter-spacing:.012em; line-height:1.44; overflow-wrap:anywhere; text-wrap:pretty;
+}
+.iv-dialog mark { padding:0 .04em; color:inherit; background:linear-gradient(174deg,transparent 49%,#f5b4ca 51%,#f7bad0 92%,transparent 94%); font-weight:800; }
+.iv-branches { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:clamp(22px,3vw,50px) clamp(55px,10cqw,160px); margin:clamp(33px,5.5cqw,85px) 0 0; }
+.iv-branch { position:relative; box-sizing:border-box; min-width:0; padding:0 .6rem .6rem; background:transparent; }
+.iv-branch h3 { display:flex; align-items:center; width:fit-content; gap:.57rem; margin:0 0 9px; color:var(--iv-accent); font:inherit; font-size:clamp(1.02rem,2cqw,1.56rem); font-weight:820; }
+.iv-ink-icon { flex:none; display:grid; place-items:center; width:2.05em; height:1.8em; border-radius:49% 41% 52% 35% / 42% 59% 37% 54%; background:var(--iv-wash); transform:rotate(-6deg); }
+.iv-ink-icon svg { width:1.26em; height:1.26em; color:#783a52; transform:rotate(6deg); }
+.iv-branch:nth-child(even) .iv-ink-icon { background:#e3e7d7; transform:rotate(5deg); }
+.iv-branch:nth-child(even) .iv-ink-icon svg { color:#4b5a45; transform:rotate(-5deg); }
+.iv-branch p { margin:5px 0 7px; font:inherit; font-size:clamp(1.08rem,2.02cqw,1.64rem); line-height:1.57; font-weight:610; color:var(--iv-ink); overflow-wrap:anywhere; white-space:pre-line; }
+.iv-person p+p,.iv-location p+p { font-size:clamp(1rem,1.67cqw,1.4rem); color:var(--iv-muted); }
+.iv-tags { display:flex; flex-wrap:wrap; gap:.35rem .68rem; font-size:clamp(1.15rem,2.6cqw,2rem); }
+.iv-sources { display:grid; gap:7px; min-width:0; }
+.iv-sources .iv-source {
+  display:block; text-align:start; width:100%; min-height:44px; padding:4px 1px 8px; color:#613a4a;
+  background:transparent; border:none; border-bottom:2px dashed #bd8499; font:inherit; cursor:pointer;
+}
+.iv-source small { display:block; font-size:clamp(.79rem,1.2cqw,1rem); font-weight:650; }
+.iv-source span { font-size:clamp(1rem,1.7cqw,1.38rem); font-weight:690; line-height:1.45; overflow-wrap:anywhere; }
+.iv-source svg { display:inline; vertical-align:-2px; margin-left:.25em; }
+.iv-original { clear:both; padding-top:12px; margin-top:24px; border-top:1px solid #cbaeb7; color:var(--iv-muted); }
+.iv-original summary { display:flex; align-items:center; gap:6px; width:fit-content; min-height:44px; cursor:pointer; font-weight:670; }
+.iv-original dl { margin:6px 0; }
+.iv-original dt { font-weight:700; color:var(--iv-accent); }
+.iv-original dd { margin:3px 0 12px; white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.65; color:var(--iv-ink); }
+.iv-dialog :is(button,summary):focus-visible,.iv-trigger:focus-visible { outline:3px solid #a84570; outline-offset:3px; }
+@container (max-width:619px) {
+  .iv-hub { max-width:100%; padding:14px 18px; }
+  .iv-branches { grid-template-columns:minmax(0,1fr); gap:16px; padding-left:24px; margin-top:35px; }
+  .iv-branch { padding:0 0 .35rem; }
+}
+@media(max-width:430px) { .iv-toolbar { gap:5px; padding:6px 8px; } .iv-toolbar>div { gap:4px; } .iv-toolbar button { padding:.35rem .45rem; font-size:.82rem; } }

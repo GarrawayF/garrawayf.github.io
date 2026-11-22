@@ -1,0 +1,104 @@
+.discussion-guide {
+  position: fixed;
+  inset: 0;
+  width: min(36rem, calc(100% - 1.25rem));
+  max-width: none;
+  max-height: calc(100dvh - 1.25rem);
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  color: #342430;
+  background: #fffdfd;
+  border: 1px solid #ddcfd6;
+  border-radius: 20px;
+  box-shadow: 0 20px 80px #21151d40;
+  text-align: start;
+}
+.discussion-guide::backdrop { background: #1e141cc4; }
+.discussion-guide-surface {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100dvh - 1.5rem);
+}
+.discussion-guide-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .8rem;
+  padding: .85rem clamp(1rem, 4vw, 1.65rem);
+  background: #f8eaf0;
+}
+.discussion-guide-header h2 { margin: 0; font: 750 1.45rem/1.35 var(--display, sans-serif); }
+.discussion-guide-close {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  color: #5a344c;
+  background: #fffafa;
+  border: 1px solid #ded1d7;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.discussion-guide-content {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1.15rem clamp(1rem, 4vw, 1.65rem);
+}
+.discussion-guide-content p { margin: 0; font-size: .95rem; line-height: 1.7; }
+.discussion-guide-content .discussion-guide-intro { font-weight: 650; }
+.discussion-guide-content .discussion-guide-speakers { margin-top: .35rem; color: #665760; font-size: .86rem; }
+.discussion-guide-content section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eadfe5;
+}
+.discussion-guide-content h3 {
+  margin: 0 0 .4rem;
+  font-size: 1rem;
+  line-height: 1.55;
+  font-weight: 700;
+}
+.discussion-guide-content h3 span {
+  display: inline-block;
+  margin-inline-end: .55rem;
+  color: #754660;
+  font-size: .85rem;
+}
+.discussion-guide-content section p + p { margin-top: .42rem; }
+.discussion-guide-answer {
+  margin-top: 1.05rem;
+  padding: .7rem .85rem;
+  background: #fbf1f5;
+  border-radius: 10px;
+}
+.discussion-guide-answer h3 { font-size: .9rem; margin-bottom: .1rem; }
+.discussion-guide-answer p { font-size: .88rem; }
+.discussion-guide-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .55rem;
+  padding: .7rem clamp(1rem, 4vw, 1.65rem) max(.75rem, env(safe-area-inset-bottom));
+  border-top: 1px solid #eadfe5;
+}
+.discussion-guide-actions button {
+  display: inline-flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  min-height: 44px;
+  padding: .45rem .65rem;
+  color: #513547;
+  background: #fff;
+  border: 1px solid #cdbac5;
+  border-radius: 999px;
+  font: inherit;
+  font-size: .9rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+.discussion-guide-actions .discussion-guide-write { background: #5a364c; border-color: #5a364c; color: #fff; }
+.discussion-guide :focus-visible { outline: 3px solid #895676; outline-offset: 2px; }
+.discussion-guide-content:focus-visible { outline-offset: -3px; }

@@ -1,0 +1,34 @@
+.post-reading { container-type: inline-size; margin: 15px 0 8px; min-width: 0; }
+.reading-label { margin: 0 0 6px; color: #f4c4d5; font-size: 12px; line-height: 1.45; font-weight: 660; }
+.post-reading .reading-title {
+  margin: 0; color: #fff9fb;
+  font: 780 clamp(28px, 3.45vw, 68px)/1.26 "Inter", "Hiragino Sans", "Yu Gothic", system-ui, sans-serif;
+  letter-spacing: -.045em; white-space: pre-wrap; overflow-wrap: anywhere; line-break: strict;
+}
+@supports (font-size: 1cqi) {
+  .post-reading .reading-title { font-size: clamp(26px, 9.2cqi, 68px); }
+}
+.reading-summary {
+  margin: 10px 0 0; color: #ece0e6; font-size: clamp(16px, 1.45vw, 25px); font-weight: 470;
+  line-height: 1.65; overflow-wrap: anywhere; white-space: pre-wrap;
+}
+.reading-disclosure { margin-top: 9px; }
+.reading-disclosure summary {
+  display: inline-flex; min-height: 40px; align-items: center; gap: 5px; cursor: pointer;
+  color: #f4c4d5; font-size: 14px; font-weight: 650; list-style: none;
+}
+.reading-disclosure summary::-webkit-details-marker { display: none; }
+.reading-disclosure summary svg { flex: none; }
+.reading-disclosure[open] > summary svg { transform: rotate(90deg); }
+.reading-disclosure summary:focus-visible { outline: 2px solid #f5b6cc; outline-offset: 3px; border-radius: 3px; }
+.reading-source-link { text-underline-offset: 3px; }
+.reading-source-link:hover { text-decoration: underline; }
+.reading-original {
+  margin: 3px 0 13px; padding: 1px 0 1px 14px; border-inline-start: 2px solid #ac8398;
+  display: grid; gap: 13px; color: #fff9fb;
+}
+.reading-original dt { font-size: 13px; line-height: 1.55; color: #efc8d6; font-weight: 650; }
+.reading-original dd { margin: 2px 0 0; font-size: clamp(16px, 1.35vw, 24px); line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
+@media (max-width: 670px) {
+  .reading-disclosure summary { min-height: 44px; }.reading-original { padding-inline-start: 10px; }
+}

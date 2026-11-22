@@ -206,3 +206,11 @@
 .screen-mode .board-cover-link { color: var(--wall-text); }
 .board-cover-link:focus-visible { outline: 2px solid #a04260; outline-offset: 1px; }
 @media (max-width: 420px) { .board-cover-link { font-size: .72rem; padding-inline: .25rem; margin-inline-end: 0; } }
+
+.board-app .board-header .page-mode-nav .board-page-cover {padding-inline:14px;}
+@media(max-width:670px) {
+  .board-app .board-header .page-mode-nav {box-sizing:border-box;width:min(calc(100% - 14px),410px);gap:2px;}
+  .board-app .board-header .page-mode-nav a {flex:1 1 auto;min-height:42px;min-width:0;padding-inline:4px;font-size:clamp(10px,3.05vw,14px);}
+  .board-app .board-header .page-mode-nav .board-page-cover {padding-inline:4px;}
+  .board-app .board-header .page-mode-nav a svg {display:none;}
+}

@@ -90,12 +90,19 @@
     .cover-full-hint{position:absolute;right:0;top:calc(100% + 7px);max-width:min(28rem,90vw);margin:0;padding:7px 10px;border:1px solid var(--ink);border-radius:8px;background:#fff;font-size:.75rem;box-shadow:2px 2px var(--ink)}
     @media(max-width:760px){.cover-full{min-height:36px;padding:3px 7px;font-size:11px}.mast nav{gap:8px}}
     @media(max-width:350px){.cover-full{padding-inline:5px;font-size:10px}.mast nav{gap:6px}}
+    .mast .cover-primary{display:flex;align-items:center;gap:3px;min-width:0}
+    .mast .cover-primary a{display:inline-flex;justify-content:center;align-items:center;min-height:36px;padding:3px 9px;border-radius:999px;color:var(--ink);text-decoration:none;font-weight:850;white-space:nowrap}
+    .mast .cover-primary a[aria-current="page"]{background:#762546;color:#fff}
+    .mast .cover-primary a:not([aria-current="page"]):hover{background:var(--rose)}
+    .cover-jumps{display:flex;justify-content:flex-end;gap:9px;margin:2px 0}
+    .cover-jumps a{display:inline-flex;align-items:center;min-height:36px;padding:2px 5px;font-size:.75rem;font-weight:850;color:var(--berry);text-underline-offset:.23em;white-space:nowrap}
+    @media(max-width:760px){html{scroll-padding-top:104px}.mast{border-radius:17px}.mast .mast-inner{display:grid;gap:1px;padding-block:3px}.mast .mast-name{min-height:25px}.mast .cover-primary{display:grid;grid-template-columns:minmax(33px,.64fr) repeat(3,minmax(0,1.25fr)) minmax(52px,auto);gap:2px;padding:0 0 2px}.mast .cover-primary a,.mast .cover-primary button{box-sizing:border-box;padding-inline:2px;min-width:0;min-height:41px;font-size:clamp(10px,3vw,13px)}.mast .cover-primary button{max-width:74px}.cover-jumps a{min-height:36px}}
   </style>
 </head>
 <body>
   <a class="skip" href="#main">本文にスキップ</a>
   <header class="mast">
-    <div class="shell mast-inner"><a class="mast-name" href="./">X-meetup <b>品川</b><small>WOVEN CITY / 11.24</small></a><nav aria-label="当日の情報"><a href="#program">当日の流れ</a><a href="#materials">資料・映像</a><button class="cover-full" type="button" aria-pressed="false">全画面</button></nav></div>
+    <div class="shell mast-inner"><a class="mast-name" href="./">X-meetup <b>品川</b><small>WOVEN CITY / 11.24</small></a><nav class="cover-primary" aria-label="会場の画面"><a class="cover-current" href="./" aria-current="page">表紙</a><a href="board/">個人で書く</a><a href="board/?view=summary">班でまとめる</a><a href="board/?view=screen">発表を見る</a><button class="cover-full" type="button" aria-pressed="false">全画面</button></nav></div>
     <p class="cover-full-hint" role="status" hidden></p>
   </header>
   <main id="main">
@@ -111,6 +118,7 @@
         <a class="action" href="board/?view=summary" rel="noreferrer nofollow"><span class="step" aria-hidden="true">02</span><span><strong>班でまとめる</strong><small>班の案・全体対話を記録</small></span><span class="arrow" aria-hidden="true">↗</span></a>
         <a class="action" href="board/?view=screen" rel="noreferrer nofollow"><span class="step" aria-hidden="true">03</span><span><strong>発表を見る</strong><small>案を開き、コメントで対話</small></span><span class="arrow" aria-hidden="true">↗</span></a>
       </nav>
+      <nav class="cover-jumps" aria-label="表紙の目次"><a href="#program">当日の流れ</a><a href="#materials">資料・映像</a></nav>
       <div class="content">
         <section class="panel" id="program" aria-labelledby="program-title">
           <p class="kicker">PROGRAM / AFTERNOON</p><h2 class="section-title" id="program-title">午後の流れ</h2>
@@ -164,6 +172,13 @@
       const button = document.querySelector('.cover-full');
       const hint = document.querySelector('.cover-full-hint');
       const root = document.documentElement;
+      if (new URL(location.href).searchParams.get('room') === 'demo') {
+        for (const link of document.querySelectorAll('a[href^="board/"], .mast-name, .cover-current')) {
+          const target = new URL(link.href, location.href);
+          target.searchParams.set('room','demo');
+          link.href = target.href;
+        }
+      }
       const enter = root.requestFullscreen?.bind(root) || root.webkitRequestFullscreen?.bind(root);
       const exit = document.exitFullscreen?.bind(document) || document.webkitExitFullscreen?.bind(document);
       const active = () => Boolean(document.fullscreenElement || document.webkitFullscreenElement);

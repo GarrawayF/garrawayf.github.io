@@ -450,18 +450,20 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
   const feedError = themeFeed.unavailable || sync === "error" || sync === "offline";
   const navTeam = screen ? team : personal ? draft.team : summaryTeam;
   const summaryRound = screen ? round : personal ? (navTeam ? draft.round : 0) : summaryScope.round;
+  const coverHref = new URL("../", publicBoardUrl);
+  if (isDemoRoom(sourceHref)) coverHref.searchParams.set("room","demo");
   const summaryHref = pageLink(sourceHref, { view: "summary", team: navTeam, round: summaryRound ? String(summaryRound) : "", write: view === "summary" && summaryScope.team === "all" ? "plenary" : "" });
 
   return <div className={screen ? "board-app screen-mode" : personal ? "board-app personal-mode" : "board-app summary-mode"}>
     <header className="topbar board-header"><div className="shell nav-inner">
       <Brand source={sourceHref} />
       <nav aria-label="表示と共有">
-        <a className="board-cover-link" href={new URL("../", publicBoardUrl).href}>当日の表紙</a>
         <span className={"live-state live-" + sync} role="status"><i />{syncLabels[sync]}</span>
         <span className="nav-line" />
         <button type="button" className="nav-action" onClick={() => { setCopied(false); setShare(true); }} aria-label="参加用QRコードを表示"><QrCode size={17} /><span>共有</span></button>
       </nav>
-    </div><nav className="shell page-mode-nav" aria-label="入力と発表の画面">
+    </div><nav className="shell page-mode-nav" aria-label="会場の画面">
+      <a className="board-page-cover" href={coverHref.href}><BookOpen size={16} aria-hidden="true"/>表紙</a>
       <a aria-current={personal ? "page" : undefined} href={pageLink(sourceHref, { join: navTeam })}><Pencil size={16}/>個人で書く</a>
       <a aria-current={view === "summary" ? "page" : undefined} href={summaryHref} onClick={e => { if (view === "summary" && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) e.preventDefault(); }}><Users size={16}/>班でまとめる</a>
       <a aria-current={screen ? "page" : undefined} href={pageLink(sourceHref, { view: "screen", team: view === "summary" ? summaryTeam : "", round: view === "summary" && summaryScope.round ? String(summaryScope.round) : "" })}><Monitor size={17}/>発表を見る</a>

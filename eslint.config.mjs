@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Unmodified upstream Mozilla PDF.js browser bundles; lint the app and reader separately.
+    "public/meetups/shinagawa-1124-76c6673b54a55e47010a67a8/vendor/pdfjs/pdf.min.mjs",
+    "public/meetups/shinagawa-1124-76c6673b54a55e47010a67a8/vendor/pdfjs/pdf.worker.min.mjs",
     // The Shinagawa board is a separately built application under public/.
     "public/meetups/shinagawa-1124-76c6673b54a55e47010a67a8/_source/**",
     "public/meetups/shinagawa-1124-76c6673b54a55e47010a67a8/board/assets/app.js",

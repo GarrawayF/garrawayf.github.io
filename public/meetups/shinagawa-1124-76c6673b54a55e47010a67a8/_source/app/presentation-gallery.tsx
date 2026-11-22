@@ -4,6 +4,7 @@ import { useCallback, useDeferredValue, useEffect, useId, useMemo, useRef, useSt
 import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, CornerDownRight, Pencil, Search, X } from "lucide-react";
 import { pageLink } from "./board-room";
 import { selectGalleryKeywords } from "./gallery-keywords";
+import { galleryEntry, galleryHistoryState, galleryLocation } from "./gallery-navigation";
 import { IdeaVisualButton } from "./idea-visual";
 import { groupLabel, kindLabel, stageLabel, type MapIdea, type MapRecord, type MapTheme } from "./mind-map-model";
 import { analyzePost } from "./post-analysis";
@@ -34,20 +35,6 @@ function routeTarget(url: URL): RouteTarget | null {
   return thread ? { id:thread } : null;
 }
 
-function updateAddress(item?: Row) {
-  const url = new URL(window.location.href);
-  url.searchParams.delete("idea"); url.searchParams.delete("thread");
-  if (url.hash.startsWith("#theme-")) url.hash = "";
-  if (item) {
-    url.searchParams.set("view", "screen");
-    if (item.kind === "theme") url.hash = "theme-" + item.row.id;
-    else url.searchParams.set("idea", item.row.id);
-  }
-  if (url.href !== window.location.href) {
-    try { window.history.replaceState(window.history.state, "", url.href); } catch { /* Local-file history may be restricted. */ }
-  }
-}
-
 function makeRows(ideas: readonly MapIdea[], themes: readonly MapTheme[]): Row[] {
   const entries = [...ideas.map(row => ({ kind:"idea" as const, row })), ...themes.map(row => ({ kind:"theme" as const, row }))];
   return entries.map(item => {
@@ -60,9 +47,10 @@ function makeRows(ideas: readonly MapIdea[], themes: readonly MapTheme[]): Row[]
 
 type DetailProps = {
   item: Row; source: string; previous?: Row; next?: Row; position: string;
-  all: ReadonlyMap<string, Row>; onOpen: (item: Row) => void; onClose: () => void;
+  all: ReadonlyMap<string, Row>; onOpen: (item: Row, move?: "related" | "carousel", scrollTop?: number) => void; onClose: () => void;
+  previousIsDetail: boolean; restoreScroll: number;
 };
-function Detail({ item, source, previous, next, position, all, onOpen, onClose }: DetailProps) {
+function Detail({ item, source, previous, next, position, all, onOpen, onClose, previousIsDetail, restoreScroll }: DetailProps) {
   const dialog = useRef<HTMLDialogElement>(null);
   const body = useRef<HTMLDivElement>(null);
   const dialogLabel = useId();
@@ -78,12 +66,12 @@ function Detail({ item, source, previous, next, position, all, onOpen, onClose }
       if (trigger instanceof HTMLElement && trigger.isConnected) trigger.focus({ preventScroll:true });
     };
   }, []);
-  useEffect(() => { if (body.current) body.current.scrollTop = 0; }, [item.key]);
+  useEffect(() => { if (body.current) body.current.scrollTop = restoreScroll; }, [item.key, restoreScroll]);
   const keys = (event: KeyboardEvent<HTMLDialogElement>) => {
     if (event.nativeEvent.isComposing || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
     if (!(event.target instanceof Element) || event.target.closest("input,textarea,select,[contenteditable=true],[role=textbox]") || event.target.closest("dialog") !== dialog.current) return;
     const destination = event.key === "ArrowLeft" ? previous : event.key === "ArrowRight" ? next : undefined;
-    if (destination) { event.preventDefault(); onOpen(destination); }
+    if (destination) { event.preventDefault(); onOpen(destination, "carousel"); }
   };
   const citations = item.kind === "idea" ? [item.row.parentId] : [item.row.sourceIdeaId, item.row.sourceIdeaId2];
   const bodyLabel = item.kind === "idea" ? item.row.parentId ? "共感した理由・付け足したいこと" : "品川で試してみたいこと" : row.team === "all" ? "会場で加えたい挑戦テーマ" : row.round === 5 ? "発表で紹介したい挑戦テーマ" : "品川で試してみたいこと";
@@ -95,11 +83,11 @@ function Detail({ item, source, previous, next, position, all, onOpen, onClose }
       if (event.clientX < b.left || event.clientX > b.right || event.clientY < b.top || event.clientY > b.bottom) onClose();
     }}>
     <header className="pg-detail-bar">
-      <button type="button" className="pg-back" onClick={onClose}><ArrowLeft size={16}/>一覧に戻る</button>
+      <button type="button" className="pg-back" onClick={onClose}><ArrowLeft size={16}/>{previousIsDetail ? "ひとつ前に戻る" : "一覧に戻る"}</button>
       <span className="pg-where">{position}</span>
       <div className="pg-page-buttons">
-        <button type="button" disabled={!previous} aria-label="前の案" title="前の案（←）" onClick={() => previous && onOpen(previous)}><ChevronLeft size={19}/></button>
-        <button type="button" disabled={!next} aria-label="次の案" title="次の案（→）" onClick={() => next && onOpen(next)}><ChevronRight size={19}/></button>
+        <button type="button" disabled={!previous} aria-label="前の案" title="前の案（←）" onClick={() => previous && onOpen(previous, "carousel")}><ChevronLeft size={19}/></button>
+        <button type="button" disabled={!next} aria-label="次の案" title="次の案（→）" onClick={() => next && onOpen(next, "carousel")}><ChevronRight size={19}/></button>
       </div>
     </header>
     <div className="pg-detail-body" ref={body} id={kind+"-"+row.id} tabIndex={-1}>
@@ -115,7 +103,7 @@ function Detail({ item, source, previous, next, position, all, onOpen, onClose }
       <div className="pg-detail-bottom">
         {citations.filter((id): id is string => Boolean(id)).map(id => {
           const parent = all.get("idea:" + id);
-          return parent ? <button type="button" className="pg-parent" key={id} onClick={() => onOpen(parent)}><CornerDownRight size={15}/>
+          return parent ? <button type="button" className="pg-parent" key={id} onClick={() => onOpen(parent, "related", body.current?.scrollTop)}><CornerDownRight size={15}/>
             <span><small>元の個人案 · {groupLabel(parent.row.team)}</small>{parent.title}</span><ArrowRight size={15}/></button> :
             <a className="pg-parent" key={id} href={pageLink(source, { view:"screen", idea:id })}><CornerDownRight size={15}/>元の個人案を開く</a>;
         })}
@@ -136,6 +124,9 @@ export default function PresentationGallery({ ideas, themes, allIdeas = ideas, a
   const [search, setSearch] = useState("");
   const [target, setTarget] = useState<RouteTarget | null>(null);
   const [lastKey, setLastKey] = useState("");
+  const [previousIsDetail, setPreviousIsDetail] = useState(false);
+  const [restoreScroll, setRestoreScroll] = useState(0);
+  const waitingForBack = useRef(false);
   const composing = useRef(false);
   const deferredSearch = useDeferredValue(search);
   const queryId = useId();
@@ -184,17 +175,56 @@ export default function PresentationGallery({ ideas, themes, allIdeas = ideas, a
   const current = target ? target.kind ? pool.get(target.kind+":"+target.id) : pool.get("idea:"+target.id) || pool.get("theme:"+target.id) : undefined;
   const index = current ? rows.findIndex(item => item.key === current.key) : -1;
   useEffect(() => {
-    const read = () => setTarget(routeTarget(new URL(window.location.href)));
+    const read = () => {
+      const next = routeTarget(new URL(window.location.href));
+      const entry = galleryEntry(window.history.state);
+      waitingForBack.current = false;
+      setTarget(next);
+      setPreviousIsDetail(Boolean(next && entry?.parent === "detail"));
+      setRestoreScroll(entry?.scrollTop ?? 0);
+    };
     read();
     window.addEventListener("popstate",read);window.addEventListener("hashchange",read);
     return () => { window.removeEventListener("popstate",read);window.removeEventListener("hashchange",read); };
   },[]);
-  const open = useCallback((item: Row) => {
+  const open = useCallback((item: Row, move?: "related" | "carousel", scrollTop = 0) => {
     const next = {kind:item.kind,id:item.row.id};
-    setTarget(next);setLastKey(item.key);updateAddress(item);onSelect?.(next);
+    const currentUrl = window.location.href;
+    const nextUrl = galleryLocation(currentUrl, next);
+    if (nextUrl.href === currentUrl || waitingForBack.current) return;
+    const history = window.history;
+    const currentEntry = galleryEntry(history.state);
+    let parent = currentEntry?.parent;
+    try {
+      if (move === "carousel") {
+        history.replaceState(galleryHistoryState(history.state, currentEntry ? { ...currentEntry, scrollTop: 0 } : null), "", nextUrl.href);
+      } else {
+        // A linked original is a deliberate new screen; carousel browsing stays in one entry.
+        if (move === "related" && currentEntry) {
+          history.replaceState(galleryHistoryState(history.state, { ...currentEntry, scrollTop }), "", currentUrl);
+        }
+        const newParent = move === "related" ? "detail" : "list";
+        history.pushState(galleryHistoryState(history.state, { parent: newParent, scrollTop: 0 }), "", nextUrl.href);
+        parent = newParent;
+      }
+    } catch { /* Portable local HTML can restrict history. The dialog still works. */ }
+    setTarget(next);setRestoreScroll(0);setPreviousIsDetail(parent === "detail");
+    if (!move) setLastKey(item.key);
+    onSelect?.(next);
   },[onSelect]);
   const close = useCallback(() => {
-    setTarget(null);updateAddress();onSelect?.(null);
+    if (waitingForBack.current) return;
+    const history = window.history;
+    if (galleryEntry(history.state)) {
+      waitingForBack.current = true;
+      history.back();
+    } else {
+      // No in-app predecessor (such as a URL opened from chat): do not leave the board.
+      try { history.replaceState(galleryHistoryState(history.state, null), "", galleryLocation(window.location.href).href); }
+      catch { /* Local-file history may be restricted. */ }
+      setTarget(null);setPreviousIsDetail(false);setRestoreScroll(0);
+    }
+    onSelect?.(null);
   },[onSelect]);
   const inputChanged = (event: ChangeEvent<HTMLInputElement>) => {
     setInput(event.target.value);
@@ -256,6 +286,6 @@ export default function PresentationGallery({ ideas, themes, allIdeas = ideas, a
       {(category !== "all" || input) && <button type="button" onClick={()=>{setCategory("all");setSearch("");setInput("");}}>種類・検索をリセット</button>}</div>}
     {current && <Detail item={current} source={source} previous={index>0 ? rows[index-1] : undefined}
       next={index>=0 && index+1<rows.length ? rows[index+1] : undefined} position={index>=0 ? (index+1)+" / "+rows.length : "元の投稿"}
-      all={pool} onOpen={open} onClose={close}/>}
+      all={pool} onOpen={open} onClose={close} previousIsDetail={previousIsDetail} restoreScroll={restoreScroll}/>}
   </section>;
 }

@@ -252,3 +252,57 @@
   .board-app .pg-detail-bar .pg-back {padding-inline:7px}
   .board-app .pg-detail-bar .pg-page-buttons {gap:3px}
 }
+
+/* Whole-room output: one vertical deck, with twenty cards per projector-sized panel. */
+.pg-output-step {display:none}
+.pg-grid-stack[data-projection-deck] .pg-output-slide {min-inline-size:0}
+.pg-grid-stack[data-projection-deck] .pg-output-slide:focus-visible {outline:2px solid #902c58;outline-offset:3px}
+@media (min-width:1000px) {
+  .board-app.screen-mode .pg-grid-stack[data-projection-deck] {
+    --pg-deck-row:clamp(84px,calc((100vh - 248px) / 4),174px);
+  }
+  .board-app.screen-mode .pg-grid-stack[data-projection-deck] .pg-output-slide {
+    scroll-margin-top:64px;
+  }
+  .board-app.screen-mode .pg-grid-stack[data-projection-deck] .pg-output-slide:not(:last-child) {
+    min-block-size:max(480px,calc(100vh - 132px));
+    padding-block-end:22px;
+  }
+  .board-app.screen-mode .pg-grid-stack[data-projection-deck] .pg-output-step {
+    display:flex;justify-content:space-between;align-items:center;gap:9px;
+    margin:0 0 9px;padding:2px 2px 5px;border-bottom:1px solid #c599ae;
+  }
+  .board-app.screen-mode .pg-grid-stack[data-projection-deck] .pg-output-step h2 {
+    display:flex;align-items:baseline;gap:5px;margin:0;color:#67354c;font:760 13px/1.1 var(--sh-sans,sans-serif);
+    font-variant-numeric:tabular-nums;white-space:nowrap;
+  }
+  .board-app.screen-mode .pg-grid-stack[data-projection-deck] .pg-output-step h2 strong {
+    color:#8c214d;font:900 clamp(26px,2.35vw,38px)/.95 var(--sh-number,"Arial Black",sans-serif);
+    letter-spacing:-.055em;
+  }
+  .board-app.screen-mode .pg-grid-stack[data-projection-deck] .pg-output-range {margin-inline-start:6px;color:#412737}
+  .board-app.screen-mode .pg-grid-stack[data-projection-deck] .pg-output-controls {display:flex;gap:6px;align-items:center}
+  .board-app.screen-mode .pg-grid-stack[data-projection-deck] .pg-output-controls button {
+    display:inline-flex;align-items:center;gap:4px;min-height:37px;padding:3px 10px;white-space:nowrap;
+    background:#fff;color:#762546;border:1px solid #762546;border-radius:999px;font-size:12px;font-weight:850;
+  }
+  .board-app.screen-mode .pg-grid-stack[data-projection-deck] .pg-output-controls button:hover {background:#f8d9e7}
+  .board-app.screen-mode .pg-grid-stack[data-projection-deck] .pg-output-controls .pg-output-next {background:#762546;color:#fff}
+  .board-app.screen-mode .pg-grid-stack[data-projection-deck] .pg-output-controls .pg-output-next:hover {background:#572037}
+  .board-app.screen-mode .pg-grid-stack[data-projection-deck] .pg-grid {
+    grid-template-columns:repeat(5,minmax(0,1fr));grid-auto-rows:minmax(var(--pg-deck-row),auto);gap:6px;
+  }
+  .board-app.screen-mode .pg-grid-stack[data-projection-deck] .pg-grid li {grid-template-columns:minmax(0,1fr) clamp(32px,2.9vw,44px)}
+  .board-app.screen-mode .pg-grid-stack[data-projection-deck] .pg-grid .pg-choice {
+    min-height:0;padding:7px 5px 6px 9px;gap:4px;
+  }
+  .board-app.screen-mode .pg-grid-stack[data-projection-deck] .pg-meta {font-size:clamp(10px,.95vw,14px);gap:4px}
+  .board-app.screen-mode .pg-grid-stack[data-projection-deck] .pg-meta small {font-size:clamp(10px,.9vw,13px)}
+  .board-app.screen-mode .pg-grid-stack[data-projection-deck] .pg-focus-word {
+    --pg-type-max:53px;font-size:clamp(15px,min(20cqi,calc(98cqi / var(--pg-word-units))),var(--pg-type-max));
+  }
+  .board-app.screen-mode .pg-grid-stack[data-projection-deck] .pg-focus-word[data-wrap] {--pg-type-max:36px;line-height:1.12}
+  .board-app.screen-mode .pg-grid-stack[data-projection-deck] .pg-choice-title {font-size:clamp(10px,.92vw,14px);line-height:1.25}
+  .board-app.screen-mode .pg-grid-stack[data-projection-deck] .pg-grid .pg-quick-visual {font-size:10px;gap:2px}
+  .board-app.screen-mode .pg-grid-stack[data-projection-deck] .pg-grid .pg-quick-visual svg {width:16px;height:16px}
+}

@@ -193,3 +193,28 @@ export function selectGalleryKeywords(records: readonly MapRecord[]): ReadonlyMa
   }
   return labels;
 }
+
+type SheetField = "person" | "scene" | "gain" | "proposal" | "partners";
+const sheetCues: Record<SheetField, RegExp> = {
+  person: /(?:待ち合わせる二人|車いす利用者|ベビーカー利用者|子ども連れ|親子連れ|乗り換え客|乗換え客|待ち合わせ相手|協力店の店主|初めて来る人|駅利用者|外出者|来訪者|保護者|通勤者|店主|親子)/u,
+  scene: /(?:屋根の切れ目|雨の日の外出|待ち合わせ場所|雑踏|小さな段差|乗換えまで\d+分|乗り換えまで\d+分|立ち止ま|雨宿り)/u,
+  gain: /(?:安心して歩き出せる|無理なく立ち上がれる|迷わず合流できる|迷わず帰れる|安心して座れる|経路を選べる|自分で選べる|判断できる|合流できる)/u,
+  proposal: /(?:会えなかった時の合図|会えなかったときの合図|雨を避けられる道|屋根付きの道|短い合図|手書き一品カード|写真だけのカード|寄り道カード|帰路の目印|静かに休む席)/u,
+  partners: /(?:施設案内担当|駅の案内担当|利用者と施設スタッフ|施設管理者|施設担当|協力店|駅案内担当|店主|待ち合わせ役)/u,
+};
+
+/** A projection cue quotes the exact field. It must not invent names, actions or commitments. */
+export function selectWorksheetKeyword(value: string | undefined, field: SheetField): string {
+  const input = value?.trim();
+  if (!input) return "";
+  const size = (s: string) => Array.from(s).length;
+  if (size(input) <= 14 && !/[\r\n]/u.test(input)) return input;
+  // Leave qualified statements intact rather than putting a conflicting fragment in large type.
+  if (stance.test(input)) return "";
+  const cue = input.match(sheetCues[field])?.[0];
+  if (cue && !cue.endsWith("止ま")) return cue;
+  return choices([[input, 10]])
+    .filter(option => option.score >= 18 && size(option.label) >= 2 && size(option.label) <= 14 &&
+      !generic.test(option.label) && input.includes(option.label) && !/[、。！？!?]/u.test(option.label))
+    .sort((a,b)=>b.score - a.score || size(b.label) - size(a.label))[0]?.label ?? "";
+}

@@ -1,10 +1,10 @@
 "use client";
 
 import { useCallback, useDeferredValue, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type ChangeEvent, type CSSProperties, type KeyboardEvent, type RefObject } from "react";
-import { ArrowDown, ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Compass, CornerDownRight, Eye, GitBranch, HandHeart, Lightbulb, MapPin, MessageCircle, Pencil, Quote, Search, Users, X } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ChevronLeft, ChevronRight, Compass, CornerDownRight, Eye, GitBranch, HandHeart, Lightbulb, MapPin, MessageCircle, Pencil, Quote, Search, Users, X } from "lucide-react";
 import { isDemoRoom, pageLink } from "./board-room";
 import demoWorksheetExamples from "./demo-worksheet-examples.json";
-import { selectGalleryKeywords } from "./gallery-keywords";
+import { selectGalleryKeywords, selectWorksheetKeyword } from "./gallery-keywords";
 import { galleryEntry, galleryHistoryState, galleryLocation } from "./gallery-navigation";
 import { IdeaVisualButton } from "./idea-visual";
 import FullscreenToggle from "./fullscreen-toggle";
@@ -21,11 +21,12 @@ type Target = { kind: "idea" | "theme"; id: string };
 type RouteTarget = { kind?: Target["kind"]; id: string };
 type GalleryProps = {
   ideas: readonly MapIdea[]; themes: readonly MapTheme[]; allIdeas?: readonly MapIdea[]; allThemes?: readonly MapTheme[];
-  loaded: boolean; loadError?: boolean; source?: string; onSelect?: (target: Target | null) => void;
+  loaded: boolean; loadError?: boolean; source?: string; projectorGroups?: boolean; onSelect?: (target: Target | null) => void;
 };
 type Row = MapRecord & { category: Exclude<KindFilter, "all">; haystack: string };
 const choices: [KindFilter, string][] = [["all","すべて"], ["idea","個人案"], ["team","班のまとめ"], ["plenary","全体の案"]];
 const teamColors: Record<string, string> = { A:"#a8c481", B:"#edba76", C:"#93c6d7", D:"#f1a6bd", E:"#bea9e0", all:"#f9dfeb" };
+const projectionChunk = 20;
 const normalize = (value: string) => value.normalize("NFKC").toLocaleLowerCase("ja-JP");
 const wording = (value: string) => normalize(value).replace(/[\s\p{P}]/gu, "");
 
@@ -188,11 +189,11 @@ function Detail({ item, source, keyword, previous, next, position, all, onOpen, 
       : { value: sample, example: true };
   };
   const cells = [
-    { id: "person", label: "誰が使う？", hint: "どんな人か。どんな一日を過ごしているか。", ...supplement("person") },
-    { id: "scene", label: "今、何に困っている？", hint: "駅前や移動のどんな場面で困っているか。", ...supplement("scene") },
-    { id: "gain", label: "どうなったら嬉しい？", hint: "その人の一日がどう変わるか。", ...supplement("gain") },
-    { id: "proposal", label: "駅前に何があったらいい？", hint: "どんな機能・サービス・場があると嬉しいか。", value: raw, example: false },
-    { id: "partners", label: "誰と一緒に挑戦したい？", hint: "この未来に共感し、一緒に考え続けたい人や組織は誰か。", ...supplement("partners") },
+    { id: "person" as const, lead: "誰", label: "誰が使う？", hint: "どんな人か。どんな一日を過ごしているか。", ...supplement("person") },
+    { id: "scene" as const, lead: "何", label: "今、何に困っている？", hint: "駅前や移動のどんな場面で困っているか。", ...supplement("scene") },
+    { id: "gain" as const, lead: "どうなる", label: "どうなったら嬉しい？", hint: "その人の一日がどう変わるか。", ...supplement("gain") },
+    { id: "proposal" as const, lead: "どうやって", label: "駅前に何があったらいい？", hint: "どんな機能・サービス・場があると嬉しいか。", value: raw, example: false },
+    { id: "partners" as const, lead: "誰と", label: "誰と一緒に挑戦したい？", hint: "この未来に共感し、一緒に考え続けたい人や組織は誰か。", ...supplement("partners") },
   ];
   const sheetKeys = new Set(cells.map(cell => cell.id));
   const currentKeys = worksheetGroups[mode];
@@ -243,10 +244,17 @@ function Detail({ item, source, keyword, previous, next, position, all, onOpen, 
           </div>
         </header>
         <dl className="reading-original pg-sheet-grid">
-          {cells.map(cell => <div key={cell.id} data-sheet-field={cell.id}>
-            <dt>{cell.label}<small>（{cell.hint}）</small></dt>
-            <dd data-empty={!cell.value?.trim() || undefined} data-demo-fill={cell.example || undefined}>{cell.value?.trim() ? cell.value : "未記入"}</dd>
-          </div>)}
+          {cells.map(cell => {
+            const cue = selectWorksheetKeyword(cell.value, cell.id);
+            const same = Boolean(cue && cell.value && wording(cue) === wording(cell.value));
+            return <div key={cell.id} data-sheet-field={cell.id}>
+              <dt><span className="pg-sheet-prompt" aria-hidden="true">{cell.lead}</span>{cell.label}<small>（{cell.hint}）</small></dt>
+              <dd data-empty={!cell.value?.trim() || undefined} data-demo-fill={cell.example || undefined}>
+                {cue && !same && <b className="pg-sheet-cell-keyword" aria-hidden="true">{cue}</b>}
+                <span className={same ? "pg-sheet-cell-keyword pg-sheet-cell-answer" : "pg-sheet-cell-answer"}>{cell.value?.trim() ? cell.value : "未記入"}</span>
+              </dd>
+            </div>;
+          })}
         </dl>
       </section>
       </div>
@@ -272,7 +280,7 @@ function Detail({ item, source, keyword, previous, next, position, all, onOpen, 
   </dialog>;
 }
 
-export default function PresentationGallery({ ideas, themes, allIdeas = ideas, allThemes = themes, source = "", loaded, loadError = false, onSelect }: GalleryProps) {
+export default function PresentationGallery({ ideas, themes, allIdeas = ideas, allThemes = themes, source = "", loaded, loadError = false, projectorGroups = false, onSelect }: GalleryProps) {
   const { order, setOrder, score, values, ready } = useReactions();
   const [category, setCategory] = useState<KindFilter>("all");
   const [input, setInput] = useState("");
@@ -285,6 +293,7 @@ export default function PresentationGallery({ ideas, themes, allIdeas = ideas, a
   const composing = useRef(false);
   const deferredSearch = useDeferredValue(search);
   const queryId = useId();
+  const scrollGroupId = useId();
   const full = useMemo(() => makeRows(allIdeas, allThemes), [allIdeas, allThemes]);
   const focusLabels = useMemo(() => {
     const keywords = selectGalleryKeywords(full);
@@ -327,6 +336,8 @@ export default function PresentationGallery({ ideas, themes, allIdeas = ideas, a
       return priority || right.row.createdAt.localeCompare(left.row.createdAt) || right.row.id.localeCompare(left.row.id);
     });
   },[scoped,category,deferredSearch,focusLabels,order,score,values,ready]);
+  const rowGroups = useMemo(() => !projectorGroups ? [rows] :
+    Array.from({ length:Math.ceil(rows.length / projectionChunk) }, (_, i) => rows.slice(i * projectionChunk, (i + 1) * projectionChunk)), [projectorGroups, rows]);
   const current = target ? target.kind ? pool.get(target.kind+":"+target.id) : pool.get("idea:"+target.id) || pool.get("theme:"+target.id) : undefined;
   const index = current ? rows.findIndex(item => item.key === current.key) : -1;
   useEffect(() => {
@@ -385,20 +396,42 @@ export default function PresentationGallery({ ideas, themes, allIdeas = ideas, a
     setInput(event.target.value);
     if (!composing.current) setSearch(event.target.value);
   };
-  function moveInGrid(event: KeyboardEvent<HTMLUListElement>) {
+  function moveInGrid(event: KeyboardEvent<HTMLDivElement>) {
     if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || event.nativeEvent.isComposing) return;
     const key = event.key;
     if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End"].includes(key)) return;
     const from = event.target instanceof Element ? event.target.closest("button") : null;
-    if (!from) return;
+    const grid = from?.closest(".pg-grid");
+    if (!from || !grid) return;
     const selector = from.classList.contains("pg-quick-visual") ? ".pg-quick-visual" : ".pg-choice";
     const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>(selector));
     const index = buttons.indexOf(from as HTMLButtonElement);
     if (index < 0) return;
-    const columns = window.getComputedStyle(event.currentTarget).gridTemplateColumns.split(/\s+/).filter(Boolean).length || 1;
+    const columns = window.getComputedStyle(grid).gridTemplateColumns.split(/\s+/).filter(Boolean).length || 1;
     const delta = key === "ArrowLeft" ? -1 : key === "ArrowRight" ? 1 : key === "ArrowUp" ? -columns : columns;
     const target = key === "Home" ? 0 : key === "End" ? buttons.length - 1 : Math.max(0, Math.min(buttons.length - 1, index + delta));
     event.preventDefault(); buttons[target]?.focus();
+  }
+  function jumpToGroup(group: number) {
+    const next = document.getElementById(scrollGroupId + "-" + group);
+    next?.focus({ preventScroll:true });
+    next?.scrollIntoView({ block:"start", behavior:"instant" });
+  }
+  function renderRows(list: readonly Row[]) {
+    return <ul className="pg-grid">{list.map(item => {
+      const label = focusLabels.get(item.key)!;
+      const accessibleTitle = label.same ? item.title : label.word + " ／ " + item.title;
+      return <li key={item.key} data-team={item.row.team} style={{"--pg-team-accent": teamColors[item.row.team] || teamColors.all} as CSSProperties}>
+        <button type="button" className="pg-choice" aria-haspopup="dialog" title={item.title} aria-label={groupLabel(item.row.team) + "・" + kindLabel(item) + "「" + accessibleTitle + "」を開く"}
+          aria-pressed={current?.key===item.key} data-last={lastKey===item.key || undefined} onClick={()=>open(item)}>
+          <span className="pg-meta"><i style={{background:teamColors[item.row.team]}}/><b>{groupLabel(item.row.team)}</b>
+            <span>{kindLabel(item)}</span><small aria-label={"リアクション" + (ready ? score(item.kind,item.row.id) : "取得中")}>{ready ? score(item.kind,item.row.id)+"票" : "—"}</small></span>
+          <strong className="pg-focus-word" data-wrap={label.wrap || undefined} style={{"--pg-word-units":label.perLine} as CSSProperties}>{label.word}</strong>
+          {label.showTitle && <span className="pg-choice-title">{item.title}</span>}
+        </button>
+        <IdeaVisualButton className="pg-quick-visual" targetType={item.kind} targetId={item.row.id}/>
+      </li>;
+    })}</ul>;
   }
   return <section className="presentation-gallery" aria-label="発表する案を選ぶ">
     <div className="pg-tools">
@@ -421,22 +454,22 @@ export default function PresentationGallery({ ideas, themes, allIdeas = ideas, a
     </div>
     <p className="pg-search-status" role="status">{[deferredSearch.trim() ? rows.length + "件の検索結果" : "", order === "popular" ? "いいね＋LOVEの合計順" : ""].filter(Boolean).join(" ・ ")}</p>
     {target && !current && loaded && <div className="pg-unavailable" role="status">指定された投稿が見つかりませんでした。<button type="button" onClick={close}>一覧に戻る</button></div>}
-    {rows.length ? <ul className="pg-grid" onKeyDown={moveInGrid}>
-      {rows.map(item => {
-        const label = focusLabels.get(item.key)!;
-        const accessibleTitle = label.same ? item.title : label.word + " ／ " + item.title;
-        return <li key={item.key} data-team={item.row.team} style={{"--pg-team-accent": teamColors[item.row.team] || teamColors.all} as CSSProperties}>
-        <button type="button" className="pg-choice" aria-haspopup="dialog" title={item.title} aria-label={groupLabel(item.row.team) + "・" + kindLabel(item) + "「" + accessibleTitle + "」を開く"}
-          aria-pressed={current?.key===item.key} data-last={lastKey===item.key || undefined} onClick={()=>open(item)}>
-          <span className="pg-meta"><i style={{background:teamColors[item.row.team]}}/><b>{groupLabel(item.row.team)}</b>
-            <span>{kindLabel(item)}</span><small aria-label={"リアクション" + (ready ? score(item.kind,item.row.id) : "取得中")}>{ready ? score(item.kind,item.row.id)+"票" : "—"}</small></span>
-          <strong className="pg-focus-word" data-wrap={label.wrap || undefined} style={{"--pg-word-units":label.perLine} as CSSProperties}>{label.word}</strong>
-          {label.showTitle && <span className="pg-choice-title">{item.title}</span>}
-        </button>
-        <IdeaVisualButton className="pg-quick-visual" targetType={item.kind} targetId={item.row.id}/>
-      </li>;
-      })}
-    </ul> : <div className="pg-empty">{!loaded ? loadError ? "接続が戻ると、発表する案を再度読み込みます。" : "発表する案を読み込み中…" :
+    {rows.length ? <div className="pg-grid-stack" data-projection-deck={projectorGroups || undefined} onKeyDown={moveInGrid}>
+      {projectorGroups ? rowGroups.map((list, group) => {
+        const groupId = scrollGroupId + "-" + group;
+        const start = group * projectionChunk + 1, end = start + list.length - 1;
+        return <section className="pg-output-slide" key={group} tabIndex={-1} id={groupId} aria-labelledby={groupId + "-title"}>
+          <header className="pg-output-step">
+            <h2 id={groupId + "-title"}><strong>{String(group + 1).padStart(2,"0")}</strong><span aria-hidden="true"> / {String(rowGroups.length).padStart(2,"0")}</span><span className="pg-output-range">{start}–{end}件目 / 全{rows.length}件</span></h2>
+            {rowGroups.length > 1 && <nav className="pg-output-controls" aria-label="表示する範囲">
+              {group > 0 && <button type="button" onClick={() => jumpToGroup(group-1)}><ArrowUp size={14} aria-hidden="true"/>前の{rowGroups[group - 1].length}件</button>}
+              {group+1 < rowGroups.length && <button type="button" className="pg-output-next" onClick={() => jumpToGroup(group+1)}><ArrowDown size={14} aria-hidden="true"/>次の{rowGroups[group + 1].length}件</button>}
+            </nav>}
+          </header>
+          {renderRows(list)}
+        </section>;
+      }) : renderRows(rows)}
+    </div> : <div className="pg-empty">{!loaded ? loadError ? "接続が戻ると、発表する案を再度読み込みます。" : "発表する案を読み込み中…" :
       category !== "all" || deferredSearch.trim() ? "この条件に一致する投稿はありません。" : "この範囲の投稿はまだありません。"}
       {(category !== "all" || input) && <button type="button" onClick={()=>{setCategory("all");setSearch("");setInput("");}}>種類・検索をリセット</button>}</div>}
     {current && <Detail item={current} source={source} keyword={focusLabels.get(current.key)?.word} previous={index>0 ? rows[index-1] : undefined}

@@ -522,3 +522,20 @@ h1 { font-size: clamp(32px, 3.55vw, 57px); font-weight: 780; line-height: 1.25; 
   background:linear-gradient(transparent 71%,#f9c4da 71%,#f9c4da 93%,transparent 93%);
   padding-inline:.055em .085em;
 }
+
+/* Projector worksheet: scan the question and its verbatim cue before reading the full answer. */
+.board-app .pg-detail .pg-sheet-grid .pg-sheet-prompt {
+  display:inline-flex;align-items:center;margin:0 .32em .1em 0;padding:.025em .28em;
+  border-radius:.46em;background:#f9d8e7;color:#741a43;
+  font:900 clamp(19px,1.85vw,31px)/1.15 var(--sh-keyword);vertical-align:baseline;
+}
+.board-app .pg-detail .pg-sheet-grid .pg-sheet-cell-keyword {
+  display:block;width:fit-content;max-width:100%;margin:0 0 .12em;padding-inline:.025em;
+  color:#8c214d;background:linear-gradient(transparent 74%,#fae0ec 74%,#fae0ec 94%,transparent 94%);
+  font:900 clamp(20px,2.0vw,32px)/1.13 var(--sh-keyword);overflow-wrap:anywhere;
+}
+.board-app .pg-detail .pg-sheet-grid .pg-sheet-cell-answer {display:block}
+@media (min-width:981px) and (max-height:790px) {
+  .board-app .pg-detail .pg-sheet-grid .pg-sheet-prompt {font-size:clamp(18px,1.7vw,25px)}
+  .board-app .pg-detail .pg-sheet-grid .pg-sheet-cell-keyword {font-size:clamp(19px,1.85vw,27px)}
+}

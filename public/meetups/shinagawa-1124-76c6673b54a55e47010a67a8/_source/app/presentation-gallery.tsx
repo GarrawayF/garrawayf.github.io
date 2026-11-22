@@ -2,7 +2,8 @@
 
 import { useCallback, useDeferredValue, useEffect, useId, useMemo, useRef, useState, type ChangeEvent, type CSSProperties, type KeyboardEvent } from "react";
 import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Compass, CornerDownRight, Eye, GitBranch, HandHeart, Lightbulb, MapPin, MessageCircle, Pencil, Quote, Search, Users, X } from "lucide-react";
-import { pageLink } from "./board-room";
+import { isDemoRoom, pageLink } from "./board-room";
+import demoWorksheetExamples from "./demo-worksheet-examples.json";
 import { selectGalleryKeywords } from "./gallery-keywords";
 import { galleryEntry, galleryHistoryState, galleryLocation } from "./gallery-navigation";
 import { IdeaVisualButton } from "./idea-visual";
@@ -80,6 +81,20 @@ function Illustration({ item, all }: { item: Row; all: ReadonlyMap<string, Row> 
   </section>;
 }
 
+const demoFields = ["person", "scene", "gain", "partners"] as const;
+type DemoField = (typeof demoFields)[number];
+type DemoExamples = Record<string, Partial<Record<DemoField, string>>>;
+const demoExamples: DemoExamples = demoWorksheetExamples;
+
+function examplesFor(rowId: string, all: ReadonlyMap<string, Row>) {
+  if (Object.hasOwn(demoExamples, rowId)) return demoExamples[rowId];
+  const prefix = rowId.slice(0, 8).toLowerCase();
+  if (!/^[0-9a-f]{8}$/u.test(prefix) || !Object.hasOwn(demoExamples, prefix)) return;
+  // New demo rows must not accidentally inherit a sample through an ambiguous prefix.
+  const matches = [...all.values()].filter(entry => entry.row.id.slice(0, 8).toLowerCase() === prefix);
+  return matches.length === 1 && matches[0].row.id === rowId ? demoExamples[prefix] : undefined;
+}
+
 type DetailProps = {
   item: Row; source: string; keyword?: string; previous?: Row; next?: Row; position: string;
   all: ReadonlyMap<string, Row>; onOpen: (item: Row, move?: "related" | "carousel", scrollTop?: number) => void; onClose: () => void;
@@ -111,14 +126,24 @@ function Detail({ item, source, keyword, previous, next, position, all, onOpen, 
   const worksheet = row.worksheet || {};
   const raw = row.enteredText ?? row.text;
   const mode = kind === "idea" ? "personal" : row.team === "all" ? "plenary" : row.round === 5 ? "summary" : "work";
-  // Match the participant's WORK 01 reference. Blank cells are intentional: do not infer missing answers.
+  // This opt-in display treatment is never used to write data or fill a production record.
+  const demoSheet = Boolean(source) && typeof window !== "undefined" && isDemoRoom(source) && isDemoRoom(window.location.href);
+  const example = demoSheet ? examplesFor(row.id, all) : undefined;
+  const supplement = (field: DemoField) => {
+    const original = worksheet[field];
+    const sample = example?.[field];
+    return original?.trim() || typeof sample !== "string" || !sample.trim()
+      ? { value: original, example: false }
+      : { value: sample, example: true };
+  };
   const cells = [
-    { id: "person", label: "誰が使う？", hint: "どんな人か。どんな一日を過ごしているか。", value: worksheet.person },
-    { id: "scene", label: "今、何に困っている？", hint: "駅前や移動のどんな場面で困っているか。", value: worksheet.scene },
-    { id: "gain", label: "どうなったら嬉しい？", hint: "その人の一日がどう変わるか。", value: worksheet.gain },
-    { id: "proposal", label: "駅前に何があったらいい？", hint: "どんな機能・サービス・場があると嬉しいか。", value: raw },
-    { id: "partners", label: "誰と一緒に挑戦したい？", hint: "この未来に共感し、一緒に考え続けたい人や組織は誰か。", value: worksheet.partners },
+    { id: "person", label: "誰が使う？", hint: "どんな人か。どんな一日を過ごしているか。", ...supplement("person") },
+    { id: "scene", label: "今、何に困っている？", hint: "駅前や移動のどんな場面で困っているか。", ...supplement("scene") },
+    { id: "gain", label: "どうなったら嬉しい？", hint: "その人の一日がどう変わるか。", ...supplement("gain") },
+    { id: "proposal", label: "駅前に何があったらいい？", hint: "どんな機能・サービス・場があると嬉しいか。", value: raw, example: false },
+    { id: "partners", label: "誰と一緒に挑戦したい？", hint: "この未来に共感し、一緒に考え続けたい人や組織は誰か。", ...supplement("partners") },
   ];
+  const containsExamples = cells.some(cell => cell.example);
   const sheetKeys = new Set(cells.map(cell => cell.id));
   const currentKeys = worksheetGroups[mode];
   const extras = [...currentKeys, ...WORKSHEET_KEYS.filter(key => !currentKeys.includes(key))]
@@ -130,7 +155,7 @@ function Detail({ item, source, keyword, previous, next, position, all, onOpen, 
   ];
   const showKeyword = keyword && wording(keyword) !== wording(item.title);
   const workLabel = row.round === 5 ? "FINAL" : row.round === 4 ? "全体対話" : "WORK 0" + row.round;
-  return <dialog className="pg-detail" ref={dialog} aria-labelledby={dialogLabel} onKeyDown={keys}
+  return <dialog className="pg-detail" data-demo-detail={demoSheet || undefined} ref={dialog} aria-labelledby={dialogLabel} onKeyDown={keys}
     onCancel={event => { event.preventDefault(); onClose(); }} onClick={event => {
       if (event.target !== dialog.current) return;
       const b = dialog.current.getBoundingClientRect();
@@ -148,7 +173,8 @@ function Detail({ item, source, keyword, previous, next, position, all, onOpen, 
       <section className="pg-original-sheet" aria-label={kind === "idea" ? "個人で書いたシート" : "班・全体で書いたシート"} style={{"--pg-sheet-team":teamColors[row.team]} as CSSProperties}>
         <header className="pg-original-heading">
           <div className="pg-sheet-heading-line">
-            <p className="pg-sheet-work">{workLabel}</p>
+            {containsExamples ? <div className="pg-sheet-workline"><p className="pg-sheet-work">{workLabel}</p><span className="pg-demo-sheet-label">テスト用記入例</span></div>
+              : <p className="pg-sheet-work">{workLabel}</p>}
             <p className="pg-original-meta"><i style={{background:teamColors[row.team]}}/>{groupLabel(row.team)}<span>／</span>{stageLabel(row.round)}</p>
           </div>
           <h2 id={dialogLabel} className="pg-sheet-title" data-keyword-is-title={!showKeyword || undefined}>{item.title}</h2>
@@ -161,7 +187,7 @@ function Detail({ item, source, keyword, previous, next, position, all, onOpen, 
         <dl className="reading-original pg-sheet-grid">
           {cells.map(cell => <div key={cell.id} data-sheet-field={cell.id}>
             <dt>{cell.label}<small>（{cell.hint}）</small></dt>
-            <dd data-empty={!cell.value?.trim() || undefined}>{cell.value?.trim() ? cell.value : "未記入"}</dd>
+            <dd data-empty={!cell.value?.trim() || undefined} data-demo-fill={cell.example || undefined}>{cell.example && <span className="pg-demo-cell-label">記入例</span>}{cell.value?.trim() ? cell.value : "未記入"}</dd>
           </div>)}
           {footer.map(field => <div key={field.key} className="pg-sheet-extra"><dt>{field.label}</dt><dd>{field.value}</dd></div>)}
         </dl>

@@ -195,3 +195,19 @@
   .pg-original-sheet .pg-sheet-grid > div,
   .pg-original-sheet .pg-sheet-grid > :is([data-sheet-field="proposal"], [data-sheet-field="partners"]) { grid-column: 1/-1; min-height: 0; }
 }
+
+/* Demo examples clarify blank prompts without changing any saved wording. */
+.pg-sheet-workline {display:flex;align-items:center;flex-wrap:wrap;gap:4px 10px}
+.pg-demo-sheet-label,.pg-demo-cell-label {
+  display:inline-block;color:#5d1737;background:#f9d4e4;border:1px solid #762546;
+  border-radius:999px;padding:2px 8px;font:800 .76rem/1.35 "Noto Sans JP",sans-serif;
+}
+.pg-demo-cell-label {margin-inline-end:6px;padding:1px 5px;font-size:.61em;vertical-align:.13em;white-space:nowrap}
+.board-app .pg-detail[data-demo-detail] :is(.pg-sheet-keyword,.pg-sheet-title[data-keyword-is-title]) {
+  font-size:clamp(2.7rem,6.05vw,6.7rem);letter-spacing:-.055em;line-height:1.02;text-wrap:wrap;overflow-wrap:anywhere;
+}
+@media(max-width:690px) {
+  .board-app .pg-detail[data-demo-detail] :is(.pg-sheet-keyword,.pg-sheet-title[data-keyword-is-title]) {
+    font-size:clamp(2.3rem,11vw,4.2rem);
+  }
+}

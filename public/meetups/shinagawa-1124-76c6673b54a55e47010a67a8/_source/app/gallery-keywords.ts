@@ -5,7 +5,8 @@ import { WORKSHEET_KEYS } from "./worksheet";
 type Choice = { label: string; key: string; score: number };
 const keyOf = (text: string) => text.normalize("NFKC").toLocaleLowerCase("ja").replace(/\s+/gu, " ").trim();
 const generic = /^(?:品川(?:区|駅)?|駅前|駅|まち|街|町|人|みんな|場所|店|案|アイデア|テーマ|提案|参加者|自分|時間|今回|理由|共感|賛成|反対|きっかけ|テスト|体験|意見|実験|仕組み|結果|利用|一緒|比較|確認|個人|試行|必要|方法|当番|大切|候補|賛成です|反対です)$/u;
-const stance = /(?:反対|賛成できな|賛成しない|賛成とは.{0,4}言えない|したくない|たくなかった|しないで|ないでほしい|不要|やめたい|やめて|やめる|禁止|増やさない|置かない|作らない|置きたくない)/u;
+const stance = /(?:反対(?!側|方向|車線|岸|票|色|か賛成)|賛成できな|賛成しない|賛成とは.{0,4}言えない|したくない|たくなかった|しないで|ないでほしい|不要|やめたい|やめて|やめる|禁止|増やさない|置かない|作らない|置きたくない)/u;
+const dissent = /(?:反対(?!側|方向|車線|岸|票|色|か賛成)|賛成できない|賛成しない)/u;
 const quantity = /[0-9０-９]+(?:[.．:：時][0-9０-９]+)?\s*(?:分|秒|時間|時|日|台|席|枚|人|円|か所|箇所|歩|メートル|[mkｍｋ]m?|％|%)/iu;
 const awkwardEnd = /(?:って|のに|ので|なら|より|ように|例えば|けれど|けれども|ければ|たいけど|だけど|だったら|ながら|くらい|ぐらい|たとき|ために|を|には|では|にも|の|が|は|と|に|で|も|や|へ|し|かを|ても|たり|えて|めて|けて|られ|して|なく|ると|すれば|れば)$/u;
 const awkwardStart = /^(?:の|を|に(?:よる|ある)|だから|しかし|けれど|そうした|こうした|そこで|それで|なく|なければ|られる|という|との|には|から|だけ|たまま|よい|よく|すると|など|そのうち|どうしても)/u;
@@ -15,6 +16,13 @@ const cut = new Set(["は", "を", "に", "には", "で", "では", "が", "も
 const segmenter = typeof Intl.Segmenter === "function" ? new Intl.Segmenter("ja", { granularity: "word" }) : null;
 const endings = /(?:案内|カード|マップ|通路|通り|目印|手紙|写真|地図|交換会|引換券|小皿|目線|入口|出口|出入口|席|場所|寄り道|休憩所|合図|時刻|時間|名前|案内板|紹介|一品|訪問|目安|行き方|実験|休憩|散歩|遠回り|背もたれ|歩幅|二択|札|券)$/u;
 const wholeNoun = /^[\p{Script=Han}々\p{Script=Katakana}ーA-Za-z0-9０-９]+$/u;
+
+function stripConjunction(label: string) {
+  if (!label.startsWith("かつ") || /^かつ(?:お|て|ら|丼|重|カレー|サンド|煮|揚げ|鍋|定食|弁当)/u.test(label)) return label;
+  const first = segmenter?.segment(label)[Symbol.iterator]().next().value?.segment;
+  if (first === "かつ" || /^かつ[\s、，,\p{Script=Han}]/u.test(label)) return label.slice(2).replace(/^[\s、，,]+/u, "");
+  return label;
+}
 
 function sources(record: MapRecord) {
   const row = record.row;
@@ -31,18 +39,29 @@ function sources(record: MapRecord) {
 function choices(parts: ReturnType<typeof sources>): Choice[] {
   const found = new Map<string, Choice>();
   for (const [source, weight] of parts) {
+    // Repeated meaningful nouns can connect a proposal to an example named later in the same entry.
+    const repeated = new Set<string>();
+    for (const noun of extractIdeaKeywords(source)) {
+      if (noun.length >= 3 && !generic.test(noun) && source.indexOf(noun, source.indexOf(noun) + noun.length) !== -1) repeated.add(noun);
+    }
     const add = (raw: string, rank: number) => {
-      const label = raw.trim().replace(/^(?:「(.+)」|『(.+)』|（(.+)）|\((.+)\))$/u, (_, a, b, c, d) => a ?? b ?? c ?? d).trim();
+      const unwrapped = raw.trim().replace(/^(?:「(.+)」|『(.+)』|（(.+)）|\((.+)\))$/u, (_, a, b, c, d) => a ?? b ?? c ?? d).trim();
+      const label = stripConjunction(unwrapped);
       const len = Array.from(label).length;
-      if (!len || len > 36 || /[\n\r。]/u.test(label) || awkwardEnd.test(label) || awkwardStart.test(label)) return;
+      if (!source.includes(label) || !len || len > 36 || /[\n\r。]/u.test(label) || awkwardEnd.test(label) || awkwardStart.test(label)) return;
       if (/^[々\s\p{P}\p{S}]+$/u.test(label) || /(?:は|が)[\p{Script=Han}々\p{Script=Katakana}ー]{1,6}$/u.test(label)) return;
       const key = keyOf(label);
       const score = rank + weight - Math.max(0, len - 10) * 2.2 - Math.max(0, 4 - len) * 4 -
-        (generic.test(label) ? 36 : 0) + (quantity.test(label) ? 10 : 0) + (without.test(label) ? 10 : 0);
+        (generic.test(label) ? 36 : 0) + (quantity.test(label) ? 10 : 0) + (without.test(label) ? 10 : 0) +
+        ([...repeated].some(noun => label.includes(noun)) ? 4 : 0);
       if ((found.get(key)?.score ?? -Infinity) < score) found.set(key, { label, key, score });
     };
     const clean = source.replace(/https?:\/\/[^\s]+/giu, " ").trim();
     if (!clean) continue;
+    // Japanese often joins an acronym directly to a loanword to name a service or tool.
+    for (const match of clean.matchAll(/(?<![A-Za-zＡ-Ｚａ-ｚ0-9０-９])[A-ZＡ-Ｚ][A-ZＡ-Ｚ0-9０-９]{1,7}[ァ-ヶー]{2,24}/gu)) {
+      add(match[0], weight >= 10 ? 58 : 45);
+    }
     for (const match of clean.matchAll(/[「『]([^「」『』\n]{2,32})[」』]/gu)) {
       const after = clean.slice(match.index + match[0].length);
       if (!/^(?:に|とは?|には|するのは)?(?:反対|賛成できない|不要)/u.test(after)) {
@@ -59,8 +78,8 @@ function choices(parts: ReturnType<typeof sources>): Choice[] {
         // A qualifier belongs to the original clause. A quotation alone can reverse the speaker's stance.
         if (stance.test(part)) {
           add(part, 70 + early);
-          const qualified = part.match(/(?:案に(?:は|も)?|試みには|計画には|提案には|これには)?(?:反対|賛成できない|賛成しない|不要)(?:です)?/u);
-          if (qualified) add(qualified[0], 58);
+          const qualified = part.match(/(?:案に(?:は|も)?|試みには|計画には|提案には|これには)?(?:反対(?!側|方向|車線|岸|票|色|か賛成)(?:では(?:ない|ありません)|じゃない)?|賛成できない|賛成しない|不要)(?:です)?/u);
+          if (qualified && !generic.test(qualified[0])) add(qualified[0], 58);
           const withoutLead = part.replace(/^(?:という|そこで|しかし|ただし)/u, "");
           if (withoutLead !== part) add(withoutLead, 70);
         }
@@ -130,8 +149,11 @@ function choices(parts: ReturnType<typeof sources>): Choice[] {
   const options = [...found.values()];
   // If the author explicitly dissents, a positive quote from that text is unsafe as a headline.
   const explicit = parts.find(([, weight]) => weight === 10)?.[0];
-  if (explicit && /反対|賛成できない|賛成しない/u.test(explicit)) {
-    const qualified = options.filter(choice => /反対|賛成できない|賛成しない/u.test(choice.label) && explicit.includes(choice.label));
+  if (explicit && dissent.test(explicit)) {
+    // Multiple voices can disagree in the same post; prefer the author's own explicit sentence.
+    const personal = explicit.match(/(?:私は|僕は|わたしは|自分は)[^。！？!?\n、]{1,32}(?=[。！？!?\n、]|$)/u)?.[0];
+    if (personal && /賛成|反対/u.test(personal)) return [{ label: personal, key: keyOf(personal), score: 100 }];
+    const qualified = options.filter(choice => dissent.test(choice.label) && !generic.test(choice.label) && explicit.includes(choice.label));
     if (qualified.length) return qualified;
   }
   return options;

@@ -99,9 +99,9 @@ function examplesFor(rowId: string, all: ReadonlyMap<string, Row>) {
   return matches.length === 1 && matches[0].row.id === rowId ? demoExamples[prefix] : undefined;
 }
 
-type ProjectorFit = { key: string; available: number; scale: number; overflow: boolean };
+type ProjectorFit = { key: string; available: number; overflow: boolean };
 const projectorQuery = "(min-width: 981px)";
-const readableScale = 0.72;
+const projectorDensities = ["normal","compact","tight"] as const;
 
 function useProjectorFit(key: string, body: RefObject<HTMLDivElement | null>, sheet: RefObject<HTMLElement | null>) {
   const [fit, setFit] = useState<ProjectorFit | null>(null);
@@ -112,17 +112,21 @@ function useProjectorFit(key: string, body: RefObject<HTMLDivElement | null>, sh
     let frame = 0, alive = true;
     const measure = () => {
       if (!desktop.matches || !canvas.clientHeight || !original.offsetHeight) {
+        delete original.dataset.projectorDensity;
         setFit(old => old === null ? old : null);
         return;
       }
       const css = window.getComputedStyle(canvas);
       const available = Math.max(1, Math.floor(canvas.clientHeight - (parseFloat(css.paddingTop) || 0) - (parseFloat(css.paddingBottom) || 0) - 4));
-      // offsetHeight is independent of transform; round down so no row edge is cut off.
-      const wanted = Math.min(1, Math.floor(1000 * available / original.offsetHeight) / 1000);
-      const overflow = wanted < readableScale;
-      const scale = overflow ? 1 : wanted;
-      const next = { key, available, scale, overflow };
-      setFit(old => old?.key === key && old.available === available && old.scale === scale && old.overflow === overflow ? old : next);
+      // Pick the roomiest layout that fits; each tier reflows at the full measured width
+      // without transforming the text or its interactive targets.
+      let overflow = true;
+      for (const density of projectorDensities) {
+        original.dataset.projectorDensity=density;
+        if (original.offsetHeight <= available) { overflow=false;break; }
+      }
+      const next = { key, available, overflow };
+      setFit(old => old?.key === key && old.available === available && old.overflow === overflow ? old : next);
     };
     const schedule = () => {
       if (!alive) return;
@@ -231,7 +235,7 @@ function Detail({ item, source, keyword, previous, next, position, all, onOpen, 
     </header>
     <div className="pg-detail-body" ref={body} id={kind+"-"+row.id} tabIndex={-1}>
       <div className="pg-projector-frame" data-fit={fit && !fit.overflow ? true : undefined}
-        style={fit && !fit.overflow ? { "--pg-fit-height":fit.available + "px", "--pg-fit-scale":fit.scale } as CSSProperties : undefined}>
+        style={fit && !fit.overflow ? { "--pg-fit-height":fit.available + "px" } as CSSProperties : undefined}>
       <section className="pg-original-sheet" ref={originalSheet} aria-label={kind === "idea" ? "個人で書いたシート" : "班・全体で書いたシート"} style={{"--pg-sheet-team":teamColors[row.team]} as CSSProperties}>
         <header className="pg-original-heading">
           <div className="pg-sheet-heading-line">

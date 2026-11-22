@@ -224,9 +224,6 @@
   }
   .board-app .pg-detail .pg-projector-frame[data-fit] > .pg-original-sheet {
     margin-block-end:0;
-    transform-origin:top center;
-    /* Fit only the vertical axis. The WORK and diagram share full-width rails at any fit. */
-    transform:scaleY(var(--pg-fit-scale,1));
   }
   .board-app .pg-detail .pg-projector-frame > .pg-original-sheet {padding:clamp(10px,1.25vw,19px)}
   .board-app .pg-detail .pg-projector-frame .pg-sheet-title {font-size:clamp(1.6rem,3.1vw,3.35rem);line-height:1.11}
@@ -352,4 +349,37 @@
   .pg-detail .pg-sheet-feedback .comments-compact .comments-composer {grid-template-columns:minmax(0,1fr);}
   .pg-detail .pg-sheet-feedback .comments-compact .comments-composer :is(textarea,input,.comments-send,.comments-audience) {grid-row:auto;grid-column:1/-1;}
   .pg-detail .pg-sheet-feedback .comments-compact .comments-toggle {justify-self:start;}
+}
+
+/* Fit the WORK sheet by reflowing. Text always keeps its native proportions. */
+@media(min-width:981px) {
+  .board-app .pg-detail .pg-projector-frame > .pg-original-sheet[data-projector-density=compact] {
+    --pg-density-title:clamp(1.6rem,2.9vw,2.9rem);
+    --pg-density-keyword:clamp(2.2rem,4.55vw,5.2rem);
+    --pg-density-lead:clamp(17px,1.8vw,27px);
+    --pg-density-label:clamp(13px,1.28vw,19px);
+    --pg-density-copy:clamp(14px,1.27vw,20px);
+    --pg-density-cell:67px;--pg-density-pad:7px;
+    --pg-density-caption:3px;
+  }
+  .board-app .pg-detail .pg-projector-frame > .pg-original-sheet[data-projector-density=tight] {
+    --pg-density-title:clamp(1.4rem,2.55vw,2.65rem);
+    --pg-density-keyword:clamp(2rem,3.85vw,4.75rem);
+    --pg-density-lead:clamp(16px,1.5vw,22px);
+    --pg-density-label:clamp(12px,1.15vw,17px);
+    --pg-density-copy:clamp(13px,1.12vw,18px);
+    --pg-density-cell:56px;--pg-density-pad:5px;
+    --pg-density-caption:2px;
+  }
+  .board-app .pg-detail .pg-projector-frame > .pg-original-sheet:is([data-projector-density=compact],[data-projector-density=tight]) {
+    margin-block-end:0;padding-block:8px;
+  }
+  .board-app .pg-detail .pg-projector-frame > .pg-original-sheet:is([data-projector-density=compact],[data-projector-density=tight]) .pg-original-heading .pg-sheet-title:not([data-keyword-is-title]) {font-size:var(--pg-density-title);line-height:1.11;}
+  .board-app .pg-detail .pg-projector-frame > .pg-original-sheet:is([data-projector-density=compact],[data-projector-density=tight]) :is(.pg-sheet-keyword,.pg-sheet-title[data-keyword-is-title]) {font-size:var(--pg-density-keyword);line-height:1.08;}
+  .board-app .pg-detail .pg-projector-frame > .pg-original-sheet:is([data-projector-density=compact],[data-projector-density=tight]) .pg-sheet-caption {margin-top:var(--pg-density-caption);padding-top:var(--pg-density-caption);}
+  .board-app .pg-detail .pg-projector-frame > .pg-original-sheet:is([data-projector-density=compact],[data-projector-density=tight]) .pg-sheet-grid > div {min-height:var(--pg-density-cell);padding-block:var(--pg-density-pad);}
+  .board-app .pg-detail .pg-projector-frame > .pg-original-sheet:is([data-projector-density=compact],[data-projector-density=tight]) .pg-sheet-grid dt {font-size:var(--pg-density-label);line-height:1.15;}
+  .board-app .pg-detail .pg-projector-frame > .pg-original-sheet:is([data-projector-density=compact],[data-projector-density=tight]) .pg-sheet-prompt {font-size:var(--pg-density-lead);line-height:1.14;}
+  .board-app .pg-detail .pg-projector-frame > .pg-original-sheet:is([data-projector-density=compact],[data-projector-density=tight]) .pg-sheet-grid dd:not([data-empty]) {font-size:var(--pg-density-copy);line-height:1.34;}
+  .board-app .pg-detail .pg-projector-frame > .pg-original-sheet:is([data-projector-density=compact],[data-projector-density=tight]) .pg-sheet-cell-keyword {font-size:var(--pg-density-lead);line-height:1.15;}
 }

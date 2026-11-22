@@ -1,10 +1,11 @@
 <!doctype html>
-<html lang="ja">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow"><meta name="x-meetup-api-base" content="https://shinagawa-discussion.delpiero.chatgpt.site/">
-<title>品川アイデアボード｜X-meetup品川</title><meta name="x-meetup-asset-base" content="./assets/">
-<link rel="icon" href="./assets/favicon.svg"><link rel="stylesheet" href="./assets/app.css?v=73c467fd9f345d0f">
-</head>
-<body><div id="root"></div><noscript>投稿やメモを利用するには、ブラウザでJavaScriptを有効にしてください。</noscript><script defer src="./assets/app.js?v=dbd71792376e5aea"></script></body>
-</html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer"><title>X-meetup 品川｜参加者入口</title>
+<style>body{margin:0;min-height:100vh;display:grid;place-items:center;padding:1rem;background:#fcebf2;color:#291922;font:1rem system-ui,sans-serif}main{max-width:28rem;padding:1.5rem;border:2px solid #321925;border-radius:1rem;background:white}a{color:#81244e;font-weight:750}</style>
+</head><body><main><h1>X-meetup 品川</h1><p>参加者入口を開いています。</p><p><a id="enter" href="https://shinagawa-discussion.delpiero.chatgpt.site/board/">参加者入口を開く</a></p></main><script>
+(()=>{const src=new URL(location.href), dst=new URL('https://shinagawa-discussion.delpiero.chatgpt.site/board/');const allowed={room:/^demo$/,view:/^(?:screen|summary|personal)$/,team:/^[A-E]$/,round:/^[0-5]$/,tab:/^(?:list|map|words)$/,write:/^(?:team|plenary|edit)$/,join:/^[A-E]$/,idea:/^[0-9a-f-]{36}$/i,thread:/^[0-9a-f-]{36}$/i,reply:/^[0-9a-f-]{36}$/i};
+for(const [name,rule] of Object.entries(allowed)){const value=src.searchParams.get(name);if(value&&rule.test(value))dst.searchParams.set(name,value)}
+if(/^#(?:materials|program|agenda|theme-[0-9a-f-]{36}|round-summary-sheet|compose)$/i.test(src.hash)){
+ const next=new URL('/login',dst);next.searchParams.set('next',dst.pathname+dst.search+src.hash);dst.href=next.href
+}
+document.getElementById('enter').href=dst.href;location.replace(dst.href)})();
+</script></body></html>

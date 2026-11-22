@@ -6,48 +6,60 @@
   <meta name="robots" content="noindex, nofollow, noarchive">
   <meta name="googlebot" content="noindex, nofollow, noarchive">
   <meta name="referrer" content="no-referrer">
-  <meta name="theme-color" content="#ffffff">
+  <meta name="theme-color" content="#fff3f6">
   <title>X-meetup品川｜参加者用ボード｜Garraway F</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <style>
-    :root { color-scheme: light; font-family: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Yu Gothic", system-ui, sans-serif; background: #f4faff; color: #08090b; }
-    * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100dvh; -webkit-font-smoothing: antialiased; }
-    a { color: inherit; text-decoration: none; }
-    a:focus-visible { outline: 3px solid #258bff; outline-offset: 4px; }
-    .shell { max-width: 1008px; padding: 20px max(22px, env(safe-area-inset-right)) 52px max(22px, env(safe-area-inset-left)); margin: 0 auto; }
-    header { min-height: 55px; padding: 9px 20px; background: #fff; border: 1.5px solid #08090b; border-radius: 40px; box-shadow: 3px 3px 0 #08090b; display: flex; align-items: center; justify-content: space-between; gap: 14px; }
-    .brand { font: 900 26px/1 "Archivo Black", Arial, sans-serif; letter-spacing: -.075em; }
-    .brand span { color: #e51771; }
-    .home { font-size: 12px; font-weight: 700; padding: 6px 3px; }
-    .home:hover { text-decoration: underline; }
-    main { margin: 0 auto; max-width: 890px; }
-    .intro { padding: clamp(40px, 8vw, 82px) 0 clamp(24px, 4.5vw, 43px); }
-    .date { display: flex; align-items: center; gap: 11px; margin: 0 0 9px; font: 750 13px/1.4 "Archivo", Arial, sans-serif; letter-spacing: .09em; }
-    .date::before { content:""; width: 28px; height: 3px; background:#ff2d86; }
-    h1 { font-size: clamp(42px, 8.2vw, 88px); font-family: "Archivo Black", "Noto Sans JP", "Hiragino Sans", Arial, sans-serif; line-height: 1.2; font-weight: 900; letter-spacing: -.065em; margin: 0; overflow-wrap: anywhere; }
-    .lead { font-size: clamp(16px, 2.2vw, 21px); margin: 9px 0 0; font-weight: 640; }
-    .choices { display: grid; gap: 16px; grid-template-columns: 1fr 1fr; }
-    .card { display: flex; flex-direction: column; align-items: flex-start; padding: clamp(23px, 3vw, 34px); border: 1.5px solid #08090b; border-radius: 15px; }
-    .input { background: #fff; box-shadow: 4px 4px 0 #bde7ff; }
-    .output { background: #101113; color: #fff; box-shadow: 4px 4px 0 #abd7ef; }
-    h2 { font-size: clamp(24px, 3.2vw, 34px); line-height: 1.3; letter-spacing: -.05em; margin: 0 0 9px; }
-    .card p { line-height: 1.7; margin: 0 0 24px; font-size: 15px; }
-    .output p { color: #d2dbe0; }
-    .join { display: inline-flex; align-items: center; justify-content: center; min-height: 49px; padding: 8px 20px; margin-top: auto; border: 1.5px solid #08090b; color: #fff; background: #08090b; border-radius: 7px; font-size: 16px; font-weight: 750; }
-    .join:hover { color: #08090b; background: #bde7ff; }
-    .teams { display: grid; width: 100%; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 5px; }
-    .teams a, .all { display: flex; justify-content: center; align-items: center; min-height: 45px; border-radius: 6px; font-weight: 720; }
-    .teams a { color: #fff; background: #222629; border: 1px solid #68727b; font-size: 16px; white-space: nowrap; }
-    .all { width: 100%; margin-top: 9px; color: #08090b; background: #bde7ff; font-size: 16px; }
-    .teams a:hover,.all:hover { color: #08090b; background: #fff; }
-    @media(max-width: 650px) {
-      .shell { padding: 14px max(16px, env(safe-area-inset-right)) calc(32px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
-      header { min-height: 48px; padding: 8px 15px; }.brand { font-size: 23px; }
-      .choices { grid-template-columns: 1fr; gap: 13px; }.card { padding: 22px; }.card p { margin-bottom: 17px; }
-      .join { width: 100%; }.intro { padding: 38px 0 24px; }
+    :root {
+      color-scheme: light;
+      --paper: #fff3f6; --surface: #ffffff; --blush: #fbe2ea; --rose: #f5b6cc;
+      --berry: #a63c63; --ink: #30262c; --rule: #dabcc7; --dark: #171518;
+      --serif: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", YuMincho, Georgia, serif;
+      font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", system-ui, sans-serif;
+      background: var(--paper); color: var(--ink);
     }
-    @media(max-width: 360px) { .card { padding: 19px 15px; }.teams { gap: 4px; } }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100dvh; -webkit-font-smoothing: antialiased; background: linear-gradient(152deg, #fff8f9 0, var(--paper) 53%, #fdecf1); }
+    a { color: inherit; text-decoration: none; }
+    a:focus-visible { outline: 3px solid #be456e; outline-offset: 4px; }
+    .shell { max-width: 1136px; padding: 18px max(24px, env(safe-area-inset-right)) 60px max(24px, env(safe-area-inset-left)); margin: auto; }
+    header { min-height: 59px; padding: 9px 23px; display: flex; align-items: center; justify-content: space-between; gap: 14px; background: #fffcfd; border: 1.5px solid var(--ink); border-radius: 999px; box-shadow: 3px 4px 0 #d9a7b8; }
+    .brand { font: 900 27px/1 "Archivo Black", "Arial Black", Arial, sans-serif; letter-spacing: -.075em; }
+    .brand span { color: #c03468; }
+    .home { font-size: 13px; font-weight: 700; padding: 9px 2px; }
+    .home:hover { text-decoration: underline; text-underline-offset: 4px; }
+    main { max-width: 966px; margin: auto; }
+    .intro { display: grid; grid-template-columns: 1fr minmax(160px, 26%); align-items: center; gap: clamp(22px, 5vw, 60px); border-bottom: 1px solid var(--rule); padding: clamp(34px, 7vw, 78px) 0 clamp(33px, 6vw, 66px); }
+    h1 { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: .09em; margin: 0; font-family: var(--serif); font-size: clamp(46px, 7.3vw, 93px); line-height: 1.15; font-weight: 900; letter-spacing: -.055em; }
+    h1 em { font-style: normal; color: var(--berry); white-space: nowrap; }
+    .lead { color: #594851; font-size: clamp(15px, 1.9vw, 21px); line-height: 1.75; margin: 15px 0 0; font-weight: 620; }
+    .calendar { position: relative; z-index: 0; isolation: isolate; aspect-ratio: 1.24; width: 95%; max-width: 228px; justify-self: end; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:"Archivo", Arial, sans-serif; color:var(--ink); }
+    .calendar::before { content:""; position:absolute; inset:0; z-index:-1; border-radius: 48% 52% 45% 52%; border: 1.5px solid #866172; background: #f5c5d6; box-shadow: 6px 6px 0 #eed4e0; transform:rotate(-5deg); }
+    .calendar .year,.calendar .day { font-weight:850; font-size:clamp(11px,1.05vw,15px); letter-spacing:.13em; line-height:1.15; }
+    .calendar strong { margin:2px 0 3px; line-height:1; font:1000 clamp(40px,5.7vw,76px)/1 "Arial Black",Arial,sans-serif; letter-spacing:-.095em; padding-right:.07em; color:#fffcfd; -webkit-text-stroke:1.15px #4b3340; text-shadow:2px 3px #7e5268; }
+    .choices { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:clamp(22px,3.4vw,39px); }
+    .card { display:flex; flex-direction:column; align-items:flex-start; min-width:0; padding:clamp(24px,3vw,35px); border:1.5px solid var(--ink); border-radius:25px; }
+    .input { background:var(--surface); box-shadow:4px 5px 0 #e9bdcd; }
+    .output { color:#fff; background:var(--dark); border-color:var(--dark); box-shadow:4px 5px 0 #ddadbf; }
+    h2 { margin:0 0 9px; font:800 clamp(24px,2.8vw,34px)/1.4 var(--serif); letter-spacing:-.055em; }
+    .card p { font-size:15px; line-height:1.75; color:#594851; margin:0 0 22px; }
+    .output p { color:#ded6dc; }
+    .join,.teams a,.all { display:inline-flex; justify-content:center; align-items:center; min-height:46px; border:1px solid var(--ink); font-size:16px; font-weight:750; }
+    .join { margin-top:auto; background:var(--blush); color:#472636; border-radius:999px; padding:9px 25px; box-shadow:2px 3px 0 #d7a6b9; }
+    .join:hover { background:var(--rose); }
+    .teams { display:grid; width:100%; grid-template-columns:repeat(5,minmax(0,1fr)); gap:6px; }
+    .teams a { color:#fff; background:#2b262b; border-color:#766675; border-radius:13px; white-space:nowrap; }
+    .all { width:100%; margin-top:10px; color:#34232d; background:#f5d3e0; border-color:#f5d3e0; border-radius:999px; }
+    .teams a:hover,.all:hover { color:var(--dark); background:#fff5f8; }
+    @media(max-width:680px) {
+      .shell { padding:13px max(16px,env(safe-area-inset-right)) calc(35px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left)); }
+      header { min-height:48px; padding:5px 15px; }.brand { font-size:23px; }.home{font-size:12px;}
+      .intro { grid-template-columns:1fr minmax(80px,23%); gap:15px; padding:38px 0 29px; }
+      h1 { font-size:clamp(34px,7.6vw,52px); }.lead { font-size:15px; line-height:1.65; margin-top:10px; }
+      .calendar { width:100%; }.calendar strong { font-size:clamp(30px,6.5vw,45px); -webkit-text-stroke:.8px #4b3340; text-shadow:1.5px 2px #7e5268; }.calendar .year,.calendar .day{font-size:9px;}
+      .choices { grid-template-columns:1fr; gap:14px; margin-top:20px; }.card{padding:22px;border-radius:21px;}.card p{margin-bottom:17px;}.join{width:100%;}
+    }
+    @media(max-width:370px) { .intro{grid-template-columns:1fr 73px;gap:9px;} .calendar{aspect-ratio:1.1;}.card{padding:19px 15px;}.teams{gap:4px;} }
   </style>
 </head>
 <body>
@@ -58,9 +70,15 @@
     </header>
     <main>
       <section class="intro" aria-labelledby="title">
-        <p class="date"><time datetime="2026-11-24">2026.11.24 TUE</time></p>
-        <h1 id="title">X-meetup品川</h1>
-        <p class="lead">品川で試してみたいことを、みんなで持ち寄る。</p>
+        <div class="intro-copy">
+          <h1 id="title"><span>X-meetup</span><em>品川</em></h1>
+          <p class="lead">品川で試してみたいことを、<wbr>みんなで持ち寄る。</p>
+        </div>
+        <time class="calendar" datetime="2026-11-24" aria-label="2026年11月24日 火曜日">
+          <span class="year" aria-hidden="true">2026</span>
+          <strong aria-hidden="true">11.24</strong>
+          <span class="day" aria-hidden="true">TUE</span>
+        </time>
       </section>
       <div class="choices">
         <section class="card input" aria-labelledby="participate">

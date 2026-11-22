@@ -215,7 +215,7 @@ export default function TeamSummaryWorkspace({ ideas, hasLoaded, loadError, init
     });
     setUnassignedDraftRound(retained ?? null);
     const team = url.searchParams.get("write") === "plenary" ? "all" : groupValue(url.searchParams.get("team")) || groupValue(init.current.initialTeam) || groupValue(previous.team);
-    const round = url.searchParams.get("round") || (previous.team === team ? previous.round : undefined) || init.current.initialRound || eventRoundAt();
+    const round = url.searchParams.get("round") || (previous.team === team ? previous.round : undefined) || eventRoundAt() || init.current.initialRound;
     setScope({ team, round: stageValue(round, team) });
     if (url.searchParams.get("write") === "edit") setEditId(url.searchParams.get("themeId") || url.searchParams.get("id") || "");
     setReady(true);

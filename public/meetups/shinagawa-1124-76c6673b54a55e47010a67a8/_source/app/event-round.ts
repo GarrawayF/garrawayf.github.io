@@ -12,7 +12,7 @@ export const roundLabels: Record<EventRound, string> = {
 const eventStart = Date.parse("2026-11-24T00:00:00+09:00");
 const secondRound = Date.parse("2026-11-24T14:30:00+09:00");
 const thirdRound = Date.parse("2026-11-24T15:30:00+09:00");
-const plenary = Date.parse("2026-11-24T16:40:00+09:00");
+const plenary = Date.parse("2026-11-24T17:00:00+09:00");
 const eventEnd = Date.parse("2026-11-25T00:00:00+09:00");
 
 // Absolute instants keep the workshop clock independent of the device's time zone.

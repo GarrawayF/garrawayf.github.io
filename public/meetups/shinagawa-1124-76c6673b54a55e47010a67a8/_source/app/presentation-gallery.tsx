@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback, useDeferredValue, useEffect, useId, useMemo, useRef, useState, type ChangeEvent, type CSSProperties, type KeyboardEvent } from "react";
-import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Compass, CornerDownRight, Eye, GitBranch, HandHeart, Lightbulb, MapPin, MessageCircle, Pencil, Quote, Search, Users, X } from "lucide-react";
+import { useCallback, useDeferredValue, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type ChangeEvent, type CSSProperties, type KeyboardEvent, type RefObject } from "react";
+import { ArrowDown, ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Compass, CornerDownRight, Eye, GitBranch, HandHeart, Lightbulb, MapPin, MessageCircle, Pencil, Quote, Search, Users, X } from "lucide-react";
 import { isDemoRoom, pageLink } from "./board-room";
 import demoWorksheetExamples from "./demo-worksheet-examples.json";
 import { selectGalleryKeywords } from "./gallery-keywords";
 import { galleryEntry, galleryHistoryState, galleryLocation } from "./gallery-navigation";
 import { IdeaVisualButton } from "./idea-visual";
+import FullscreenToggle from "./fullscreen-toggle";
 import { excerpt, makeVisualIndex, VisualCache } from "./idea-visual-model";
 import { groupLabel, kindLabel, stageLabel, type MapIdea, type MapRecord, type MapTheme } from "./mind-map-model";
 import { analyzePost } from "./post-analysis";
@@ -95,6 +96,53 @@ function examplesFor(rowId: string, all: ReadonlyMap<string, Row>) {
   return matches.length === 1 && matches[0].row.id === rowId ? demoExamples[prefix] : undefined;
 }
 
+type ProjectorFit = { key: string; available: number; scale: number; overflow: boolean };
+const projectorQuery = "(min-width: 981px)";
+const readableScale = 0.72;
+
+function useProjectorFit(key: string, body: RefObject<HTMLDivElement | null>, sheet: RefObject<HTMLElement | null>) {
+  const [fit, setFit] = useState<ProjectorFit | null>(null);
+  useLayoutEffect(() => {
+    const canvas = body.current, original = sheet.current;
+    if (!canvas || !original) return;
+    const desktop = window.matchMedia(projectorQuery);
+    let frame = 0, alive = true;
+    const measure = () => {
+      if (!desktop.matches || !canvas.clientHeight || !original.offsetHeight) {
+        setFit(old => old === null ? old : null);
+        return;
+      }
+      const css = window.getComputedStyle(canvas);
+      const available = Math.max(1, Math.floor(canvas.clientHeight - (parseFloat(css.paddingTop) || 0) - (parseFloat(css.paddingBottom) || 0) - 4));
+      // offsetHeight is independent of transform; round down so no row edge is cut off.
+      const wanted = Math.min(1, Math.floor(1000 * available / original.offsetHeight) / 1000);
+      const overflow = wanted < readableScale;
+      const scale = overflow ? 1 : wanted;
+      const next = { key, available, scale, overflow };
+      setFit(old => old?.key === key && old.available === available && old.scale === scale && old.overflow === overflow ? old : next);
+    };
+    const schedule = () => {
+      if (!alive) return;
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(measure);
+    };
+    const observer = typeof ResizeObserver === "function" ? new ResizeObserver(schedule) : null;
+    observer?.observe(canvas); observer?.observe(original);
+    window.addEventListener("resize",schedule);
+    desktop.addEventListener?.("change",schedule);
+    void document.fonts?.ready.then(schedule);
+    schedule();
+    return () => {
+      alive = false;
+      cancelAnimationFrame(frame);
+      observer?.disconnect();
+      window.removeEventListener("resize",schedule);
+      desktop.removeEventListener?.("change",schedule);
+    };
+  }, [key, body, sheet]);
+  return fit?.key === key ? fit : null;
+}
+
 type DetailProps = {
   item: Row; source: string; keyword?: string; previous?: Row; next?: Row; position: string;
   all: ReadonlyMap<string, Row>; onOpen: (item: Row, move?: "related" | "carousel", scrollTop?: number) => void; onClose: () => void;
@@ -103,6 +151,9 @@ type DetailProps = {
 function Detail({ item, source, keyword, previous, next, position, all, onOpen, onClose, previousIsDetail, restoreScroll }: DetailProps) {
   const dialog = useRef<HTMLDialogElement>(null);
   const body = useRef<HTMLDivElement>(null);
+  const originalSheet = useRef<HTMLElement>(null);
+  const diagram = useRef<HTMLDivElement>(null);
+  const fit = useProjectorFit(item.key, body, originalSheet);
   const dialogLabel = useId();
   const { row, kind } = item;
   useEffect(() => {
@@ -143,7 +194,6 @@ function Detail({ item, source, keyword, previous, next, position, all, onOpen, 
     { id: "proposal", label: "駅前に何があったらいい？", hint: "どんな機能・サービス・場があると嬉しいか。", value: raw, example: false },
     { id: "partners", label: "誰と一緒に挑戦したい？", hint: "この未来に共感し、一緒に考え続けたい人や組織は誰か。", ...supplement("partners") },
   ];
-  const containsExamples = cells.some(cell => cell.example);
   const sheetKeys = new Set(cells.map(cell => cell.id));
   const currentKeys = worksheetGroups[mode];
   const extras = [...currentKeys, ...WORKSHEET_KEYS.filter(key => !currentKeys.includes(key))]
@@ -163,18 +213,26 @@ function Detail({ item, source, keyword, previous, next, position, all, onOpen, 
     }}>
     <header className="pg-detail-bar">
       <button type="button" className="pg-back" onClick={onClose}><ArrowLeft size={16}/>{previousIsDetail ? "ひとつ前に戻る" : "一覧に戻る"}</button>
+      {fit?.overflow && <span className="pg-fit-warning">原文を省かず表示しています。続きはスクロール</span>}
       <span className="pg-where">{position}</span>
+      <button type="button" className="pg-diagram-jump" onClick={() => {
+        const target = diagram.current;
+        target?.focus({ preventScroll: true });
+        target?.scrollIntoView({ block: "start" });
+      }} aria-label="図解と解説へ移動"><ArrowDown size={15} aria-hidden="true"/>図解へ</button>
+      <FullscreenToggle where="detail"/>
       <div className="pg-page-buttons">
         <button type="button" disabled={!previous} aria-label="前の案" title="前の案（←）" onClick={() => previous && onOpen(previous, "carousel")}><ChevronLeft size={19}/></button>
         <button type="button" disabled={!next} aria-label="次の案" title="次の案（→）" onClick={() => next && onOpen(next, "carousel")}><ChevronRight size={19}/></button>
       </div>
     </header>
     <div className="pg-detail-body" ref={body} id={kind+"-"+row.id} tabIndex={-1}>
-      <section className="pg-original-sheet" aria-label={kind === "idea" ? "個人で書いたシート" : "班・全体で書いたシート"} style={{"--pg-sheet-team":teamColors[row.team]} as CSSProperties}>
+      <div className="pg-projector-frame" data-fit={fit && !fit.overflow ? true : undefined}
+        style={fit && !fit.overflow ? { "--pg-fit-height":fit.available + "px", "--pg-fit-scale":fit.scale } as CSSProperties : undefined}>
+      <section className="pg-original-sheet" ref={originalSheet} aria-label={kind === "idea" ? "個人で書いたシート" : "班・全体で書いたシート"} style={{"--pg-sheet-team":teamColors[row.team]} as CSSProperties}>
         <header className="pg-original-heading">
           <div className="pg-sheet-heading-line">
-            {containsExamples ? <div className="pg-sheet-workline"><p className="pg-sheet-work">{workLabel}</p><span className="pg-demo-sheet-label">テスト用記入例</span></div>
-              : <p className="pg-sheet-work">{workLabel}</p>}
+            <p className="pg-sheet-work">{workLabel}</p>
             <p className="pg-original-meta"><i style={{background:teamColors[row.team]}}/>{groupLabel(row.team)}<span>／</span>{stageLabel(row.round)}</p>
           </div>
           <h2 id={dialogLabel} className="pg-sheet-title" data-keyword-is-title={!showKeyword || undefined}>{item.title}</h2>
@@ -187,12 +245,16 @@ function Detail({ item, source, keyword, previous, next, position, all, onOpen, 
         <dl className="reading-original pg-sheet-grid">
           {cells.map(cell => <div key={cell.id} data-sheet-field={cell.id}>
             <dt>{cell.label}<small>（{cell.hint}）</small></dt>
-            <dd data-empty={!cell.value?.trim() || undefined} data-demo-fill={cell.example || undefined}>{cell.example && <span className="pg-demo-cell-label">記入例</span>}{cell.value?.trim() ? cell.value : "未記入"}</dd>
+            <dd data-empty={!cell.value?.trim() || undefined} data-demo-fill={cell.example || undefined}>{cell.value?.trim() ? cell.value : "未記入"}</dd>
           </div>)}
-          {footer.map(field => <div key={field.key} className="pg-sheet-extra"><dt>{field.label}</dt><dd>{field.value}</dd></div>)}
         </dl>
       </section>
-      <Illustration item={item} all={all}/>
+      </div>
+      {footer.length > 0 && <section className="pg-original-sheet pg-sheet-notes" aria-label="記入シートの補足">
+        <h3>記入シートの補足</h3>
+        <dl className="reading-original pg-sheet-grid">{footer.map(field => <div key={field.key} className="pg-sheet-extra"><dt>{field.label}</dt><dd>{field.value}</dd></div>)}</dl>
+      </section>}
+      <div ref={diagram} className="pg-diagram-target" tabIndex={-1}><Illustration item={item} all={all}/></div>
       <div className="pg-detail-bottom">
         {citations.filter((id): id is string => Boolean(id)).map(id => {
           const parent = all.get("idea:" + id);

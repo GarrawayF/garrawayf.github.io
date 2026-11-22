@@ -6,6 +6,7 @@ import { BookOpen, Check, ChevronDown, ChevronRight, CircleAlert, CornerDownRigh
 import { boardViewOf, isDemoRoom, pageLink, publicBoardUrl, roomApi, roomStorageKey } from "./board-room";
 import { assetUrl } from "./asset-url";
 import MaterialsPanel from "./materials-panel";
+import FullscreenToggle from "./fullscreen-toggle";
 import PersonalNotes from "./personal-notes";
 import DiscussionGuide from "./discussion-guide";
 import IdeaWorksheet from "./idea-worksheet";
@@ -419,6 +420,7 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
     <header className="topbar board-header"><div className="shell nav-inner">
       <Brand source={sourceHref} />
       <nav aria-label="表示と共有">
+        <FullscreenToggle where="topbar"/>
         <a className="board-cover-link" href={new URL("../", publicBoardUrl).href}>当日の表紙</a>
         <span className={"live-state live-" + sync} role="status"><i />{syncLabels[sync]}</span>
         <span className="nav-line" />

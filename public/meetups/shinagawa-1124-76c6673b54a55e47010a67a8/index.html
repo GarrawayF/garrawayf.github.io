@@ -65,12 +65,33 @@
       .film .media-caption p{font-size:.69rem}.film iframe{min-height:200px}
     }
     @media(max-width:350px){.mast nav{gap:7px}.mast nav a{font-size:10px}.hero h1{font-size:23px}.hero .kicker{font-size:7px}.lead{font-size:.74rem}.flow li{grid-template-columns:68px minmax(0,1fr)}}
+    /* Short desktop/projector: all three preview cards on the same row. */
+    @media(min-width:961px) and (max-height:820px){
+      .mast{margin-top:5px}.mast-inner{min-height:43px}
+      .hero-inner{padding-block:12px 11px}.hero h1{font-size:clamp(2.2rem,4.5vw,3.65rem)}
+      .hero-date{min-height:66px}.hero-date strong{font-size:clamp(34px,4.75vw,60px)}
+      .actions .action{min-height:57px}
+      .content{grid-template-columns:minmax(0,1fr) minmax(0,1.8fr);gap:14px;margin-block:11px 9px;padding-top:9px}
+      .section-title{font-size:clamp(1.3rem,2vw,1.75rem);margin-bottom:5px}
+      .flow li{padding-block:5px}
+      .media-layout{grid-template-columns:minmax(0,1.2fr) repeat(2,minmax(0,1fr));gap:8px}
+      .media-layout .materials{display:contents}
+      .slide-card{grid-template-columns:minmax(0,1fr)}
+      .slide-card .media-caption{padding-top:7px}
+      .footer{padding-block:6px 7px}
+    }
+    .cover-full{display:inline-flex;align-items:center;justify-content:center;min-height:36px;align-self:center;padding:3px 10px;border:1px solid var(--ink);border-radius:999px;background:var(--rose);font-family:inherit;font-size:12px;font-weight:850;line-height:1.2;color:var(--ink);white-space:nowrap;cursor:pointer}
+    .cover-full:focus-visible{outline:3px solid var(--berry);outline-offset:3px}.cover-full:hover{background:var(--pink)}
+    .cover-full-hint{position:absolute;right:0;top:calc(100% + 7px);max-width:min(28rem,90vw);margin:0;padding:7px 10px;border:1px solid var(--ink);border-radius:8px;background:#fff;font-size:.75rem;box-shadow:2px 2px var(--ink)}
+    @media(max-width:760px){.cover-full{min-height:36px;padding:3px 7px;font-size:11px}.mast nav{gap:8px}}
+    @media(max-width:350px){.cover-full{padding-inline:5px;font-size:10px}.mast nav{gap:6px}}
   </style>
 </head>
 <body>
   <a class="skip" href="#main">本文にスキップ</a>
   <header class="mast">
-    <div class="shell mast-inner"><a class="mast-name" href="./">X-meetup <b>品川</b><small>WOVEN CITY / 11.24</small></a><nav aria-label="当日の情報"><a href="#program">当日の流れ</a><a href="#materials">資料・映像</a></nav></div>
+    <div class="shell mast-inner"><a class="mast-name" href="./">X-meetup <b>品川</b><small>WOVEN CITY / 11.24</small></a><nav aria-label="当日の情報"><a href="#program">当日の流れ</a><a href="#materials">資料・映像</a><button class="cover-full" type="button" aria-pressed="false">全画面</button></nav></div>
+    <p class="cover-full-hint" role="status" hidden></p>
   </header>
   <main id="main">
     <section class="hero" aria-labelledby="title">
@@ -133,5 +154,37 @@
       <footer class="footer">X-meetup 品川 ／ 2026.11.24　参加者用</footer>
     </div>
   </main>
+  <script>
+    (() => {
+      const button = document.querySelector('.cover-full');
+      const hint = document.querySelector('.cover-full-hint');
+      const root = document.documentElement;
+      const enter = root.requestFullscreen?.bind(root) || root.webkitRequestFullscreen?.bind(root);
+      const exit = document.exitFullscreen?.bind(document) || document.webkitExitFullscreen?.bind(document);
+      const active = () => Boolean(document.fullscreenElement || document.webkitFullscreenElement);
+      const showFallback = () => {
+        hint.textContent = matchMedia('(hover: hover) and (pointer: fine) and (min-width: 761px)').matches
+          ? 'ページから全画面に切り替えられません。F11 またはブラウザーのメニューをお試しください。'
+          : 'このブラウザーでは、このページを全画面に切り替えられません。';
+        hint.hidden = false;
+      };
+      const sync = () => {
+        button.textContent = active() ? '全画面を終了' : '全画面';
+        button.setAttribute('aria-pressed', String(active()));
+        hint.hidden = true;
+      };
+      button.addEventListener('click', async () => {
+        hint.hidden = true;
+        try {
+          const change = active() ? exit : enter;
+          if (!change) { showFallback(); return; }
+          await change();
+        } catch { showFallback(); }
+      });
+      for (const name of ['fullscreenchange', 'webkitfullscreenchange']) document.addEventListener(name, sync);
+      for (const name of ['fullscreenerror', 'webkitfullscreenerror']) document.addEventListener(name, showFallback);
+      sync();
+    })();
+  </script>
 </body>
 </html>

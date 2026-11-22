@@ -1,7 +1,6 @@
 "use client";
 import { useId } from "react";
 import type { RefObject } from "react";
-import { ChevronRight } from "lucide-react";
 import { WORKSHEET_FIELD_LIMIT, type Worksheet, type WorksheetKey } from "./worksheet";
 import "./idea-worksheet.css";
 
@@ -34,8 +33,8 @@ export default function IdeaWorksheet({ values, text, onTextChange, onChange, in
         onChange={event => onTextChange(event.target.value)} />
       <small id={id + "-help"}>{help || (isReply ? "どの言葉に共感したか、自分の経験を添えてみてください。" : "誰かの案に共感した理由も書けます。")}</small>
     </div>
-    <details className="optional-idea-sheet">
-      <summary><ChevronRight size={16} aria-hidden="true" /><span>シートの項目から書く</span><small>{filled ? filled + "項目を記入済み" : "任意"}</small></summary>
+    <section className="optional-idea-sheet" aria-labelledby={id + "-sheet"}>
+      <h2 className="optional-idea-heading" id={id + "-sheet"}><span>シートの項目から書く</span><small>{filled ? filled + "項目を記入済み" : "任意"}</small></h2>
       <div className="optional-idea-grid">
         {fields.map(({ key, label, hint }) => {
           const fieldId = id + "-" + key;
@@ -53,6 +52,6 @@ export default function IdeaWorksheet({ values, text, onTextChange, onChange, in
           </div>;
         })}
       </div>
-    </details>
+    </section>
   </div>;
 }

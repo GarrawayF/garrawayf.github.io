@@ -8,7 +8,7 @@
   font: inherit; font-size: 1rem; line-height: 1.6; resize: vertical;
 }
 .idea-cell textarea:hover { border-color: #92677b; }
-.idea-cell textarea:focus-visible, .optional-idea-sheet summary:focus-visible {
+.idea-cell textarea:focus-visible {
   outline: 2px solid #963955; outline-offset: 2px;
 }
 .idea-cell-main { gap: 8px; }
@@ -19,13 +19,11 @@
 }
 .idea-cell-main textarea::placeholder { color: #796b72; opacity: 1; }
 .optional-idea-sheet { margin-top: 10px; border-bottom: 1px solid #ecdee4; }
-.optional-idea-sheet summary {
-  width: fit-content; display: flex; align-items: center; gap: 5px; min-height: 44px;
-  color: #6c3e51; font-size: .9rem; font-weight: 640; cursor: pointer;
+.optional-idea-heading {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; margin: 0; padding: 10px 0 8px;
+  color: #6c3e51; font-size: .9rem; font-weight: 650;
 }
-.optional-idea-sheet summary::-webkit-details-marker { display: none; }
-.optional-idea-sheet summary small { margin-left: 3px; color: #735d67; font-size: .75rem; font-weight: 500; }
-.optional-idea-sheet[open] summary svg { transform: rotate(90deg); }
+.optional-idea-heading small { color: #735d67; font-size: .75rem; font-weight: 500; }
 .optional-idea-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; padding: 0 0 15px; }
 @media (max-width: 670px) {
   .idea-cell-main textarea { min-height: 107px; padding: 11px 12px; font-size: 1rem; }

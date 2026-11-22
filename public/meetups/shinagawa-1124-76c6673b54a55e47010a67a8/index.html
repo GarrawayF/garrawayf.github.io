@@ -65,7 +65,7 @@
       .film .media-caption p{font-size:.69rem}.film iframe{min-height:200px}
     }
     @media(max-width:350px){.mast nav{gap:7px}.mast nav a{font-size:10px}.hero h1{font-size:23px}.hero .kicker{font-size:7px}.lead{font-size:.74rem}.flow li{grid-template-columns:68px minmax(0,1fr)}}
-    /* Short desktop/projector: all three preview cards on the same row. */
+    /* Short desktop/projector: keep the header and schedule compact. */
     @media(min-width:961px) and (max-height:820px){
       .mast{margin-top:5px}.mast-inner{min-height:43px}
       .hero-inner{padding-block:12px 11px}.hero h1{font-size:clamp(2.2rem,4.5vw,3.65rem)}
@@ -74,11 +74,16 @@
       .content{grid-template-columns:minmax(0,1fr) minmax(0,1.8fr);gap:14px;margin-block:11px 9px;padding-top:9px}
       .section-title{font-size:clamp(1.3rem,2vw,1.75rem);margin-bottom:5px}
       .flow li{padding-block:5px}
-      .media-layout{grid-template-columns:minmax(0,1.2fr) repeat(2,minmax(0,1fr));gap:8px}
-      .media-layout .materials{display:contents}
-      .slide-card{grid-template-columns:minmax(0,1fr)}
-      .slide-card .media-caption{padding-top:7px}
       .footer{padding-block:6px 7px}
+    }
+    /* Put the video on the main stage and align it with both stacked slide previews. */
+    @media(min-width:951px){
+      .media-layout{grid-template-columns:minmax(0,1.9fr) minmax(0,1fr);align-items:stretch;gap:clamp(9px,1vw,14px)}
+      .media-layout .materials{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:repeat(2,minmax(0,1fr));gap:clamp(9px,1vw,14px)}
+      .media-layout .film{display:flex;flex-direction:column}
+      .media-layout .film iframe{flex:1 1 auto;min-height:0;aspect-ratio:auto;height:0}
+      .media-layout .slide-card{grid-template-columns:minmax(0,1fr) auto}
+      .media-layout .slide-card .media-caption{padding-top:0}
     }
     .cover-full{display:inline-flex;align-items:center;justify-content:center;min-height:36px;align-self:center;padding:3px 10px;border:1px solid var(--ink);border-radius:999px;background:var(--rose);font-family:inherit;font-size:12px;font-weight:850;line-height:1.2;color:var(--ink);white-space:nowrap;cursor:pointer}
     .cover-full:focus-visible{outline:3px solid var(--berry);outline-offset:3px}.cover-full:hover{background:var(--pink)}

@@ -316,3 +316,44 @@
 @media(max-width:600px) {
   .pg-detail .pg-sheet-feedback .post-comments { flex-basis:100%; }
 }
+
+/* Put the WORK sheet, graphic and supporting content on the same projector rails. */
+@media(min-width:981px) {
+  .board-app .pg-detail .pg-detail-body {
+    box-sizing:border-box;width:100%;max-width:none;
+    padding-inline:max(clamp(12px,1.1vw,24px),env(safe-area-inset-left)) max(clamp(12px,1.1vw,24px),env(safe-area-inset-right));
+    scrollbar-gutter:stable both-edges;
+  }
+  .board-app .pg-detail .pg-detail-body > :is(.pg-projector-frame,.pg-diagram-target,.pg-sheet-notes,.pg-explainer,.pg-detail-bottom) {
+    box-sizing:border-box;width:100%;max-width:none;margin-inline:0;
+  }
+  /* Use the space gained on the wider sheet instead of extra vertical inset. */
+  .board-app .pg-detail .pg-projector-frame > .pg-original-sheet {padding-block:clamp(8px,.75vw,14px);}
+  .board-app .pg-detail .pg-original-sheet .pg-sheet-feedback {margin-top:5px;padding-top:5px;}
+}
+.pg-detail .pg-sheet-feedback .comments-compact {
+  display:grid;grid-template-columns:minmax(0,1fr) max-content;align-items:start;min-width:0;
+}
+.pg-detail .pg-sheet-feedback .comments-compact .comments-composer {
+  --pg-comment-row:44px;
+  display:grid;width:100%;min-width:0;
+  grid-template-columns:minmax(0,1fr) minmax(7.25rem,10rem);
+}
+.pg-detail .pg-sheet-feedback .comments-compact .comments-composer textarea {grid-column:1;grid-row:1;}
+.pg-detail .pg-sheet-feedback .comments-compact .comments-composer input {grid-column:2;grid-row:1;}
+.pg-detail .pg-sheet-feedback .comments-compact .comments-send {grid-column:1/-1;grid-row:3;width:100%;min-width:0;min-height:var(--pg-comment-row);}
+.pg-detail .pg-sheet-feedback .comments-compact .comments-audience {grid-column:1/-1;grid-row:2;}
+.pg-detail .pg-sheet-feedback .comments-compact .comments-thread {grid-column:1/-1;}
+@media(max-width:600px) {
+  .pg-detail .pg-sheet-feedback .comments-compact {grid-template-columns:minmax(0,1fr);}
+  .pg-detail .pg-sheet-feedback .comments-compact .comments-composer {grid-template-columns:minmax(0,1fr);}
+  .pg-detail .pg-sheet-feedback .comments-compact .comments-composer :is(textarea,input,.comments-send,.comments-audience) {grid-row:auto;grid-column:1/-1;}
+  .pg-detail .pg-sheet-feedback .comments-compact .comments-toggle {justify-self:start;}
+}
+@media(min-width:1280px) and (max-height:930px) {
+  .board-app .pg-detail .pg-projector-frame[data-fit] > .pg-original-sheet {
+    /* Keep the vertical projector fit; recover a modest width only on short, wide monitors. */
+    --pg-width-scale:max(var(--pg-fit-scale,1),min(.97,calc(var(--pg-fit-scale,1) + .07)));
+    transform:scale(var(--pg-width-scale),var(--pg-fit-scale,1));
+  }
+}

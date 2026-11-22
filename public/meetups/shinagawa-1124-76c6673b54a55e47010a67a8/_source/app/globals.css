@@ -473,3 +473,66 @@ h1 { font-size: clamp(32px, 3.55vw, 57px); font-weight: 780; line-height: 1.25; 
   .board-app .pg-original-sheet {padding:10px}
   .board-app .pg-original-sheet .pg-sheet-grid > div {min-height:0;padding:8px 10px}
 }
+
+/* Projection is a dark stage; the input views and white WORK sheet stay unchanged. */
+.board-app.screen-mode {
+  --sh-stage:#0c0b0e;--sh-stage-panel:#161319;--sh-stage-edge:#655762;
+  --sh-stage-text:#fff8fc;--sh-stage-muted:#dfcbd7;--sh-stage-accent:#f8aecf;
+  background:var(--sh-stage);color:var(--sh-stage-text);
+}
+.board-app.screen-mode .board-header {background:var(--sh-stage);color:var(--sh-stage-text);border-color:var(--sh-stage-edge)}
+.board-app.screen-mode .board-header .page-mode-nav {
+  background:var(--sh-stage-panel);border-color:var(--sh-stage-edge);box-shadow:2px 2px #000;
+}
+.board-app.screen-mode :is(.brand-type,.brand-type b,.board-cover-link,.live-state,.nav-action,.page-mode-nav a,.projection-title h1) {
+  color:var(--sh-stage-text);
+}
+.board-app.screen-mode .page-mode-nav a:not([aria-current="page"]):hover {background:#33242e}
+.board-app.screen-mode .page-mode-nav a[aria-current="page"],
+.board-app.screen-mode .projection-controls :is(.view-switch button[aria-pressed=true],.outputs-links a[aria-current]),
+.board-app.screen-mode .pg-kinds button[aria-pressed=true] {
+  background:var(--sh-stage-accent);color:#25141f;border-color:var(--sh-stage-accent);
+}
+.board-app.screen-mode .projection-count {color:var(--sh-stage-muted)}
+.board-app.screen-mode .projection-count b {color:var(--sh-stage-accent);-webkit-text-stroke:.028em #050405}
+.board-app.screen-mode .projection-controls {border-color:var(--sh-stage-edge);color-scheme:dark}
+.board-app.screen-mode .projection-tools :is(a,button) {color:var(--sh-stage-accent)}
+.board-app.screen-mode :is(.projection-room-link,.projection-round select),
+.board-app.screen-mode .projection-controls :is(.view-switch button,.outputs-links a),
+.board-app.screen-mode .presentation-gallery :is(.pg-kinds button,.pg-search,.pg-order select) {
+  color:var(--sh-stage-text);background:var(--sh-stage-panel);border-color:var(--sh-stage-edge);
+}
+.board-app.screen-mode .projection-room-link:is(:hover,:focus-visible) {background:#362236;outline-color:var(--sh-stage-accent)}
+.board-app.screen-mode .presentation-gallery {
+  --pg-paper:var(--sh-stage);--pg-line:var(--sh-stage-edge);--pg-ink:var(--sh-stage-text);
+  --pg-mute:var(--sh-stage-muted);--pg-accent:var(--sh-stage-accent);
+}
+.board-app.screen-mode .presentation-gallery :is(.pg-search input,.pg-search button,.pg-search input::placeholder) {color:var(--sh-stage-muted)}
+.board-app.screen-mode .pg-grid li {
+  background:color-mix(in srgb,var(--pg-team-accent,#f9dfeb) 10%,var(--sh-stage-panel));
+  border-color:#51434d;box-shadow:1px 2px #040306;
+}
+.board-app.screen-mode .pg-grid .pg-choice:hover {background:color-mix(in srgb,var(--pg-team-accent,#f9dfeb) 19%,var(--sh-stage-panel))}
+.board-app.screen-mode .pg-grid .pg-choice[data-last] {box-shadow:inset 0 0 0 2px var(--sh-stage-accent)}
+.board-app.screen-mode .pg-focus-word {color:var(--sh-stage-text)}
+.board-app.screen-mode :is(.pg-meta,.pg-choice-title,.pg-where) {color:var(--sh-stage-muted)}
+.board-app.screen-mode .pg-grid .pg-meta b {color:var(--pg-team-accent,var(--sh-stage-accent))}
+.board-app.screen-mode .pg-grid .pg-quick-visual {color:var(--sh-stage-accent);border-color:#6a4e60}
+.board-app.screen-mode .pg-grid .pg-quick-visual:hover {background:#392536;color:var(--sh-stage-text)}
+.board-app.screen-mode :is(.pg-empty,.pg-unavailable,.kw-panel) {background:var(--sh-stage-panel);color:var(--sh-stage-text);border-color:var(--sh-stage-edge)}
+.board-app.screen-mode .kw-panel {--kw-accent:var(--sh-stage-accent);--kw-copy:var(--sh-stage-text);--kw-sub:var(--sh-stage-muted)}
+.board-app.screen-mode :is(.pg-detail,.pg-detail-bar) {background:var(--sh-stage);border-color:var(--sh-stage-edge)}
+.board-app.screen-mode .pg-detail-bar :is(.pg-back,.pg-page-buttons button) {background:var(--sh-stage-panel);color:var(--sh-stage-text);border-color:var(--sh-stage-edge)}
+.board-app.screen-mode :is(.pg-detail,.pg-grid,.projection-controls) :is(a,button,select):focus-visible {outline-color:var(--sh-stage-accent)}
+.board-app.screen-mode .pg-original-sheet,.board-app.screen-mode .pg-explainer {box-shadow:3px 3px #000}
+.board-app.screen-mode .pg-detail-bottom :is(.pg-actions a,.pg-parent small) {color:var(--sh-stage-accent)}
+.board-app.screen-mode .pg-detail-bottom .pg-parent {background:var(--sh-stage-panel);color:var(--sh-stage-text);border-color:var(--sh-stage-edge)}
+.board-app.screen-mode .pg-detail .post-comments {
+  --comment-fg:var(--sh-stage-text);--comment-muted:var(--sh-stage-muted);--comment-edge:var(--sh-stage-edge);
+  --comment-bg:var(--sh-stage-panel);--comment-input:#201923;--comment-accent:var(--sh-stage-accent);--comment-on-accent:#25141f;--comment-alert:#ffc3c8;
+}
+.board-app.screen-mode .pg-detail .reaction-buttons {color:var(--sh-stage-text)}
+.board-app.screen-mode .presentation-gallery .pg-kinds button[aria-pressed=true] {
+  background:var(--sh-stage-accent);color:#25141f;border-color:var(--sh-stage-accent);
+}
+.board-app.screen-mode .presentation-gallery .pg-search input::placeholder {color:var(--sh-stage-muted)}

@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useDeferredValue, useEffect, useId, useMemo, useRef, useState, type ChangeEvent, type KeyboardEvent } from "react";
+import { useCallback, useDeferredValue, useEffect, useId, useMemo, useRef, useState, type ChangeEvent, type CSSProperties, type KeyboardEvent } from "react";
 import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, CornerDownRight, Pencil, Search, X } from "lucide-react";
 import { pageLink } from "./board-room";
+import { selectGalleryKeywords } from "./gallery-keywords";
 import { IdeaVisualButton } from "./idea-visual";
 import { groupLabel, kindLabel, stageLabel, type MapIdea, type MapRecord, type MapTheme } from "./mind-map-model";
 import { analyzePost } from "./post-analysis";
@@ -23,6 +24,7 @@ type Row = MapRecord & { category: Exclude<KindFilter, "all">; haystack: string 
 const choices: [KindFilter, string][] = [["all","すべて"], ["idea","個人案"], ["team","班のまとめ"], ["plenary","全体の案"]];
 const teamColors: Record<string, string> = { A:"#a8c481", B:"#edba76", C:"#93c6d7", D:"#f1a6bd", E:"#bea9e0", all:"#f9dfeb" };
 const normalize = (value: string) => value.normalize("NFKC").toLocaleLowerCase("ja-JP");
+const wording = (value: string) => normalize(value).replace(/[\s\p{P}]/gu, "");
 
 function routeTarget(url: URL): RouteTarget | null {
   const id = url.searchParams.get("idea");
@@ -138,6 +140,24 @@ export default function PresentationGallery({ ideas, themes, allIdeas = ideas, a
   const deferredSearch = useDeferredValue(search);
   const queryId = useId();
   const full = useMemo(() => makeRows(allIdeas, allThemes), [allIdeas, allThemes]);
+  const focusLabels = useMemo(() => {
+    const keywords = selectGalleryKeywords(full);
+    const counts = new Map<string, number>();
+    const labels = full.map(item => {
+      const word = keywords.get(item.key)?.trim() || item.title;
+      const key = wording(word);
+      counts.set(key, (counts.get(key) || 0) + 1);
+      // Half-width Latin, numerals and kana need less space than full-width Japanese glyphs.
+      const units = Array.from(word).reduce((total, glyph) => total + (/^[\u0020-\u007e\uff61-\uff9f]$/u.test(glyph) ? .58 : 1), 0);
+      return { item, word, key, units };
+    });
+    return new Map(labels.map(({ item, word, key, units }) => {
+      const same = key === wording(item.title);
+      const wrap = units > 12 && (same || counts.get(key) === 1);
+      const showTitle = !same && !wrap;
+      return [item.key, { word, wrap, showTitle, same, search:normalize(word), perLine:Math.max(1, wrap ? Math.ceil(units / 2) : units) }];
+    }));
+  }, [full]);
   const pool = useMemo(() => new Map(full.map(item => [item.key,item])), [full]);
   const scoped = useMemo(() => {
     const ids = new Set([...ideas.map(i => "idea:"+i.id), ...themes.map(i=>"theme:"+i.id)]);
@@ -154,13 +174,13 @@ export default function PresentationGallery({ ideas, themes, allIdeas = ideas, a
       if (category !== "all" && category !== item.category) return false;
       if (!terms.length) return true;
       const stats = values.get(item.key), likes = stats?.likes || 0, loves = stats?.loves || 0;
-      const sourceText = item.haystack + (ready ? " "+(likes+loves)+"票 いいね"+likes+" love"+loves : "");
+      const sourceText = item.haystack + " " + (focusLabels.get(item.key)?.search || "") + (ready ? " "+(likes+loves)+"票 いいね"+likes+" love"+loves : "");
       return terms.every(term => sourceText.includes(term));
     }).sort((left,right) => {
       const priority = order === "popular" ? score(right.kind,right.row.id) - score(left.kind,left.row.id) : 0;
       return priority || right.row.createdAt.localeCompare(left.row.createdAt) || right.row.id.localeCompare(left.row.id);
     });
-  },[scoped,category,deferredSearch,order,score,values,ready]);
+  },[scoped,category,deferredSearch,focusLabels,order,score,values,ready]);
   const current = target ? target.kind ? pool.get(target.kind+":"+target.id) : pool.get("idea:"+target.id) || pool.get("theme:"+target.id) : undefined;
   const index = current ? rows.findIndex(item => item.key === current.key) : -1;
   useEffect(() => {
@@ -217,15 +237,20 @@ export default function PresentationGallery({ ideas, themes, allIdeas = ideas, a
     <p className="pg-search-status" role="status">{[deferredSearch.trim() ? rows.length + "件の検索結果" : "", order === "popular" ? "いいね＋LOVEの合計順" : ""].filter(Boolean).join(" ・ ")}</p>
     {target && !current && loaded && <div className="pg-unavailable" role="status">指定された投稿が見つかりませんでした。<button type="button" onClick={close}>一覧に戻る</button></div>}
     {rows.length ? <ul className="pg-grid" onKeyDown={moveInGrid}>
-      {rows.map(item => <li key={item.key}>
-        <button type="button" className="pg-choice" aria-haspopup="dialog" aria-label={groupLabel(item.row.team) + "・" + kindLabel(item) + "「" + item.title + "」を開く"}
+      {rows.map(item => {
+        const label = focusLabels.get(item.key)!;
+        const accessibleTitle = label.same ? item.title : label.word + " ／ " + item.title;
+        return <li key={item.key}>
+        <button type="button" className="pg-choice" aria-haspopup="dialog" title={item.title} aria-label={groupLabel(item.row.team) + "・" + kindLabel(item) + "「" + accessibleTitle + "」を開く"}
           aria-pressed={current?.key===item.key} data-last={lastKey===item.key || undefined} onClick={()=>open(item)}>
           <span className="pg-meta"><i style={{background:teamColors[item.row.team]}}/><b>{groupLabel(item.row.team)}</b>
             <span>{kindLabel(item)}</span><small aria-label={"リアクション" + (ready ? score(item.kind,item.row.id) : "取得中")}>{ready ? score(item.kind,item.row.id)+"票" : "—"}</small></span>
-          <span className="pg-choice-title">{item.title}</span>
+          <strong className="pg-focus-word" data-wrap={label.wrap || undefined} style={{"--pg-word-units":label.perLine} as CSSProperties}>{label.word}</strong>
+          {label.showTitle && <span className="pg-choice-title">{item.title}</span>}
         </button>
         <IdeaVisualButton className="pg-quick-visual" targetType={item.kind} targetId={item.row.id}/>
-      </li>)}
+      </li>;
+      })}
     </ul> : <div className="pg-empty">{!loaded ? loadError ? "接続が戻ると、発表する案を再度読み込みます。" : "発表する案を読み込み中…" :
       category !== "all" || deferredSearch.trim() ? "この条件に一致する投稿はありません。" : "この範囲の投稿はまだありません。"}
       {(category !== "all" || input) && <button type="button" onClick={()=>{setCategory("all");setSearch("");setInput("");}}>種類・検索をリセット</button>}</div>}

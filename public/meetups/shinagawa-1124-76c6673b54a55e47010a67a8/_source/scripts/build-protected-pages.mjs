@@ -34,6 +34,7 @@ try {
   const access=await readFile(join(root,"pages","access.js"),"utf8");
   const version=createHash("sha256").update(access).digest("hex").slice(0,16);
   await writeFile(join(output,"access.js"),access);
+  await cp(join(root,"pages","vendor"),join(output,"vendor"),{recursive:true});
   const cover="<!doctype html><html lang=\"ja\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><meta name=\"robots\" content=\"noindex,nofollow\"><title>X-meetup 品川｜参加者入口</title></head><body></body></html>";
   const gate=await readFile(join(root,"pages","gate.html"),"utf8");
   const style=await readFile(join(root,"pages","gate-style.html"),"utf8");

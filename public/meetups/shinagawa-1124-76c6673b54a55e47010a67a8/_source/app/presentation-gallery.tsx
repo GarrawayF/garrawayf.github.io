@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useDeferredValue, useEffect, useId, useMemo, useRef, useState, type ChangeEvent, type CSSProperties, type KeyboardEvent } from "react";
-import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Compass, CornerDownRight, Eye, FileText, GitBranch, HandHeart, Lightbulb, MapPin, MessageCircle, Pencil, Quote, Search, Users, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Compass, CornerDownRight, Eye, GitBranch, HandHeart, Lightbulb, MapPin, MessageCircle, Pencil, Quote, Search, Users, X } from "lucide-react";
 import { pageLink } from "./board-room";
 import { selectGalleryKeywords } from "./gallery-keywords";
 import { galleryEntry, galleryHistoryState, galleryLocation } from "./gallery-navigation";
@@ -10,7 +10,7 @@ import { excerpt, makeVisualIndex, VisualCache } from "./idea-visual-model";
 import { groupLabel, kindLabel, stageLabel, type MapIdea, type MapRecord, type MapTheme } from "./mind-map-model";
 import { analyzePost } from "./post-analysis";
 import { PostComments } from "./post-comments";
-import { OriginalWording } from "./post-reading";
+import { WORKSHEET_KEYS, worksheetField, worksheetGroups } from "./worksheet";
 import { ReactionButtons, useReactions } from "./reactions";
 import "./presentation-gallery.css";
 
@@ -19,7 +19,7 @@ type Target = { kind: "idea" | "theme"; id: string };
 type RouteTarget = { kind?: Target["kind"]; id: string };
 type GalleryProps = {
   ideas: readonly MapIdea[]; themes: readonly MapTheme[]; allIdeas?: readonly MapIdea[]; allThemes?: readonly MapTheme[];
-  loaded: boolean; loadError?: boolean; source?: string; scopeKey?: string; onSelect?: (target: Target | null) => void;
+  loaded: boolean; loadError?: boolean; source?: string; onSelect?: (target: Target | null) => void;
 };
 type Row = MapRecord & { category: Exclude<KindFilter, "all">; haystack: string };
 const choices: [KindFilter, string][] = [["all","すべて"], ["idea","個人案"], ["team","班のまとめ"], ["plenary","全体の案"]];
@@ -81,11 +81,11 @@ function Illustration({ item, all }: { item: Row; all: ReadonlyMap<string, Row> 
 }
 
 type DetailProps = {
-  item: Row; source: string; previous?: Row; next?: Row; position: string;
+  item: Row; source: string; keyword?: string; previous?: Row; next?: Row; position: string;
   all: ReadonlyMap<string, Row>; onOpen: (item: Row, move?: "related" | "carousel", scrollTop?: number) => void; onClose: () => void;
   previousIsDetail: boolean; restoreScroll: number;
 };
-function Detail({ item, source, previous, next, position, all, onOpen, onClose, previousIsDetail, restoreScroll }: DetailProps) {
+function Detail({ item, source, keyword, previous, next, position, all, onOpen, onClose, previousIsDetail, restoreScroll }: DetailProps) {
   const dialog = useRef<HTMLDialogElement>(null);
   const body = useRef<HTMLDivElement>(null);
   const dialogLabel = useId();
@@ -108,8 +108,28 @@ function Detail({ item, source, previous, next, position, all, onOpen, onClose, 
     if (destination) { event.preventDefault(); onOpen(destination, "carousel"); }
   };
   const citations = item.kind === "idea" ? [item.row.parentId] : [item.row.sourceIdeaId, item.row.sourceIdeaId2];
-  const bodyLabel = item.kind === "idea" ? item.row.parentId ? "共感した理由・付け足したいこと" : "品川で試してみたいこと" : row.team === "all" ? "会場で加えたい挑戦テーマ" : row.round === 5 ? "発表で紹介したい挑戦テーマ" : "品川で試してみたいこと";
+  const worksheet = row.worksheet || {};
+  const raw = row.enteredText ?? row.text;
   const mode = kind === "idea" ? "personal" : row.team === "all" ? "plenary" : row.round === 5 ? "summary" : "work";
+  // Match the participant's WORK 01 reference. Blank cells are intentional: do not infer missing answers.
+  const cells = [
+    { id: "person", label: "誰が使う？", hint: "どんな人か。どんな一日を過ごしているか。", value: worksheet.person },
+    { id: "scene", label: "今、何に困っている？", hint: "駅前や移動のどんな場面で困っているか。", value: worksheet.scene },
+    { id: "gain", label: "どうなったら嬉しい？", hint: "その人の一日がどう変わるか。", value: worksheet.gain },
+    { id: "proposal", label: "駅前に何があったらいい？", hint: "どんな機能・サービス・場があると嬉しいか。", value: raw },
+    { id: "partners", label: "誰と一緒に挑戦したい？", hint: "この未来に共感し、一緒に考え続けたい人や組織は誰か。", value: worksheet.partners },
+  ];
+  const sheetKeys = new Set(cells.map(cell => cell.id));
+  const currentKeys = worksheetGroups[mode];
+  const extras = [...currentKeys, ...WORKSHEET_KEYS.filter(key => !currentKeys.includes(key))]
+    .filter(key => !sheetKeys.has(key) && worksheet[key]?.trim())
+    .map(key => ({ key, label: worksheetField(key, mode).label, value: worksheet[key]! }));
+  const footer = [...extras,
+    ...(kind === "idea" && item.row.context?.trim() ? [{ key: "context", label: "きっかけ・共感した理由", value: item.row.context }] : []),
+    ...(kind === "idea" && item.row.name?.trim() ? [{ key: "name", label: "呼ばれたい名前", value: item.row.name }] : []),
+  ];
+  const showKeyword = keyword && wording(keyword) !== wording(item.title);
+  const workLabel = row.round === 5 ? "FINAL" : row.round === 4 ? "全体対話" : "WORK 0" + row.round;
   return <dialog className="pg-detail" ref={dialog} aria-labelledby={dialogLabel} onKeyDown={keys}
     onCancel={event => { event.preventDefault(); onClose(); }} onClick={event => {
       if (event.target !== dialog.current) return;
@@ -125,13 +145,26 @@ function Detail({ item, source, previous, next, position, all, onOpen, onClose, 
       </div>
     </header>
     <div className="pg-detail-body" ref={body} id={kind+"-"+row.id} tabIndex={-1}>
-      <h2 id={dialogLabel} className="pg-sr">{item.title}</h2>
-      <section className="pg-original-sheet" aria-label={kind === "idea" ? "個人で書いたシート" : "班・全体で書いたシート"}>
-        <div className="pg-original-heading">
-          <h3><FileText aria-hidden="true" size={22}/>{kind === "idea" ? "個人で書いたシート" : row.team === "all" ? "全体で書いたシート" : "班で書いたシート"}</h3>
-          <p className="pg-original-meta"><i style={{background:teamColors[row.team]}}/>{groupLabel(row.team)}<span>／</span>{stageLabel(row.round)}</p>
-        </div>
-        <OriginalWording entry={row} mode={mode} bodyLabel={bodyLabel}/>
+      <section className="pg-original-sheet" aria-label={kind === "idea" ? "個人で書いたシート" : "班・全体で書いたシート"} style={{"--pg-sheet-team":teamColors[row.team]} as CSSProperties}>
+        <header className="pg-original-heading">
+          <div className="pg-sheet-heading-line">
+            <p className="pg-sheet-work">{workLabel}</p>
+            <p className="pg-original-meta"><i style={{background:teamColors[row.team]}}/>{groupLabel(row.team)}<span>／</span>{stageLabel(row.round)}</p>
+          </div>
+          <h2 id={dialogLabel} className="pg-sheet-title" data-keyword-is-title={!showKeyword || undefined}>{item.title}</h2>
+          {showKeyword && <p className="pg-sheet-keyword">{keyword}</p>}
+          <div className="pg-sheet-heading-line pg-sheet-caption">
+            <h3>{kind === "idea" ? "個人で書いたシート" : row.team === "all" ? "全体で書いたシート" : "班で書いたシート"}</h3>
+            <p>困りごと ／ したい体験　どちらか一方でOK</p>
+          </div>
+        </header>
+        <dl className="reading-original pg-sheet-grid">
+          {cells.map(cell => <div key={cell.id} data-sheet-field={cell.id}>
+            <dt>{cell.label}<small>（{cell.hint}）</small></dt>
+            <dd data-empty={!cell.value?.trim() || undefined}>{cell.value?.trim() ? cell.value : "未記入"}</dd>
+          </div>)}
+          {footer.map(field => <div key={field.key} className="pg-sheet-extra"><dt>{field.label}</dt><dd>{field.value}</dd></div>)}
+        </dl>
       </section>
       <Illustration item={item} all={all}/>
       <div className="pg-detail-bottom">
@@ -151,34 +184,13 @@ function Detail({ item, source, previous, next, position, all, onOpen, onClose, 
   </dialog>;
 }
 
-export default function PresentationGallery({ ideas, themes, allIdeas = ideas, allThemes = themes, source = "", loaded, loadError = false, scopeKey = "", onSelect }: GalleryProps) {
+export default function PresentationGallery({ ideas, themes, allIdeas = ideas, allThemes = themes, source = "", loaded, loadError = false, onSelect }: GalleryProps) {
   const { order, setOrder, score, values, ready } = useReactions();
   const [category, setCategory] = useState<KindFilter>("all");
   const [input, setInput] = useState("");
   const [search, setSearch] = useState("");
   const [target, setTarget] = useState<RouteTarget | null>(null);
   const [lastKey, setLastKey] = useState("");
-  const [pageIndex, setPageIndex] = useState(0);
-  const [pageSize, setPageSize] = useState(0);
-  const gridStart = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const measure = () => {
-      const width = window.innerWidth;
-      if (width < 981) { setPageSize(0); return; }
-      const columns = width >= 1550 ? 6 : width >= 1200 ? 5 : 4;
-      const top = (gridStart.current?.getBoundingClientRect().top || 0) + window.scrollY;
-      const rows = Math.min(8, Math.max(1, Math.floor((window.innerHeight - top - 26) / 77)));
-      setPageSize(columns * rows);
-    };
-    const observer = typeof ResizeObserver === "function" && gridStart.current?.parentElement
-      ? new ResizeObserver(measure) : null;
-    if (observer && gridStart.current?.parentElement) observer.observe(gridStart.current.parentElement);
-    window.addEventListener("resize", measure);
-    measure();
-    return () => { observer?.disconnect(); window.removeEventListener("resize", measure); };
-  }, []);
-
   const [previousIsDetail, setPreviousIsDetail] = useState(false);
   const [restoreScroll, setRestoreScroll] = useState(0);
   const waitingForBack = useRef(false);
@@ -227,11 +239,6 @@ export default function PresentationGallery({ ideas, themes, allIdeas = ideas, a
       return priority || right.row.createdAt.localeCompare(left.row.createdAt) || right.row.id.localeCompare(left.row.id);
     });
   },[scoped,category,deferredSearch,focusLabels,order,score,values,ready]);
-  const pages = pageSize ? Math.max(1, Math.ceil(rows.length / pageSize)) : 1;
-  const displayPage = Math.min(pageIndex, pages - 1);
-  const first = pageSize ? displayPage * pageSize : 0;
-  const visibleRows = pageSize ? rows.slice(first, first + pageSize) : rows;
-  useEffect(() => { setPageIndex(0); }, [category, deferredSearch, order, scopeKey]);
   const current = target ? target.kind ? pool.get(target.kind+":"+target.id) : pool.get("idea:"+target.id) || pool.get("theme:"+target.id) : undefined;
   const index = current ? rows.findIndex(item => item.key === current.key) : -1;
   useEffect(() => {
@@ -323,19 +330,11 @@ export default function PresentationGallery({ ideas, themes, allIdeas = ideas, a
           <option value="recent">新着順</option><option value="popular">人気順</option>
         </select>
       </label>
-      {pages > 1 && <div className="pg-pager" role="group" aria-label="投稿一覧のページ切り替え">
-        <button type="button" aria-label="前のページ" disabled={displayPage === 0}
-          onClick={() => setPageIndex(displayPage - 1)}><ChevronLeft size={17}/></button>
-        <span role="status">{first + 1}–{first + visibleRows.length} / {rows.length}件</span>
-        <button type="button" aria-label="次のページ" disabled={displayPage + 1 >= pages}
-          onClick={() => setPageIndex(displayPage + 1)}><ChevronRight size={17}/></button>
-      </div>}
     </div>
     <p className="pg-search-status" role="status">{[deferredSearch.trim() ? rows.length + "件の検索結果" : "", order === "popular" ? "いいね＋LOVEの合計順" : ""].filter(Boolean).join(" ・ ")}</p>
     {target && !current && loaded && <div className="pg-unavailable" role="status">指定された投稿が見つかりませんでした。<button type="button" onClick={close}>一覧に戻る</button></div>}
-    <div ref={gridStart} aria-hidden="true"/>
     {rows.length ? <ul className="pg-grid" onKeyDown={moveInGrid}>
-      {visibleRows.map(item => {
+      {rows.map(item => {
         const label = focusLabels.get(item.key)!;
         const accessibleTitle = label.same ? item.title : label.word + " ／ " + item.title;
         return <li key={item.key} data-team={item.row.team} style={{"--pg-team-accent": teamColors[item.row.team] || teamColors.all} as CSSProperties}>
@@ -352,7 +351,7 @@ export default function PresentationGallery({ ideas, themes, allIdeas = ideas, a
     </ul> : <div className="pg-empty">{!loaded ? loadError ? "接続が戻ると、発表する案を再度読み込みます。" : "発表する案を読み込み中…" :
       category !== "all" || deferredSearch.trim() ? "この条件に一致する投稿はありません。" : "この範囲の投稿はまだありません。"}
       {(category !== "all" || input) && <button type="button" onClick={()=>{setCategory("all");setSearch("");setInput("");}}>種類・検索をリセット</button>}</div>}
-    {current && <Detail item={current} source={source} previous={index>0 ? rows[index-1] : undefined}
+    {current && <Detail item={current} source={source} keyword={focusLabels.get(current.key)?.word} previous={index>0 ? rows[index-1] : undefined}
       next={index>=0 && index+1<rows.length ? rows[index+1] : undefined} position={index>=0 ? (index+1)+" / "+rows.length : "元の投稿"}
       all={pool} onOpen={open} onClose={close} previousIsDetail={previousIsDetail} restoreScroll={restoreScroll}/>}
   </section>;

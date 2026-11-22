@@ -511,7 +511,7 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
             {boardView === "map" ? <MindMap ideas={ideas} themes={themeFeed.themes} themesLoaded={themeFeed.loaded} loadError={feedError}
               teamFilter={team} roundFilter={round} hasLoaded={hasLoaded} presentation onReply={reply}/>
               : boardView === "words" ? <KeywordsPanel ideas={filteredIdeas} onReply={reply} presentation/>
-              : <PresentationGallery ideas={filteredIdeas} themes={visibleThemes} allIdeas={ideas} allThemes={themeFeed.themes} source={sourceHref} scopeKey={team + ":" + round} loaded={feedReady} loadError={feedError}/>}
+              : <PresentationGallery ideas={filteredIdeas} themes={visibleThemes} allIdeas={ideas} allThemes={themeFeed.themes} source={sourceHref} loaded={feedReady} loadError={feedError}/>}
           </IdeaVisualProvider>
         </section>}
       </div>

@@ -353,6 +353,8 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
   const focusComposer = (field?: "context" | keyof Worksheet) => requestAnimationFrame(() => {
     const destination = field && form.current?.querySelector<HTMLTextAreaElement>('[data-worksheet-key="' + field + '"]');
     const target = destination || input.current;
+    const sheet = target?.closest("details");
+    if (sheet) sheet.open = true;
     target?.focus({ preventScroll: true });
     target?.scrollIntoView({ behavior: "smooth", block: "center" });
   });
@@ -365,7 +367,7 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
     } else {
       update({ round: sheetRound, manualRoundSlot: eventRoundAt() });
     }
-    focusComposer();
+    focusComposer("person");
   };
 
   const receiveNote = (text: string, noteRound: Round, fields: NoteFields = {}) => {
@@ -413,7 +415,7 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
   const summaryRound = screen ? round : personal ? (navTeam ? draft.round : 0) : summaryScope.round;
   const summaryHref = pageLink(sourceHref, { view: "summary", team: navTeam, round: summaryRound ? String(summaryRound) : "", write: view === "summary" && summaryScope.team === "all" ? "plenary" : "" });
 
-  return <div className={screen ? "board-app screen-mode" : personal ? "board-app" : "board-app summary-mode"}>
+  return <div className={screen ? "board-app screen-mode" : personal ? "board-app personal-mode" : "board-app summary-mode"}>
     <header className="topbar board-header"><div className="shell nav-inner">
       <Brand source={sourceHref} />
       <nav aria-label="表示と共有">
@@ -428,12 +430,10 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
     </nav></header>
 
     <main className="shell">
-      {!screen && <section className="hero">
+      {view === "summary" && <section className="hero">
         <div className="hero-copy"><div className="event-meta"><span className="event-rule" />2026.11.24 <span>TUE</span><i /> WOVEN CITY</div>
-          <h1>{personal ? "品川アイデアボード" : "班のまとめ"}</h1>
-          {personal && <p>品川で、誰とどんなことを試してみたい？</p>}
-          <div className="event-tools" ref={eventTools}>
-            {personal && <button type="button" onClick={() => setTool("notes")}><NotebookPen size={15} />個人メモ</button>}
+          <h1>班のまとめ</h1>
+          <div className="event-tools">
             <button type="button" onClick={() => setTool("slides")}><Presentation size={15} />スライド・記入シート</button>
             <button type="button" onClick={() => setTool("guide")}><BookOpen size={15} />今日の進め方</button>
           </div>
@@ -442,10 +442,6 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
       </section>}
       <div className={screen ? "workspace" : personal ? "workspace sheet-workspace" : "summary-layout"}>
         {personal && <form className="composer" ref={form} onSubmit={send} id="compose">
-          <div className="section-heading composer-heading">
-            <div className="section-name"><span className="icon-box"><Pencil size={18} strokeWidth={2.1} /></span><h2>アイデアを書く</h2></div>
-          </div>
-          <p className="sheet-intro">どれか1欄と班の選択で投稿できます。誰かの案に共感した理由も歓迎です。</p>
           <fieldset disabled={sending} className="compose-fields">
             {replyId && <div className="pending-reference" role="status">
               {replySource ? <><strong>この下書きに元の投稿を引用しますか？</strong><p>{replySource.text}</p>
@@ -482,6 +478,11 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
             <button className="post-button" type="submit" aria-describedby="posting-audience submit-hint" disabled={sending || !hydrated || Boolean(submitHint)}><Send size={17} /><span>{sending ? "投稿中…" : error ? "もう一度投稿する" : "投稿する"}</span></button>
             <p id="submit-hint" className="submit-hint" aria-live="polite">{!sending && submitHint}</p>
           </fieldset>
+          <div className="personal-resources" ref={eventTools} role="group" aria-label="個人メモと資料">
+            <button type="button" onClick={() => setTool("notes")}><NotebookPen size={16} />個人メモ</button>
+            <button type="button" onClick={() => setTool("slides")}><Presentation size={16} />スライド・記入シート</button>
+            <button type="button" onClick={() => setTool("guide")}><BookOpen size={16} />今日の進め方</button>
+          </div>
         </form>}
         {view === "summary" && <TeamSummaryWorkspace ideas={ideas} hasLoaded={hasLoaded} loadError={sync === "error" || sync === "offline"}
           initialTeam={initialTeam || draft.team} initialRound={initialRound || draft.round} source={sourceHref} onScopeChange={onSummaryScope} />}

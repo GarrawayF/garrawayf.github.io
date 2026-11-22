@@ -40,10 +40,8 @@ function choices(parts: ReturnType<typeof sources>): Choice[] {
   const found = new Map<string, Choice>();
   for (const [source, weight] of parts) {
     // Repeated meaningful nouns can connect a proposal to an example named later in the same entry.
-    const repeated = new Set<string>();
-    for (const noun of extractIdeaKeywords(source)) {
-      if (noun.length >= 3 && !generic.test(noun) && source.indexOf(noun, source.indexOf(noun) + noun.length) !== -1) repeated.add(noun);
-    }
+    const repeated = extractIdeaKeywords(source).filter(noun =>
+      noun.length >= 3 && !generic.test(noun) && source.includes(noun, source.indexOf(noun) + noun.length));
     const add = (raw: string, rank: number) => {
       const unwrapped = raw.trim().replace(/^(?:「(.+)」|『(.+)』|（(.+)）|\((.+)\))$/u, (_, a, b, c, d) => a ?? b ?? c ?? d).trim();
       const label = stripConjunction(unwrapped);
@@ -53,7 +51,7 @@ function choices(parts: ReturnType<typeof sources>): Choice[] {
       const key = keyOf(label);
       const score = rank + weight - Math.max(0, len - 10) * 2.2 - Math.max(0, 4 - len) * 4 -
         (generic.test(label) ? 36 : 0) + (quantity.test(label) ? 10 : 0) + (without.test(label) ? 10 : 0) +
-        ([...repeated].some(noun => label.includes(noun)) ? 4 : 0);
+        (repeated.some(noun => label.includes(noun)) ? 4 : 0);
       if ((found.get(key)?.score ?? -Infinity) < score) found.set(key, { label, key, score });
     };
     const clean = source.replace(/https?:\/\/[^\s]+/giu, " ").trim();

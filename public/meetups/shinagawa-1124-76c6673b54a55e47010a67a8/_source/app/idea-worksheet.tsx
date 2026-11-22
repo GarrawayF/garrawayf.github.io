@@ -1,6 +1,7 @@
 "use client";
 import { useId } from "react";
 import type { RefObject } from "react";
+import { ChevronRight } from "lucide-react";
 import { WORKSHEET_FIELD_LIMIT, type Worksheet, type WorksheetKey } from "./worksheet";
 import "./idea-worksheet.css";
 
@@ -13,34 +14,44 @@ type Props = {
   isReply?: boolean;
 };
 
-const fields: readonly { key: WorksheetKey | "text"; label: string; hint: string }[] = [
-  { key: "person", label: "誰のことを考える？", hint: "品川駅前で過ごす一人を思い浮かべる。" },
-  { key: "scene", label: "いつ、どんな場面？", hint: "その人が、そこで何をしているか。" },
-  { key: "gain", label: "その人にとって、うれしい変化は？", hint: "楽になること、できたらうれしい体験、どちらからでも。" },
-  { key: "text", label: "品川で試してみたいこと", hint: "何を試せば、どんな人の体験が変わりそう？" },
-  { key: "perspective", label: "ほかの立場から見ると？", hint: "別の人や場面を思い浮かべて、違う見方も書く。" },
+const fields: readonly { key: WorksheetKey; label: string; hint: string }[] = [
+  { key: "person", label: "誰のことを考える？", hint: "品川で過ごす一人を思い浮かべてください。" },
+  { key: "scene", label: "いつ、どんな場面？", hint: "その人はそこで何をしていますか？" },
+  { key: "gain", label: "その人にとって、うれしい変化は？", hint: "楽になること、体験できたらうれしいことなど。" },
+  { key: "perspective", label: "ほかの立場から見ると？", hint: "別の人や場面を思い浮かべてください。" },
 ];
 
 export default function IdeaWorksheet({ values, text, onTextChange, onChange, inputRef, isReply = false }: Props) {
   const id = useId();
-  return <div className="idea-worksheet" role="group" aria-label="個人の記入シート">
-    {fields.map(({ key, label, hint }) => {
-      const main = key === "text";
-      const fieldId = id + "-" + key;
-      const change = (value: string) => {
-        if (main) return onTextChange(value);
-        const next = { ...values };
-        if (value) next[key] = value;
-        else delete next[key];
-        onChange(next);
-      };
-      return <div className={"idea-cell" + (main ? " idea-cell-main" : "")} key={key}>
-        <label htmlFor={fieldId}>{main && isReply ? "共感した理由・付け足したいこと" : label}</label>
-        <small id={fieldId + "-help"}>{main && isReply ? "どの言葉に共感しましたか？　あなた自身の経験を一言。" : hint}</small>
-        <textarea id={fieldId} data-worksheet-key={key} ref={main ? inputRef : undefined}
-          aria-describedby={fieldId + "-help"} maxLength={WORKSHEET_FIELD_LIMIT} rows={3}
-          value={main ? text : values[key] || ""} onChange={event => change(event.target.value)} />
-      </div>;
-    })}
+  const filled = fields.filter(({ key }) => values[key]?.trim()).length;
+  return <div className="idea-worksheet">
+    <div className="idea-cell idea-cell-main">
+      <h1><label htmlFor={id + "-text"}>{isReply ? "共感した理由・付け足したいこと" : "品川で試してみたいこと"}</label></h1>
+      <textarea id={id + "-text"} ref={inputRef} data-worksheet-key="text" rows={3}
+        maxLength={WORKSHEET_FIELD_LIMIT} aria-describedby={id + "-help"} value={text}
+        placeholder={isReply ? "私はここに共感しました。なぜなら…" : "思いついたことを、ここに一言。"}
+        onChange={event => onTextChange(event.target.value)} />
+      <small id={id + "-help"}>{isReply ? "どの言葉に共感したか、自分の経験を添えてみてください。" : "誰かの案に共感した理由も書けます。"}</small>
+    </div>
+    <details className="optional-idea-sheet">
+      <summary><ChevronRight size={16} aria-hidden="true" /><span>シートの項目から書く</span><small>{filled ? filled + "項目を記入済み" : "任意"}</small></summary>
+      <div className="optional-idea-grid">
+        {fields.map(({ key, label, hint }) => {
+          const fieldId = id + "-" + key;
+          return <div className="idea-cell" key={key}>
+            <label htmlFor={fieldId}>{label}</label>
+            <small id={fieldId + "-help"}>{hint}</small>
+            <textarea id={fieldId} data-worksheet-key={key} rows={2}
+              aria-describedby={fieldId + "-help"} maxLength={WORKSHEET_FIELD_LIMIT}
+              value={values[key] || ""} onChange={event => {
+                const next = { ...values };
+                if (event.target.value) next[key] = event.target.value;
+                else delete next[key];
+                onChange(next);
+              }} />
+          </div>;
+        })}
+      </div>
+    </details>
   </div>;
 }

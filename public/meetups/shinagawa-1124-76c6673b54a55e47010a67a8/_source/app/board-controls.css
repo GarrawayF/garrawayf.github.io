@@ -168,3 +168,31 @@
   .projection-round select { min-height:36px; font-size:.82rem; }
   .screen-mode .projection-controls .view-switch { width:100%; margin:0; }
 }
+
+.personal-mode .sheet-workspace {
+  width: min(100%, 840px); margin-inline: auto; padding-top: clamp(12px, 2.5vw, 32px);
+}
+.personal-mode .composer { padding: clamp(17px, 2.5vw, 32px); }
+.personal-mode .composer .compose-fields { margin: 0; }
+.personal-resources {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 0 18px;
+  border-top: 1px solid #ecdee4; margin-top: 17px; padding-top: 4px;
+}
+.personal-resources button {
+  display: inline-flex; align-items: center; gap: 5px; min-height: 44px; padding: 4px 0;
+  color: #69535f; font: inherit; font-size: .82rem;
+}
+.personal-resources button:hover { color: #893958; text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 670px) {
+  .personal-mode .composer { padding: 14px 0 0; border: 0; border-radius: 0; box-shadow: none; background: none; }
+  .personal-mode .sheet-workspace { padding-top: 0; }
+}
+@media (max-width: 360px) {
+  .personal-mode .brand-mark { display: none; }
+}
+@media (max-width: 360px) and (max-height: 605px) {
+  .personal-mode .composer { padding-top: 8px; }
+  .personal-mode .idea-cell-main { gap: 5px; }
+  .personal-mode .idea-cell-main textarea { min-height: 84px; height: 84px; }
+  .personal-mode .optional-idea-sheet { margin-top: 5px; }
+}

@@ -7,8 +7,8 @@
   <meta name="googlebot" content="noindex, nofollow, noarchive">
   <meta name="referrer" content="no-referrer">
   <meta name="theme-color" content="#fff3f6">
-  <title>X-meetup品川｜参加者用ボード｜Garraway F</title>
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <title>X-meetup品川｜参加者用ボード</title>
+  <link rel="icon" href="data:,">
   <style>
     :root {
       color-scheme: light;
@@ -22,14 +22,9 @@
     body { margin: 0; min-height: 100dvh; -webkit-font-smoothing: antialiased; background: linear-gradient(152deg, #fff8f9 0, var(--paper) 53%, #fdecf1); }
     a { color: inherit; text-decoration: none; }
     a:focus-visible { outline: 3px solid #be456e; outline-offset: 4px; }
-    .shell { max-width: 1136px; padding: 18px max(24px, env(safe-area-inset-right)) 60px max(24px, env(safe-area-inset-left)); margin: auto; }
-    header { min-height: 59px; padding: 9px 23px; display: flex; align-items: center; justify-content: space-between; gap: 14px; background: #fffcfd; border: 1.5px solid var(--ink); border-radius: 999px; box-shadow: 3px 4px 0 #d9a7b8; }
-    .brand { font: 900 27px/1 "Archivo Black", "Arial Black", Arial, sans-serif; letter-spacing: -.075em; }
-    .brand span { color: #c03468; }
-    .home { font-size: 13px; font-weight: 700; padding: 9px 2px; }
-    .home:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .shell { max-width: 1136px; padding: 0 max(24px, env(safe-area-inset-right)) 60px max(24px, env(safe-area-inset-left)); margin: auto; }
     main { max-width: 966px; margin: auto; }
-    .intro { display: grid; grid-template-columns: 1fr minmax(160px, 26%); align-items: center; gap: clamp(22px, 5vw, 60px); border-bottom: 1px solid var(--rule); padding: clamp(34px, 7vw, 78px) 0 clamp(33px, 6vw, 66px); }
+    .intro { display: grid; grid-template-columns: 1fr minmax(160px, 26%); align-items: center; gap: clamp(22px, 5vw, 60px); border-bottom: 1px solid var(--rule); padding: clamp(24px, 4vw, 50px) 0 clamp(33px, 6vw, 66px); }
     h1 { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: .09em; margin: 0; font-family: var(--serif); font-size: clamp(46px, 7.3vw, 93px); line-height: 1.15; font-weight: 900; letter-spacing: -.055em; }
     h1 em { font-style: normal; color: var(--berry); white-space: nowrap; }
     .lead { color: #594851; font-size: clamp(15px, 1.9vw, 21px); line-height: 1.75; margin: 15px 0 0; font-weight: 620; }
@@ -45,16 +40,16 @@
     .card p { font-size:15px; line-height:1.75; color:#594851; margin:0 0 22px; }
     .output p { color:#ded6dc; }
     .join,.teams a,.all { display:inline-flex; justify-content:center; align-items:center; min-height:46px; border:1px solid var(--ink); font-size:16px; font-weight:750; }
-    .join { margin-top:auto; background:var(--blush); color:#472636; border-radius:999px; padding:9px 25px; box-shadow:2px 3px 0 #d7a6b9; }
+    .input-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:auto; width:100%; }
+    .join { background:var(--blush); color:#472636; border-radius:999px; padding:9px 18px; box-shadow:2px 3px 0 #d7a6b9; }
     .join:hover { background:var(--rose); }
     .teams { display:grid; width:100%; grid-template-columns:repeat(5,minmax(0,1fr)); gap:6px; }
     .teams a { color:#fff; background:#2b262b; border-color:#766675; border-radius:13px; white-space:nowrap; }
     .all { width:100%; margin-top:10px; color:#34232d; background:#f5d3e0; border-color:#f5d3e0; border-radius:999px; }
     .teams a:hover,.all:hover { color:var(--dark); background:#fff5f8; }
     @media(max-width:680px) {
-      .shell { padding:13px max(16px,env(safe-area-inset-right)) calc(35px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left)); }
-      header { min-height:48px; padding:5px 15px; }.brand { font-size:23px; }.home{font-size:12px;}
-      .intro { grid-template-columns:1fr minmax(80px,23%); gap:15px; padding:38px 0 29px; }
+      .shell { padding:0 max(16px,env(safe-area-inset-right)) calc(35px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left)); }
+      .intro { grid-template-columns:1fr minmax(80px,23%); gap:15px; padding:24px 0 29px; }
       h1 { font-size:clamp(34px,7.6vw,52px); }.lead { font-size:15px; line-height:1.65; margin-top:10px; }
       .calendar { width:100%; }.calendar strong { font-size:clamp(30px,6.5vw,45px); -webkit-text-stroke:.8px #4b3340; text-shadow:1.5px 2px #7e5268; }.calendar .year,.calendar .day{font-size:9px;}
       .choices { grid-template-columns:1fr; gap:14px; margin-top:20px; }.card{padding:22px;border-radius:21px;}.card p{margin-bottom:17px;}.join{width:100%;}
@@ -64,10 +59,6 @@
 </head>
 <body>
   <div class="shell">
-    <header>
-      <a class="brand" href="/" aria-label="Garraway F 公式ホームページ">Garraway <span>F</span></a>
-      <a class="home" href="/">公式ホームへ</a>
-    </header>
     <main>
       <section class="intro" aria-labelledby="title">
         <div class="intro-copy">
@@ -83,8 +74,11 @@
       <div class="choices">
         <section class="card input" aria-labelledby="participate">
           <h2 id="participate">入力する</h2>
-          <p>紙の記入シートと同じ項目から、書きやすい欄を一つ選んで入力できます。</p>
-          <a class="join" href="https://shinagawa-discussion.delpiero.chatgpt.site/" rel="noreferrer nofollow">記入シートを開く</a>
+          <p>個人の案は記入シートへ。班で出た挑戦テーマや、きっかけになった声は「班のまとめ」に書きます。</p>
+          <nav class="input-actions" aria-label="入力する内容を選ぶ">
+            <a class="join" href="https://shinagawa-discussion.delpiero.chatgpt.site/" rel="noreferrer nofollow">個人の記入シートを開く</a>
+            <a class="join" href="https://shinagawa-discussion.delpiero.chatgpt.site/?view=summary" rel="noreferrer nofollow">班のまとめを入力</a>
+          </nav>
         </section>
         <section class="card output" aria-labelledby="project">
           <h2 id="project">発表を見る</h2>

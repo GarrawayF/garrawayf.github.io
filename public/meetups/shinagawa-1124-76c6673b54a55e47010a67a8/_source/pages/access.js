@@ -180,7 +180,8 @@
           if(manual!==current)return;
           for(const item of await model.getAnnotations({intent:'display'})){
             if(item.subtype!=='Link'||!item.rect||(!item.url&&!item.dest))continue;
-            const [x1,y1,x2,y2]=viewport.convertToViewportRectangle(item.rect);
+            const [x1,y1]=viewport.convertToViewportPoint(item.rect[0],item.rect[1]);
+            const [x2,y2]=viewport.convertToViewportPoint(item.rect[2],item.rect[3]);
             const annotation=document.createElement('a');
             annotation.className='event-manual-annotation';
             annotation.style.cssText='left:'+(100*Math.min(x1,x2)/viewport.width)+'%;top:'+(100*Math.min(y1,y2)/viewport.height)+'%;width:'+(100*Math.abs(x1-x2)/viewport.width)+'%;height:'+(100*Math.abs(y1-y2)/viewport.height)+'%';

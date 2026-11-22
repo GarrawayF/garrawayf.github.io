@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // The Shinagawa board is a separately built application under public/.
+    "public/meetups/shinagawa-1124-76c6673b54a55e47010a67a8/_source/**",
+    "public/meetups/shinagawa-1124-76c6673b54a55e47010a67a8/board/assets/app.js",
   ]),
   {
     files: ["components/ui/**/*.{ts,tsx}", "hooks/use-mobile.ts"],

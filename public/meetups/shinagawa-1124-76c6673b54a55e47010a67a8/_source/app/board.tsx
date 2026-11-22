@@ -135,6 +135,7 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
   const [draft, setDraft] = useState<Draft>(emptyDraft);
   const [hydrated, setHydrated] = useState(false);
   const [extras, setExtras] = useState(false);
+  const [mapWorksheet,setMapWorksheet] = useState<{key:string}|null>(null);
   const [boardView, setBoardView] = useState<"list" | "map" | "words">(initialTab === "map" || initialTab === "words" ? initialTab : "list");
   const [team, setTeam] = useState<Team | "">(teams.find(t => t === initialTeam) || "");
   const [round, setRound] = useState<ProjectionRound>(Object.hasOwn(projectionRounds, Number(initialRound)) ? Number(initialRound) as ProjectionRound : 0);
@@ -214,7 +215,7 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
     if (!hydrated || !screen) return;
     const current = window.location.href;
     const url = new URL(boardLocation(current, screen, { tab: boardView, team, round }));
-    if (boardView !== "list") {
+    if (boardView === "words") {
       url.searchParams.delete("idea");
       url.searchParams.delete("thread");
       if (url.hash.startsWith("#theme-")) url.hash = "";
@@ -548,8 +549,14 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
           </div>
           <TeamThemes team={team || "all"} round={round || undefined} projection ideas={ideas} feedOnly onFeedChange={setThemeFeed} />
           <IdeaVisualProvider ideas={ideas} themes={themeFeed.themes}>
-            {boardView === "map" ? <MindMap ideas={ideas} themes={themeFeed.themes} themesLoaded={themeFeed.loaded} loadError={feedError}
-              teamFilter={team} roundFilter={round} hasLoaded={hasLoaded} presentation onReply={reply}/>
+            {boardView === "map" ? <>
+              <MindMap ideas={ideas} themes={themeFeed.themes} themesLoaded={themeFeed.loaded} loadError={feedError}
+                teamFilter={team} roundFilter={round} hasLoaded={hasLoaded} presentation onReply={reply}
+                onOpenWorksheet={key=>setMapWorksheet({key})}/>
+              <PresentationGallery ideas={filteredIdeas} themes={visibleThemes} allIdeas={ideas} allThemes={themeFeed.themes}
+                source={sourceHref} loaded={feedReady} loadError={feedError} detailOnly externalOpen={mapWorksheet}
+                onExternalOpenConsumed={()=>setMapWorksheet(null)}/>
+              </>
               : boardView === "words" ? <KeywordsPanel ideas={filteredIdeas} onReply={reply} presentation onSearchLink={openKeywordSearch} searchHref={keyword => {
                   const path = boardLocation(sourceHref, true, { tab:"list", team, round });
                   const url = new URL(path, publicBoardUrl);

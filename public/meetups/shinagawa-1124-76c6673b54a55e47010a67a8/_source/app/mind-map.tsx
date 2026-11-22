@@ -11,7 +11,7 @@ import { buildContentMap, buildIdeaMap, defaultContentFocus, defaultFocus, group
 import "./mind-map.css";
 
 type CitationProps = { onCite?: (idea: MapIdea) => void; citedIds?: readonly string[] };
-type Props = CitationProps & { ideas: readonly MapIdea[]; themes?: readonly MapTheme[]; teamFilter: MapGroup | ""; roundFilter: EventRound | 5 | 0; hasLoaded: boolean; themesLoaded?: boolean; loadError?: boolean; presentation?: boolean; onWrite?: () => void; onReply?: (idea:MapIdea)=>void };
+type Props = CitationProps & { ideas: readonly MapIdea[]; themes?: readonly MapTheme[]; teamFilter: MapGroup | ""; roundFilter: EventRound | 5 | 0; hasLoaded: boolean; themesLoaded?: boolean; loadError?: boolean; presentation?: boolean; onWrite?: () => void; onOpenWorksheet?: (key:string) => void; onReply?: (idea:MapIdea)=>void };
 const initialThemes: MapTheme[] = [];
 const pageSize = 6;
 type View = "groups" | "links";
@@ -119,7 +119,7 @@ function ContentDrawing({entry,edges,keywords,onOpen,onFocus}:{entry:MapRecord;e
   </div>;
 }
 
-export default function MindMap({ ideas, themes=initialThemes, teamFilter, roundFilter, hasLoaded, themesLoaded=true, loadError=false, presentation, onWrite, onReply, onCite, citedIds }:Props) {
+export default function MindMap({ ideas, themes=initialThemes, teamFilter, roundFilter, hasLoaded, themesLoaded=true, loadError=false, presentation, onWrite, onOpenWorksheet, onReply, onCite, citedIds }:Props) {
   const graph=useMemo(()=>buildIdeaMap(ideas,themes),[ideas,themes]);
   const keywords=useMemo(()=>selectGalleryKeywords(graph.records),[graph]);
   const visible=useMemo(()=>graph.records.filter(e=>(!teamFilter||e.row.team===teamFilter)&&(!roundFilter||e.row.round===roundFilter)),[graph,teamFilter,roundFilter]);
@@ -166,6 +166,7 @@ export default function MindMap({ ideas, themes=initialThemes, teamFilter, round
   const focusSelector=useRef<HTMLSelectElement>(null);
   const current=graph.byKey.get(history[history.length-1]);
   const focusOn=(key:string)=>{setFocus({key,filter:filterKey});setView("links");setHistory([]);};
+  const openRecord=(key:string)=>{ if(presentation&&onOpenWorksheet) onOpenWorksheet(key); else setHistory([key]); };
   const wait=!hasLoaded||!themesLoaded;
   if(!entry||!diagram) return <div className="mm-empty" role="status"><GitBranch size={30} aria-hidden="true"/>
     <strong>{loadError?"マップに接続できません":wait?"マップを読み込み中…":graph.records.length?"この条件にはまだ案がありません":"最初の投稿からマップが始まります"}</strong>
@@ -187,7 +188,7 @@ export default function MindMap({ ideas, themes=initialThemes, teamFilter, round
           <span className="mm-legend"><i data-wire="classification" aria-hidden="true"/>投稿原文の共通語（参考）</span>
         </div>:<span className="mm-legend"><i data-wire={view==="groups"?"classification":"citation"} aria-hidden="true"/>{view==="groups"?"点線：班・講演の分類":"矢印：元の案から派生した案へ"}</span>}
       </header>
-      <div ref={resize} className="mm-space">{contentView?<ContentDrawing entry={entry} edges={related.slice(start,start+size)} keywords={keywords} onOpen={key=>setHistory([key])} onFocus={key=>{focusOn(key);focusSelector.current?.focus({preventScroll:true});}}/>:<MapDrawing diagram={diagram} onOpen={key=>setHistory([key])}
+      <div ref={resize} className="mm-space">{contentView?<ContentDrawing entry={entry} edges={related.slice(start,start+size)} keywords={keywords} onOpen={openRecord} onFocus={key=>{focusOn(key);focusSelector.current?.focus({preventScroll:true});}}/>:<MapDrawing diagram={diagram} onOpen={openRecord}
         team={view==="groups"?group:undefined} keywords={keywords} label={view==="groups"?"班から講演、個人案・テーマへの分類図":"元の個人案と、そこから生まれた投稿・テーマの関係図"}/>}</div>
       {view==="links"&&!contentView&&!graph.sources.has(entry.key)&&!successors.length&&<p className="mm-unlinked">この案には、まだ元の案や派生した投稿が結び付いていません。</p>}
       <Pages start={start} total={total} size={size} change={setPage} label={view==="groups"?"案":contentView?"関連する案":"派生した投稿・テーマ"}/>

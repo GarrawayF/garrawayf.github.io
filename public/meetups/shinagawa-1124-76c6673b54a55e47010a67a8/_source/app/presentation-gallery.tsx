@@ -22,6 +22,7 @@ type Target = { kind: "idea" | "theme"; id: string };
 type RouteTarget = { kind?: Target["kind"]; id: string };
 type GalleryProps = {
   ideas: readonly MapIdea[]; themes: readonly MapTheme[]; allIdeas?: readonly MapIdea[]; allThemes?: readonly MapTheme[];
+  detailOnly?:boolean; externalOpen?:{key:string}|null; onExternalOpenConsumed?:()=>void;
   loaded: boolean; loadError?: boolean; source?: string; projectorGroups?: boolean; onSelect?: (target: Target | null) => void;
 };
 type Row = MapRecord & { category: Exclude<KindFilter, "all">; haystack: string };
@@ -148,9 +149,9 @@ function useProjectorFit(key: string, body: RefObject<HTMLDivElement | null>, sh
 type DetailProps = {
   item: Row; source: string; keyword?: string; previous?: Row; next?: Row; position: string;
   all: ReadonlyMap<string, Row>; onOpen: (item: Row, move?: "related" | "carousel", scrollTop?: number) => void; onClose: () => void;
-  previousIsDetail: boolean; restoreScroll: number;
+  previousIsDetail: boolean; restoreScroll: number; returnToMap?:boolean;
 };
-function Detail({ item, source, keyword, previous, next, position, all, onOpen, onClose, previousIsDetail, restoreScroll }: DetailProps) {
+function Detail({ item, source, keyword, previous, next, position, all, onOpen, onClose, previousIsDetail, restoreScroll, returnToMap }: DetailProps) {
   const dialog = useRef<HTMLDialogElement>(null);
   const body = useRef<HTMLDivElement>(null);
   const originalSheet = useRef<HTMLElement>(null);
@@ -214,7 +215,7 @@ function Detail({ item, source, keyword, previous, next, position, all, onOpen, 
       if (event.clientX < b.left || event.clientX > b.right || event.clientY < b.top || event.clientY > b.bottom) onClose();
     }}>
     <header className="pg-detail-bar">
-      <button type="button" className="pg-back" onClick={onClose}><ArrowLeft size={16}/>{previousIsDetail ? "ひとつ前に戻る" : "一覧に戻る"}</button>
+      <button type="button" className="pg-back" onClick={onClose}><ArrowLeft size={16}/>{previousIsDetail ? "ひとつ前に戻る" : returnToMap ? "マップに戻る" : "一覧に戻る"}</button>
       {fit?.overflow && <span className="pg-fit-warning">原文を省かず表示しています。続きはスクロール</span>}
       <span className="pg-where">{position}</span>
       <button type="button" className="pg-diagram-jump" onClick={() => {
@@ -291,7 +292,7 @@ function Detail({ item, source, keyword, previous, next, position, all, onOpen, 
   </dialog>;
 }
 
-export default function PresentationGallery({ ideas, themes, allIdeas = ideas, allThemes = themes, source = "", loaded, loadError = false, projectorGroups = false, onSelect }: GalleryProps) {
+export default function PresentationGallery({ ideas, themes, allIdeas = ideas, allThemes = themes, source = "", loaded, loadError = false, projectorGroups = false, onSelect, detailOnly=false, externalOpen, onExternalOpenConsumed }: GalleryProps) {
   const { order, setOrder, score, values, ready } = useReactions();
   const [category, setCategory] = useState<KindFilter>("all");
   const [input, setInput] = useState("");
@@ -404,6 +405,15 @@ export default function PresentationGallery({ ideas, themes, allIdeas = ideas, a
     if (!move) setLastKey(item.key);
     onSelect?.(next);
   },[onSelect]);
+  const consumedOpen=useRef<typeof externalOpen>(null);
+  useEffect(()=>{
+    if (!externalOpen || externalOpen===consumedOpen.current) return;
+    const item=pool.get(externalOpen.key);
+    if(!item) return;
+    consumedOpen.current=externalOpen;
+    open(item);
+    onExternalOpenConsumed?.();
+  },[externalOpen,pool,open,onExternalOpenConsumed]);
   const close = useCallback(() => {
     if (waitingForBack.current) return;
     const history = window.history;
@@ -459,6 +469,13 @@ export default function PresentationGallery({ ideas, themes, allIdeas = ideas, a
       </li>;
     })}</ul>;
   }
+  const slide=current && <Detail item={current} source={source} keyword={focusLabels.get(current.key)?.word}
+    previous={index>0 ? rows[index-1] : undefined} next={index>=0 && index+1<rows.length ? rows[index+1] : undefined}
+    position={index>=0 ? (index+1)+" / "+rows.length : "元の投稿"} all={pool}
+    onOpen={open} onClose={close} previousIsDetail={previousIsDetail} restoreScroll={restoreScroll} returnToMap={detailOnly}/>;
+  if(detailOnly) return target || slide ? <section className="presentation-gallery">{slide}
+    {target && !current && loaded && <div className="pg-unavailable" role="status">指定された投稿が見つかりませんでした。<button type="button" onClick={close}>マップに戻る</button></div>}
+  </section> : null;
   return <section className="presentation-gallery" aria-label="発表する案を選ぶ">
     <div className="pg-tools">
       <div className="pg-kinds" role="group" aria-label="投稿の種類">
@@ -498,8 +515,6 @@ export default function PresentationGallery({ ideas, themes, allIdeas = ideas, a
     </div> : <div className="pg-empty">{!loaded ? loadError ? "接続が戻ると、発表する案を再度読み込みます。" : "発表する案を読み込み中…" :
       category !== "all" || deferredSearch.trim() ? "この条件に一致する投稿はありません。" : "この範囲の投稿はまだありません。"}
       {(category !== "all" || input) && <button type="button" onClick={()=>{setCategory("all");commitSearch("");setInput("");}}>種類・検索をリセット</button>}</div>}
-    {current && <Detail item={current} source={source} keyword={focusLabels.get(current.key)?.word} previous={index>0 ? rows[index-1] : undefined}
-      next={index>=0 && index+1<rows.length ? rows[index+1] : undefined} position={index>=0 ? (index+1)+" / "+rows.length : "元の投稿"}
-      all={pool} onOpen={open} onClose={close} previousIsDetail={previousIsDetail} restoreScroll={restoreScroll}/>}
+    {slide}
   </section>;
 }

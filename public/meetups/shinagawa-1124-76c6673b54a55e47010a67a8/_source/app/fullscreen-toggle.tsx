@@ -64,7 +64,7 @@ export default function FullscreenToggle({ where }: { where: "topbar" | "detail"
     }
   }
 
-  const label = enabled ? "全画面を終了" : "全画面";
+  const label = enabled ? "全画面を終了" : where === "topbar" ? "全画面表示" : "全画面";
   return <span className={"x-fullscreen x-fullscreen-" + where}>
     <button type="button" className="x-fullscreen-button" aria-label={label} title={label}
       aria-pressed={enabled} onClick={toggle}>

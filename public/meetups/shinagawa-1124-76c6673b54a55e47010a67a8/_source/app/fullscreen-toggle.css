@@ -20,3 +20,15 @@
 @media(max-width:425px){
   .board-app .x-fullscreen-topbar .x-fullscreen-button span {display:none}
 }
+/* Keep projection controls in the same visible pill as the three views. */
+.board-app .page-mode-nav .x-fullscreen-topbar {margin-inline-start:auto}
+.board-app .page-mode-nav .x-fullscreen-button {
+  min-height:34px;padding-inline:12px;background:#fff0f7;border-color:#8c3157
+}
+.board-app .page-mode-nav .x-fullscreen-button[aria-pressed=true] {background:#762546}
+@media(max-width:520px) {
+  .board-app .board-header .page-mode-nav a {font-size:clamp(10px,3.25vw,14px);padding-inline:3px;gap:3px}
+  .board-app .board-header .page-mode-nav a svg {width:14px;flex:none}
+  .board-app .page-mode-nav .x-fullscreen-button {min-width:36px;min-height:40px;padding-inline:6px}
+  .board-app .page-mode-nav .x-fullscreen-topbar .x-fullscreen-button span {display:none}
+}

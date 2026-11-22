@@ -420,7 +420,6 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
     <header className="topbar board-header"><div className="shell nav-inner">
       <Brand source={sourceHref} />
       <nav aria-label="表示と共有">
-        <FullscreenToggle where="topbar"/>
         <a className="board-cover-link" href={new URL("../", publicBoardUrl).href}>当日の表紙</a>
         <span className={"live-state live-" + sync} role="status"><i />{syncLabels[sync]}</span>
         <span className="nav-line" />
@@ -430,6 +429,7 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
       <a aria-current={personal ? "page" : undefined} href={pageLink(sourceHref, { join: navTeam })}><Pencil size={16}/>個人で書く</a>
       <a aria-current={view === "summary" ? "page" : undefined} href={summaryHref} onClick={e => { if (view === "summary" && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) e.preventDefault(); }}><Users size={16}/>班でまとめる</a>
       <a aria-current={screen ? "page" : undefined} href={pageLink(sourceHref, { view: "screen", team: view === "summary" ? summaryTeam : "", round: view === "summary" && summaryScope.round ? String(summaryScope.round) : "" })}><Monitor size={17}/>発表を見る</a>
+      <FullscreenToggle where="topbar"/>
     </nav></header>
 
     <main className="shell">

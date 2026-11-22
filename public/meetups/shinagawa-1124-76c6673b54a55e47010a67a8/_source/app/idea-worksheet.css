@@ -29,3 +29,72 @@
   .idea-cell-main textarea { min-height: 107px; padding: 11px 12px; font-size: 1rem; }
   .optional-idea-grid { grid-template-columns: minmax(0,1fr); gap: 12px; }
 }
+
+/* Keep the full five-field draft visible on PC without changing the mobile order. */
+@media (min-width: 1000px) {
+  .board-app.personal-mode .sheet-workspace,
+  .board-app.summary-mode .team-summary-workspace,
+  .board-app.summary-mode .summary-layout .sw-resources {
+    width: min(100%, 1210px);
+  }
+  .board-app.personal-mode .sheet-workspace,
+  .board-app.summary-mode .summary-layout {
+    padding-top: 14px;
+  }
+  .board-app.personal-mode .composer,
+  .board-app.summary-mode .sw-editor {
+    padding: 18px clamp(20px, 2.15vw, 32px);
+  }
+  .idea-worksheet {
+    display: grid;
+    grid-template-columns: minmax(0, 1.02fr) minmax(0, 1.25fr);
+    gap: clamp(18px, 2.4vw, 34px);
+    align-items: start;
+    border-bottom: 1px solid #ecdee4;
+    padding-bottom: 12px;
+  }
+  .idea-worksheet .idea-cell-main h1 {
+    font-size: clamp(1.43rem, 2.1vw, 1.8rem);
+  }
+  .idea-worksheet .idea-cell-main textarea {
+    min-height: 157px;
+    height: clamp(157px, 24vh, 190px);
+  }
+  .idea-worksheet .optional-idea-sheet {
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  .idea-worksheet .optional-idea-heading {
+    margin: 0 0 4px;
+    padding: 0;
+    font: inherit;
+    font-size: .9rem;
+    font-weight: 650;
+    line-height: 1.45;
+  }
+  .idea-worksheet .optional-idea-grid {
+    gap: 9px 12px;
+    padding: 0;
+  }
+  .idea-worksheet .optional-idea-grid .idea-cell {
+    align-content: start;
+    gap: 3px;
+  }
+  .idea-worksheet .optional-idea-grid label {
+    font-size: .91rem;
+    line-height: 1.35;
+  }
+  .idea-worksheet .optional-idea-grid small {
+    font-size: .78rem;
+    line-height: 1.4;
+  }
+  .idea-worksheet .optional-idea-grid textarea {
+    min-height: 59px;
+    height: 59px;
+    padding: 7px 9px;
+    line-height: 1.35;
+  }
+  .board-app.personal-mode .sheet-routing { margin-top: 10px; }
+  .board-app.personal-mode .personal-resources { margin-top: 10px; }
+}

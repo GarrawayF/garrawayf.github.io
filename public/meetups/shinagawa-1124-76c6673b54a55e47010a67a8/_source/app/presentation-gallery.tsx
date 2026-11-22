@@ -1,17 +1,17 @@
 "use client";
 
 import { useCallback, useDeferredValue, useEffect, useId, useMemo, useRef, useState, type ChangeEvent, type CSSProperties, type KeyboardEvent } from "react";
-import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, CornerDownRight, Pencil, Search, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Compass, CornerDownRight, Eye, FileText, GitBranch, HandHeart, Lightbulb, MapPin, MessageCircle, Pencil, Quote, Search, Users, X } from "lucide-react";
 import { pageLink } from "./board-room";
 import { selectGalleryKeywords } from "./gallery-keywords";
 import { galleryEntry, galleryHistoryState, galleryLocation } from "./gallery-navigation";
 import { IdeaVisualButton } from "./idea-visual";
+import { excerpt, makeVisualIndex, VisualCache } from "./idea-visual-model";
 import { groupLabel, kindLabel, stageLabel, type MapIdea, type MapRecord, type MapTheme } from "./mind-map-model";
 import { analyzePost } from "./post-analysis";
 import { PostComments } from "./post-comments";
-import PostReading from "./post-reading";
+import { OriginalWording } from "./post-reading";
 import { ReactionButtons, useReactions } from "./reactions";
-import { selectScenePhoto } from "./scene-photo";
 import "./presentation-gallery.css";
 
 type KindFilter = "all" | "idea" | "team" | "plenary";
@@ -19,7 +19,7 @@ type Target = { kind: "idea" | "theme"; id: string };
 type RouteTarget = { kind?: Target["kind"]; id: string };
 type GalleryProps = {
   ideas: readonly MapIdea[]; themes: readonly MapTheme[]; allIdeas?: readonly MapIdea[]; allThemes?: readonly MapTheme[];
-  loaded: boolean; loadError?: boolean; source?: string; onSelect?: (target: Target | null) => void;
+  loaded: boolean; loadError?: boolean; source?: string; scopeKey?: string; onSelect?: (target: Target | null) => void;
 };
 type Row = MapRecord & { category: Exclude<KindFilter, "all">; haystack: string };
 const choices: [KindFilter, string][] = [["all","すべて"], ["idea","個人案"], ["team","班のまとめ"], ["plenary","全体の案"]];
@@ -45,6 +45,41 @@ function makeRows(ideas: readonly MapIdea[], themes: readonly MapTheme[]): Row[]
   });
 }
 
+const illustrationIcons = { person: Users, scene: MapPin, gain: HandHeart, action: Compass, perspective: Eye,
+  origin: MessageCircle, quote: Quote, words: Pencil, location: MapPin, sources: GitBranch };
+
+function Illustration({ item, all }: { item: Row; all: ReadonlyMap<string, Row> }) {
+  const { row, kind } = item;
+  const model = useMemo(() => {
+    const ids = kind === "idea" ? [item.row.parentId] : [item.row.sourceIdeaId, item.row.sourceIdeaId2];
+    const originals = ids.flatMap(id => {
+      const source = id ? all.get("idea:" + id) : undefined;
+      return source?.kind === "idea" && source.key !== item.key ? [source.row] : [];
+    });
+    return new VisualCache().resolve(item.key, makeVisualIndex(kind === "idea" ? [item.row, ...originals] : originals, kind === "theme" ? [item.row] : []));
+  }, [item, all, kind]);
+  const analysis = useMemo(() => row.analysis?.summary?.trim() || analyzePost(row, kind).summary, [row, kind]);
+  if (!model) return null;
+  return <section className="pg-explainer" aria-label="図解と解説">
+    <h3><GitBranch aria-hidden="true" size={22}/>図解と解説</h3>
+    {analysis && <div className="pg-explainer-note"><span>入力内容の要約</span><p>{excerpt(analysis, 170)}</p></div>}
+    <div className="pg-explainer-map">
+      <div className="pg-explainer-hub"><Lightbulb aria-hidden="true" strokeWidth={1.6} size={26}/><strong>{excerpt(model.title, 72)}</strong></div>
+      <ul className="pg-explainer-branches">{model.branches.map((branch, i) => {
+        const Icon = illustrationIcons[branch.type];
+        return <li key={branch.type + i} data-branch={branch.type}>
+          <svg className="pg-explainer-wire" viewBox="0 0 30 34" width="30" height="34" fill="none" aria-hidden="true"><path d="M1 1v16q0 9 9 9h18"/><circle cx="28" cy="26" r="2"/></svg>
+          <div className="pg-explainer-node">
+            <h4><Icon size={17} strokeWidth={1.8} aria-hidden="true"/>{branch.label}</h4>
+            {branch.type === "sources" ? branch.sources?.map((source, j) => <p key={source.key + j}>{excerpt(source.title, 75)}<span>{source.location}</span></p>)
+              : branch.passages.map((text, j) => <p key={j}>{excerpt(text, 115)}</p>)}
+          </div>
+        </li>;
+      })}</ul>
+    </div>
+  </section>;
+}
+
 type DetailProps = {
   item: Row; source: string; previous?: Row; next?: Row; position: string;
   all: ReadonlyMap<string, Row>; onOpen: (item: Row, move?: "related" | "carousel", scrollTop?: number) => void; onClose: () => void;
@@ -55,7 +90,6 @@ function Detail({ item, source, previous, next, position, all, onOpen, onClose, 
   const body = useRef<HTMLDivElement>(null);
   const dialogLabel = useId();
   const { row, kind } = item;
-  const photo = selectScenePhoto(row);
   useEffect(() => {
     const element = dialog.current;
     if (!element) return;
@@ -92,14 +126,14 @@ function Detail({ item, source, previous, next, position, all, onOpen, onClose, 
     </header>
     <div className="pg-detail-body" ref={body} id={kind+"-"+row.id} tabIndex={-1}>
       <h2 id={dialogLabel} className="pg-sr">{item.title}</h2>
-      <div className="pg-full-meta"><i style={{background:teamColors[row.team]}}/>{groupLabel(row.team)}<span>／</span>{kindLabel(item)}<span>／</span>{stageLabel(row.round)}
-        {item.kind === "idea" && item.row.name && <strong>{item.row.name}</strong>}</div>
-      <div className="pg-detail-story">
-        <div className="pg-reading"><PostReading entry={row} kind={kind} mode={mode} bodyLabel={bodyLabel}/>
-          <div className="pg-diagram"><IdeaVisualButton targetType={kind} targetId={row.id}/></div>
+      <section className="pg-original-sheet" aria-label={kind === "idea" ? "個人で書いたシート" : "班・全体で書いたシート"}>
+        <div className="pg-original-heading">
+          <h3><FileText aria-hidden="true" size={22}/>{kind === "idea" ? "個人で書いたシート" : row.team === "all" ? "全体で書いたシート" : "班で書いたシート"}</h3>
+          <p className="pg-original-meta"><i style={{background:teamColors[row.team]}}/>{groupLabel(row.team)}<span>／</span>{stageLabel(row.round)}</p>
         </div>
-        <figure className="pg-photo"><img src={photo.src} alt={photo.alt}/><figcaption>{photo.caption}</figcaption></figure>
-      </div>
+        <OriginalWording entry={row} mode={mode} bodyLabel={bodyLabel}/>
+      </section>
+      <Illustration item={item} all={all}/>
       <div className="pg-detail-bottom">
         {citations.filter((id): id is string => Boolean(id)).map(id => {
           const parent = all.get("idea:" + id);
@@ -117,13 +151,34 @@ function Detail({ item, source, previous, next, position, all, onOpen, onClose, 
   </dialog>;
 }
 
-export default function PresentationGallery({ ideas, themes, allIdeas = ideas, allThemes = themes, source = "", loaded, loadError = false, onSelect }: GalleryProps) {
+export default function PresentationGallery({ ideas, themes, allIdeas = ideas, allThemes = themes, source = "", loaded, loadError = false, scopeKey = "", onSelect }: GalleryProps) {
   const { order, setOrder, score, values, ready } = useReactions();
   const [category, setCategory] = useState<KindFilter>("all");
   const [input, setInput] = useState("");
   const [search, setSearch] = useState("");
   const [target, setTarget] = useState<RouteTarget | null>(null);
   const [lastKey, setLastKey] = useState("");
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(0);
+  const gridStart = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const measure = () => {
+      const width = window.innerWidth;
+      if (width < 981) { setPageSize(0); return; }
+      const columns = width >= 1550 ? 6 : width >= 1200 ? 5 : 4;
+      const top = (gridStart.current?.getBoundingClientRect().top || 0) + window.scrollY;
+      const rows = Math.min(8, Math.max(1, Math.floor((window.innerHeight - top - 26) / 77)));
+      setPageSize(columns * rows);
+    };
+    const observer = typeof ResizeObserver === "function" && gridStart.current?.parentElement
+      ? new ResizeObserver(measure) : null;
+    if (observer && gridStart.current?.parentElement) observer.observe(gridStart.current.parentElement);
+    window.addEventListener("resize", measure);
+    measure();
+    return () => { observer?.disconnect(); window.removeEventListener("resize", measure); };
+  }, []);
+
   const [previousIsDetail, setPreviousIsDetail] = useState(false);
   const [restoreScroll, setRestoreScroll] = useState(0);
   const waitingForBack = useRef(false);
@@ -172,6 +227,11 @@ export default function PresentationGallery({ ideas, themes, allIdeas = ideas, a
       return priority || right.row.createdAt.localeCompare(left.row.createdAt) || right.row.id.localeCompare(left.row.id);
     });
   },[scoped,category,deferredSearch,focusLabels,order,score,values,ready]);
+  const pages = pageSize ? Math.max(1, Math.ceil(rows.length / pageSize)) : 1;
+  const displayPage = Math.min(pageIndex, pages - 1);
+  const first = pageSize ? displayPage * pageSize : 0;
+  const visibleRows = pageSize ? rows.slice(first, first + pageSize) : rows;
+  useEffect(() => { setPageIndex(0); }, [category, deferredSearch, order, scopeKey]);
   const current = target ? target.kind ? pool.get(target.kind+":"+target.id) : pool.get("idea:"+target.id) || pool.get("theme:"+target.id) : undefined;
   const index = current ? rows.findIndex(item => item.key === current.key) : -1;
   useEffect(() => {
@@ -263,14 +323,22 @@ export default function PresentationGallery({ ideas, themes, allIdeas = ideas, a
           <option value="recent">新着順</option><option value="popular">人気順</option>
         </select>
       </label>
+      {pages > 1 && <div className="pg-pager" role="group" aria-label="投稿一覧のページ切り替え">
+        <button type="button" aria-label="前のページ" disabled={displayPage === 0}
+          onClick={() => setPageIndex(displayPage - 1)}><ChevronLeft size={17}/></button>
+        <span role="status">{first + 1}–{first + visibleRows.length} / {rows.length}件</span>
+        <button type="button" aria-label="次のページ" disabled={displayPage + 1 >= pages}
+          onClick={() => setPageIndex(displayPage + 1)}><ChevronRight size={17}/></button>
+      </div>}
     </div>
     <p className="pg-search-status" role="status">{[deferredSearch.trim() ? rows.length + "件の検索結果" : "", order === "popular" ? "いいね＋LOVEの合計順" : ""].filter(Boolean).join(" ・ ")}</p>
     {target && !current && loaded && <div className="pg-unavailable" role="status">指定された投稿が見つかりませんでした。<button type="button" onClick={close}>一覧に戻る</button></div>}
+    <div ref={gridStart} aria-hidden="true"/>
     {rows.length ? <ul className="pg-grid" onKeyDown={moveInGrid}>
-      {rows.map(item => {
+      {visibleRows.map(item => {
         const label = focusLabels.get(item.key)!;
         const accessibleTitle = label.same ? item.title : label.word + " ／ " + item.title;
-        return <li key={item.key}>
+        return <li key={item.key} data-team={item.row.team} style={{"--pg-team-accent": teamColors[item.row.team] || teamColors.all} as CSSProperties}>
         <button type="button" className="pg-choice" aria-haspopup="dialog" title={item.title} aria-label={groupLabel(item.row.team) + "・" + kindLabel(item) + "「" + accessibleTitle + "」を開く"}
           aria-pressed={current?.key===item.key} data-last={lastKey===item.key || undefined} onClick={()=>open(item)}>
           <span className="pg-meta"><i style={{background:teamColors[item.row.team]}}/><b>{groupLabel(item.row.team)}</b>

@@ -4,6 +4,7 @@ import { useCallback, useDeferredValue, useEffect, useId, useLayoutEffect, useMe
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ChevronLeft, ChevronRight, Compass, CornerDownRight, Eye, GitBranch, HandHeart, Lightbulb, MapPin, MessageCircle, Pencil, Quote, Search, Users, X } from "lucide-react";
 import { isDemoRoom, pageLink } from "./board-room";
 import demoWorksheetExamples from "./demo-worksheet-examples.json";
+import GraphicRecording from "./graphic-recording";
 import { selectGalleryKeywords, selectWorksheetKeyword } from "./gallery-keywords";
 import { galleryEntry, galleryHistoryState, galleryLocation } from "./gallery-navigation";
 import { IdeaVisualButton } from "./idea-visual";
@@ -202,8 +203,8 @@ function Detail({ item, source, keyword, previous, next, position, all, onOpen, 
     .map(key => ({ key, label: worksheetField(key, mode).label, value: worksheet[key]! }));
   const footer = [...extras,
     ...(kind === "idea" && item.row.context?.trim() ? [{ key: "context", label: "きっかけ・共感した理由", value: item.row.context }] : []),
-    ...(kind === "idea" && item.row.name?.trim() ? [{ key: "name", label: "呼ばれたい名前", value: item.row.name }] : []),
   ];
+  const calledName = kind === "idea" ? item.row.name?.trim() : "";
   const showKeyword = keyword && wording(keyword) !== wording(item.title);
   const workLabel = row.round === 5 ? "FINAL" : row.round === 4 ? "全体対話" : "WORK 0" + row.round;
   return <dialog className="pg-detail" data-demo-detail={demoSheet || undefined} ref={dialog} aria-labelledby={dialogLabel} onKeyDown={keys}
@@ -234,7 +235,10 @@ function Detail({ item, source, keyword, previous, next, position, all, onOpen, 
         <header className="pg-original-heading">
           <div className="pg-sheet-heading-line">
             <p className="pg-sheet-work">{workLabel}</p>
-            <p className="pg-original-meta"><i style={{background:teamColors[row.team]}}/>{groupLabel(row.team)}<span>／</span>{stageLabel(row.round)}</p>
+            <div className="pg-sheet-attribution">
+              <p className="pg-original-meta"><i style={{background:teamColors[row.team]}}/>{groupLabel(row.team)}<span>／</span>{stageLabel(row.round)}</p>
+              {calledName && <p className="pg-sheet-called-name"><span>呼ばれたい名前</span><strong>{calledName}</strong></p>}
+            </div>
           </div>
           <h2 id={dialogLabel} className="pg-sheet-title" data-keyword-is-title={!showKeyword || undefined}>{item.title}</h2>
           {showKeyword && <p className="pg-sheet-keyword">{keyword}</p>}
@@ -258,11 +262,15 @@ function Detail({ item, source, keyword, previous, next, position, all, onOpen, 
         </dl>
       </section>
       </div>
+      <div ref={diagram} className="pg-diagram-target" tabIndex={-1}>
+        <GraphicRecording title={item.title} person={cells[0].value} scene={cells[1].value}
+          proposal={raw} gain={cells[2].value}/>
+      </div>
       {footer.length > 0 && <section className="pg-original-sheet pg-sheet-notes" aria-label="記入シートの補足">
         <h3>記入シートの補足</h3>
         <dl className="reading-original pg-sheet-grid">{footer.map(field => <div key={field.key} className="pg-sheet-extra"><dt>{field.label}</dt><dd>{field.value}</dd></div>)}</dl>
       </section>}
-      <div ref={diagram} className="pg-diagram-target" tabIndex={-1}><Illustration item={item} all={all}/></div>
+      <Illustration item={item} all={all}/>
       <div className="pg-detail-bottom">
         {citations.filter((id): id is string => Boolean(id)).map(id => {
           const parent = all.get("idea:" + id);

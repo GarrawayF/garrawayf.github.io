@@ -539,3 +539,9 @@ h1 { font-size: clamp(32px, 3.55vw, 57px); font-weight: 780; line-height: 1.25; 
   .board-app .pg-detail .pg-sheet-grid .pg-sheet-prompt {font-size:clamp(18px,1.7vw,25px)}
   .board-app .pg-detail .pg-sheet-grid .pg-sheet-cell-keyword {font-size:clamp(19px,1.85vw,27px)}
 }
+
+.board-app .pg-detail .pg-sheet-attribution {display:flex;align-items:flex-end;flex-direction:column;gap:3px;margin-inline-start:auto;text-align:end;min-width:0;max-width:min(60%,36rem)}
+.board-app .pg-detail .pg-sheet-attribution .pg-original-meta {justify-content:flex-end}
+.board-app .pg-detail .pg-sheet-called-name {display:flex;justify-content:flex-end;align-items:baseline;flex-wrap:wrap;gap:2px .45em;line-height:1.18;margin:0}
+.board-app .pg-detail .pg-sheet-called-name span {font-size:.68rem;font-weight:750;color:#684555}
+.board-app .pg-detail .pg-sheet-called-name strong {font:900 clamp(.94rem,1.66vw,1.5rem)/1.15 var(--sh-keyword);color:#741a43;overflow-wrap:anywhere}

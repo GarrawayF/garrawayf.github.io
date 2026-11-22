@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useDeferredValue, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type ChangeEvent, type CSSProperties, type KeyboardEvent, type RefObject } from "react";
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ChevronLeft, ChevronRight, Compass, CornerDownRight, Eye, GitBranch, HandHeart, Lightbulb, MapPin, MessageCircle, Pencil, Quote, Search, Users, X } from "lucide-react";
-import { isDemoRoom, pageLink } from "./board-room";
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, BookOpen, ChevronLeft, ChevronRight, Compass, CornerDownRight, Eye, GitBranch, HandHeart, Lightbulb, MapPin, MessageCircle, Pencil, Quote, Search, Users, X } from "lucide-react";
+import { boardApiUrl, isDemoRoom, pageLink } from "./board-room";
 import demoWorksheetExamples from "./demo-worksheet-examples.json";
 import GraphicRecording from "./graphic-recording";
 import { selectGalleryKeywords, selectWorksheetKeyword } from "./gallery-keywords";
@@ -228,6 +228,8 @@ function Detail({ item, source, keyword, previous, next, position, all, onOpen, 
         target?.scrollIntoView({ block: "start" });
       }} aria-label="図解と解説へ移動"><ArrowDown size={15} aria-hidden="true"/>図解へ</button>
       <FullscreenToggle where="detail"/>
+      <a className="board-manual-link pg-manual-link" href={new URL("/guide.pdf",boardApiUrl).href}
+        target="_blank" rel="noopener noreferrer" aria-label="マニュアルを開く"><BookOpen size={15} aria-hidden="true"/><span>マニュアル</span></a>
       <div className="pg-page-buttons">
         <button type="button" disabled={!previous} aria-label="前の案" title="前の案（←）" onClick={() => previous && onOpen(previous, "carousel")}><ChevronLeft size={19}/></button>
         <button type="button" disabled={!next} aria-label="次の案" title="次の案（→）" onClick={() => next && onOpen(next, "carousel")}><ChevronRight size={19}/></button>

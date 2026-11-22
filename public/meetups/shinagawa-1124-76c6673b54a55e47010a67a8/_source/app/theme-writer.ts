@@ -1,4 +1,4 @@
-import { roomApi } from "./board-room";
+import { roomFetch, roomApi } from "./board-room";
 import { cleanWorksheet, type Worksheet } from "./worksheet";
 import type { MapGroup, MapTheme } from "./mind-map-model";
 
@@ -32,7 +32,7 @@ export async function saveTheme(draft: ThemeDraft): Promise<SaveResult> {
   const controller = new AbortController();
   const timer = window.setTimeout(() => controller.abort(), 12000);
   try {
-    const response = await fetch(roomApi("/api/themes"), {
+    const response = await roomFetch(roomApi("/api/themes"), {
       method: editing ? "PATCH" : "POST", headers: { "Content-Type": "application/json" },
       credentials: "omit", body: JSON.stringify(payload), signal: controller.signal,
     });

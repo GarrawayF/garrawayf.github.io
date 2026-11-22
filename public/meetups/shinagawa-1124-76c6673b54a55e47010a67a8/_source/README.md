@@ -1,7 +1,24 @@
-# X-meetup品川 ディスカッションアプリ
+# Shinagawa GitHub Pages frontend
 
-このフォルダーに画面のソースを、../board/assets/ にスライド・QR画像を置いています。画像はそのまま配信とビルドの両方に使います。
+This subtree contains the public frontend source for the event entrance and board. Real posts, participant-only cover HTML, schedule, guide PDF, source-deck metadata and slide previews remain in the protected API. There are no passwords, session tokens, private slide images or original deck IDs in this tree.
 
-Node.js 22.13以降でこのフォルダーを開き、初回に `npm ci`、画面を変更したら `npm run build` を実行してください。隣の `../board/index.html` と `../board/assets/app.js`、`app.css` が更新されます。単体で配布する場合は `npm run build:html` で `../board/discussion.html` を生成します。
+## Rebuild (Node.js 22+)
 
-公開ページの `?room=demo` は練習用です。画面・画像はGitHub Pagesで配信し、投稿やコメントの保存・同期には既存のWorkerを使います。
+From the published meetup directory:
+
+```sh
+cd _source
+npm ci
+npm run build -- \
+  --out /tmp/shinagawa-pages-next \
+  --assets ../board/assets
+```
+
+Use a new empty output directory. The asset input is only used for an explicit allow-list (favicon, QR icons, generic drawing references in scene-photos); even if a legacy checkout still has a slide directory it is not copied. The output is:
+
+- `index.html`: public authorization shell for the event cover
+- `access.js`: proof check and narrowly scoped authenticated requests
+- `board/index.html`: public authorization shell for the board
+- `board/assets/`: board JS, CSS and the allow-listed artwork
+
+Deploy output under the existing meetup path, preserving paths. Install the matching backend routes before cutover (`/api/access`, `/api/cover`, `/api/materials`, `/api/asset/slides/...`, `/api/guide`, and existing ideas/themes/comments/reactions). The native protected service is deployed separately and is not modified by this build. Do not use the generic `export-html.mjs` directly to publish the Pages entrypoint: it writes an ungated HTML shell.

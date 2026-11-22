@@ -214,3 +214,26 @@
   .board-app .board-header .page-mode-nav .board-page-cover {padding-inline:4px;}
   .board-app .board-header .page-mode-nav a svg {display:none;}
 }
+
+.board-app .board-manual-link {
+  display:inline-flex;align-items:center;justify-content:center;gap:4px;min-height:40px;
+  padding:4px 9px;border:1px solid var(--sh-outline);border-radius:999px;
+  background:#fff;color:var(--sh-plum);font-size:12px;font-weight:850;line-height:1.1;
+  white-space:nowrap;text-decoration:none;flex:none;
+}
+.board-app .board-manual-link:hover {background:var(--sh-wash);}
+.board-app .board-manual-link:focus-visible {outline:3px solid var(--sh-stage-accent,#8a2350);outline-offset:2px;}
+.board-app .pg-detail .pg-manual-link {min-height:36px;}
+@media(max-width:670px) {
+  .board-app .board-manual-link {min-height:38px;padding-inline:5px;font-size:clamp(10px,2.8vw,12px);}
+  .board-app .board-header .board-manual-link svg {display:none;}
+  .board-app .pg-detail .pg-manual-link {width:32px;min-height:34px;}
+  .board-app .pg-detail .pg-manual-link span {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);}
+}
+
+.board-app.screen-mode .board-header .page-mode-nav .board-projection-manual {flex:0 0 auto;min-height:38px;}
+@media(max-width:670px) {
+  .board-app.screen-mode .board-header .page-mode-nav .board-projection-manual {box-sizing:border-box;min-width:34px;min-height:40px;padding-inline:5px;}
+  .board-app.screen-mode .board-header .page-mode-nav .board-projection-manual svg {display:block;width:15px;height:15px;}
+  .board-app.screen-mode .board-header .page-mode-nav .board-projection-manual span {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}
+}

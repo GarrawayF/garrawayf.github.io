@@ -2,11 +2,10 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { ChevronDown, ChevronLeft, ChevronRight, ExternalLink, Pencil, Share2, X, ZoomIn, ZoomOut } from "lucide-react";
-import { materials } from "./materials-data";
-import { assetUrl } from "./asset-url";
+import { isMaterials, type DeckKey, type Materials } from "./materials-data";
+import { roomApi, roomFetch } from "./board-room";
 import "./materials-panel.css";
 
-type DeckKey = keyof typeof materials;
 type Round = 1 | 2 | 3 | 4;
 type PanelProps = {
   onClose: () => void;
@@ -18,7 +17,38 @@ type PanelProps = {
 
 const sheetRounds: Partial<Record<number, Round>> = { 2: 1, 3: 2, 4: 3, 5: 4, 6: 4 };
 
-export default function MaterialsPanel({ onClose, round, initialDeck, onStartIdea, onStartNote }: PanelProps) {
+export default function MaterialsPanel(props: PanelProps) {
+  const [materials,setMaterials]=useState<Materials|null>(null);
+  const [error,setError]=useState(false);
+  const retry=useState(0);
+  const ref=useRef<HTMLDialogElement>(null);
+  useEffect(()=>{
+    const el=ref.current;
+    if(!el)return;
+    el.showModal();
+    return ()=>{if(el.open)el.close();};
+  },[materials]);
+  useEffect(()=>{
+    const controller=new AbortController();
+    setError(false);
+    void roomFetch(roomApi("/api/materials"),{signal:controller.signal,cache:"no-store"}).then(async response=>{
+      if(!response.ok)throw Error("Materials unavailable");
+      const data=await response.json();
+      if(!isMaterials(data.materials))throw Error("Invalid materials");
+      if(!controller.signal.aborted)setMaterials(data.materials);
+    }).catch(()=>{if(!controller.signal.aborted)setError(true);});
+    return ()=>controller.abort();
+  },[retry[0]]);
+  if(materials)return <MaterialDeck {...props} materials={materials}/>;
+  return <dialog ref={ref} className="materials-dialog" aria-label="当日の資料" onCancel={e=>{e.preventDefault();props.onClose();}}>
+    <div className="materials-surface"><header className="materials-header"><h2>当日の資料</h2>
+      <button type="button" className="materials-close" aria-label="資料を閉じる" onClick={props.onClose}><X size={20} aria-hidden="true"/></button>
+    </header><p role="status">{error?"資料を読み込めませんでした。":"資料を読み込んでいます…"}</p>
+    {error&&<button type="button" className="materials-share" onClick={()=>retry[1](n=>n+1)}>再読み込み</button>}</div>
+  </dialog>;
+}
+
+function MaterialDeck({ onClose, round, initialDeck, onStartIdea, onStartNote, materials }: PanelProps & { materials:Materials }) {
   const [kind, setKind] = useState<DeckKey>(initialDeck ?? (round ? "worksheets" : "slides"));
   const [positions, setPositions] = useState({ slides: 0, worksheets: round === 4 ? 6 : round && round >= 1 && round <= 3 ? round + 1 : 0 });
   const [zoomed, setZoomed] = useState(false);
@@ -27,8 +57,22 @@ export default function MaterialsPanel({ onClose, round, initialDeck, onStartIde
   const previousFocus = useRef<HTMLElement | null>(null);
   const heading = useId();
   const deck = materials[kind];
-  const index = positions[kind];
+  const index = Math.max(0,Math.min(positions[kind],deck.slides.length-1));
   const slide = deck.slides[index];
+  const [preview,setPreview]=useState({key:"",url:"",error:false});
+  const slideKey=deck.file+"-"+(index+1);
+  useEffect(()=>{
+    const controller=new AbortController();
+    let objectUrl="";
+    void roomFetch(roomApi("/api/asset/slides/"+slideKey+".webp"),{signal:controller.signal,cache:"no-store"}).then(async response=>{
+      if(!response.ok||!response.headers.get("Content-Type")?.startsWith("image/webp"))throw Error("Preview unavailable");
+      const blob=await response.blob();
+      if(controller.signal.aborted)return;
+      objectUrl=URL.createObjectURL(blob);
+      setPreview({key:slideKey,url:objectUrl,error:false});
+    }).catch(()=>{if(!controller.signal.aborted)setPreview({key:slideKey,url:"",error:true});});
+    return ()=>{controller.abort();if(objectUrl)URL.revokeObjectURL(objectUrl);};
+  },[slideKey]);
   const activeSlideId = slide.id;
   const url = `https://docs.google.com/presentation/d/${deck.id}/edit#slide=id.${activeSlideId}`;
   const actionsRef = useRef(0);
@@ -116,9 +160,9 @@ export default function MaterialsPanel({ onClose, round, initialDeck, onStartIde
         <div className="materials-preview-wrap">
           <div className={zoomed ? "materials-preview is-zoomed" : "materials-preview"}
             tabIndex={zoomed ? 0 : undefined} aria-label={zoomed ? "拡大表示。横と縦にスクロールできます" : undefined}>
-            <img src={assetUrl(`/slides/${deck.file}-${index + 1}.webp`)} alt={`${deck.label} ${index + 1}枚目：${slide.title}`}
+            {preview.key===slideKey&&preview.url?<img src={preview.url} alt={`${deck.label} ${index + 1}枚目：${slide.title}`}
               key={kind + activeSlideId} width={kind === "slides" ? 1280 : 1682} height={kind === "slides" ? 720 : 1190}
-              decoding="async" draggable={false} />
+              decoding="async" draggable={false} />:<p role="status">{preview.key===slideKey&&preview.error?"プレビューを読み込めません。下のリンクから資料を開けます。":"プレビューを読み込んでいます…"}</p>}
           </div>
           <button className="materials-zoom" type="button" aria-pressed={zoomed}
             aria-label={zoomed ? "ページ全体を表示" : "ページを拡大"} onClick={() => setZoomed(v => !v)}>

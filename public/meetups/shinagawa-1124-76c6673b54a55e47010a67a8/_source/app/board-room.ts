@@ -42,3 +42,9 @@ export function pageLink(source: string, params: Record<string, string> = {}, ha
   for (const [key, value] of Object.entries(params)) if (value) page.searchParams.set(key, value);
   return source && !source.startsWith("?") ? page.href : (page.search || (hash ? "" : "?")) + page.hash;
 }
+
+type PagesAccess = { request: (url: string, init?: RequestInit) => Promise<Response> };
+export function roomFetch(url: string, init?: RequestInit) {
+  const access = (window as Window & { __XMEETUP_ACCESS__?: PagesAccess }).__XMEETUP_ACCESS__;
+  return access ? access.request(url,init) : fetch(url,init);
+}

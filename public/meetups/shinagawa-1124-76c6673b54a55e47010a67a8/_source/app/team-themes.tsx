@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { Compass, Pencil } from "lucide-react";
-import { pageLink, roomApi } from "./board-room";
+import { roomFetch, pageLink, roomApi } from "./board-room";
 import { roundLabels as eventRoundLabels, type EventRound } from "./event-round";
 import { ReactionButtons, useReactions } from "./reactions";
 import { PostComments } from "./post-comments";
@@ -62,7 +62,7 @@ export default function TeamThemes({ team, projection = true, round, ideas = [],
     const controller = new AbortController();
     const timer = window.setTimeout(() => controller.abort(), 9000);
     try {
-      const response = await fetch(themesEndpoint(), {
+      const response = await roomFetch(themesEndpoint(), {
         headers: tag.current ? { "If-None-Match": tag.current } : {},
         cache: "no-store", credentials: "omit", signal: controller.signal,
       });

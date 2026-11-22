@@ -8,8 +8,7 @@
   },
   "boardDirectory": "../board",
   "scripts": {
-    "build": "node scripts/export-html.mjs --project pages",
-    "build:html": "node scripts/export-html.mjs --project html"
+    "build": "node scripts/build-protected-pages.mjs"
   },
   "dependencies": {
     "lucide-react": "1.31.0",

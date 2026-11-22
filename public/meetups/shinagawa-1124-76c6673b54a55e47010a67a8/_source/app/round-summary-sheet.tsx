@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { Check, Plus } from "lucide-react";
-import { roomApi, roomStorageKey } from "./board-room";
+import { roomFetch, roomApi, roomStorageKey } from "./board-room";
 import { roundLabels, type EventRound } from "./event-round";
 import { WORKSHEET_FIELD_LIMIT, type Worksheet } from "./worksheet";
 import "./round-summary-sheet.css";
@@ -125,7 +125,7 @@ function ThemeRows({ team, round, sourceIds }: { team: Team | ""; round: ThemeRo
       const body = row.version === undefined
         ? { id, text, worksheet, team, round, sourceIdeaId: citations[0] || null, sourceIdeaId2: citations[1] || null }
         : { id, text, worksheet, version: row.version };
-      const response = await fetch(roomApi("/api/themes"), {
+      const response = await roomFetch(roomApi("/api/themes"), {
         method: row.version === undefined ? "POST" : "PATCH", credentials: "omit",
         headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal: controller.signal,
       });

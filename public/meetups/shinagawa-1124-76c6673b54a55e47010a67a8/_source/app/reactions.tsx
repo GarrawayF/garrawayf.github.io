@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
-import { roomApi, roomStorageKey } from "./board-room";
+import { roomFetch, roomApi, roomStorageKey } from "./board-room";
 import { Heart, ThumbsUp } from "lucide-react";
 import "./reactions.css";
 
@@ -29,7 +29,7 @@ async function requestReactions(options: RequestInit) {
   const controller = new AbortController();
   const timeout = window.setTimeout(() => controller.abort(), 15000);
   try {
-    const result = await fetch(roomApi("/api/reactions"), { ...options, cache: "no-store", signal: controller.signal });
+    const result = await roomFetch(roomApi("/api/reactions"), { ...options, cache: "no-store", signal: controller.signal });
     if (!result.ok) throw new Error("Reaction service is unavailable");
     return await result.json() as unknown;
   } finally {

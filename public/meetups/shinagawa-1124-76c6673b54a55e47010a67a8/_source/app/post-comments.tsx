@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useId, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { ChevronDown, MessageCircle, Send } from "lucide-react";
-import { roomApi, roomStorageKey } from "./board-room";
+import { roomFetch, roomApi, roomStorageKey } from "./board-room";
 import "./post-comments.css";
 
 type Target = "idea" | "theme";
@@ -69,7 +69,7 @@ async function requestComments(options: RequestInit) {
   const controller = new AbortController();
   const timer = window.setTimeout(() => controller.abort(), 12000);
   try {
-    const response = await fetch(roomApi("/api/comments"), { ...options, signal: controller.signal, cache: "no-store" });
+    const response = await roomFetch(roomApi("/api/comments"), { ...options, signal: controller.signal, cache: "no-store" });
     const body: unknown = response.status === 304 ? null : await response.json();
     return { response, body };
   } finally {

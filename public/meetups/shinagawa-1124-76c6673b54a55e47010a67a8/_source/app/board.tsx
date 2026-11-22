@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { FormEvent, MouseEvent, ReactNode } from "react";
 import { BookOpen, Check, ChevronDown, ChevronRight, CircleAlert, CornerDownRight, Link2, Monitor, Pencil, QrCode, Send, X, NotebookPen, Presentation, Users } from "lucide-react";
-import { boardViewOf, isDemoRoom, pageLink, publicBoardUrl, roomApi, roomStorageKey } from "./board-room";
+import { roomFetch, boardApiUrl, boardViewOf, isDemoRoom, pageLink, publicBoardUrl, roomApi, roomStorageKey } from "./board-room";
 import { assetUrl } from "./asset-url";
 import MaterialsPanel from "./materials-panel";
 import FullscreenToggle from "./fullscreen-toggle";
@@ -271,7 +271,7 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
     const controller = new AbortController();
     const timeout = window.setTimeout(() => controller.abort(), 9000);
     try {
-      const response = await fetch(apiURL(), {
+      const response = await roomFetch(apiURL(), {
         cache: "no-store", signal: controller.signal,
         headers: entityTag.current ? { "If-None-Match": entityTag.current } : {},
       });
@@ -359,7 +359,7 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
     const timeout = window.setTimeout(() => controller.abort(), 14000);
     try {
       const { team: inputTeam, round: inputRound, text, context, name, parentId, worksheet } = submitted;
-      const response = await fetch(apiURL(), {
+      const response = await roomFetch(apiURL(), {
         method: "POST", headers: { "Content-Type": "application/json" }, signal: controller.signal,
         body: JSON.stringify({ id, team: inputTeam, round: inputRound, text: text.trim(), context: context.trim(), name: name.trim(), parentId, worksheet: cleanWorksheet(worksheet) }),
       });
@@ -458,10 +458,11 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
   return <div className={screen ? "board-app screen-mode" : personal ? "board-app personal-mode" : "board-app summary-mode"}>
     <header className="topbar board-header"><div className="shell nav-inner">
       <Brand source={sourceHref} />
-      <nav aria-label="表示と共有">
+      <nav aria-label="表示・共有・マニュアル">
         <span className={"live-state live-" + sync} role="status"><i />{syncLabels[sync]}</span>
         <span className="nav-line" />
         <button type="button" className="nav-action" onClick={() => { setCopied(false); setShare(true); }} aria-label="参加用QRコードを表示"><QrCode size={17} /><span>共有</span></button>
+        <a className="board-manual-link" href={new URL("/guide.pdf",boardApiUrl).href} target="_blank" rel="noopener noreferrer"><BookOpen size={15} aria-hidden="true"/>マニュアル</a>
       </nav>
     </div><nav className="shell page-mode-nav" aria-label="会場の画面">
       <a className="board-page-cover" href={coverHref.href}><BookOpen size={16} aria-hidden="true"/>表紙</a>
@@ -469,6 +470,8 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
       <a aria-current={view === "summary" ? "page" : undefined} href={summaryHref} onClick={e => { if (view === "summary" && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) e.preventDefault(); }}><Users size={16}/>班でまとめる</a>
       <a aria-current={screen ? "page" : undefined} href={pageLink(sourceHref, { view: "screen", team: view === "summary" ? summaryTeam : "", round: view === "summary" && summaryScope.round ? String(summaryScope.round) : "" })}><Monitor size={17}/>発表を見る</a>
       <FullscreenToggle where="topbar"/>
+      {screen&&<a className="board-manual-link board-projection-manual" href={new URL("/guide.pdf",boardApiUrl).href}
+        target="_blank" rel="noopener noreferrer" aria-label="マニュアル"><BookOpen size={15} aria-hidden="true"/><span>マニュアル</span></a>}
     </nav></header>
 
     <main className="shell">

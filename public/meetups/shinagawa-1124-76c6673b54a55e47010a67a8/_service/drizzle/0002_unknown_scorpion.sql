@@ -1,1 +1,0 @@
-ALTER TABLE `team_themes` ADD `source_idea_id_2` text REFERENCES ideas(id);

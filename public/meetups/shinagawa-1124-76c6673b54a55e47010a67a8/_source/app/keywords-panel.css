@@ -133,3 +133,21 @@
   .kw-projection .kw-search > span:first-child {position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}
   .board-app.screen-mode .kw-projection .kw-term {min-height:52px;}
 }
+
+/* Card meaning and team participation are separate channels. */
+.kw-projection [data-category="people"] {--kw-category:#eee0ff;--kw-category-ink:#523178}
+.kw-projection [data-category="place"] {--kw-category:#d7ebfa;--kw-category-ink:#234f71}
+.kw-projection [data-category="situation"] {--kw-category:#ffe6c9;--kw-category-ink:#713d1a}
+.kw-projection [data-category="means"] {--kw-category:#faddE9;--kw-category-ink:#78324f}
+.kw-projection [data-category="value"] {--kw-category:#dcefd9;--kw-category-ink:#365d36}
+.kw-projection [data-category="other"] {--kw-category:#eeeaec;--kw-category-ink:#574952}
+.board-app.screen-mode .kw-projection .kw-term[data-category] {
+  background:var(--kw-category);border-inline-start:4px solid var(--kw-category-ink);
+}
+.board-app.screen-mode .kw-projection .kw-term[data-category]:hover {background:white}
+.board-app.screen-mode .kw-projection .kw-term[data-category] > b {color:var(--kw-category-ink)}
+.kw-projection .kw-colour-legend {display:flex;align-items:center;flex-wrap:wrap;gap:3px 8px;margin:0 0 7px;font-size:.7rem;line-height:1.35;color:var(--kw-ink)}
+.kw-projection .kw-colour-legend ul {display:flex;flex-wrap:wrap;gap:3px 6px;list-style:none;padding:0;margin:0}
+.kw-projection .kw-colour-legend li {display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:99px;background:var(--kw-category);color:var(--kw-category-ink);font-weight:800;white-space:nowrap}
+.kw-projection .kw-colour-legend li i {width:7px;height:7px;border-radius:50%;background:var(--kw-category-ink)}
+.kw-projection .kw-category-tag {color:var(--kw-category-ink);font-size:10px;line-height:14px;font-weight:850;margin-inline-end:2px;white-space:nowrap}

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, ChevronDown, ChevronUp, CornerDownRight, Search } from "lucide-react";
+import { classifyKeyword, keywordCategories } from "./keyword-categories";
 import { collectIdeaKeywords, searchIdeaSources } from "./idea-keywords";
 import { WorksheetReadout } from "./worksheet-fields";
 import { type Worksheet, worksheetHeadline } from "./worksheet";
@@ -90,14 +91,20 @@ export default function KeywordsPanel<T extends Source>({ ideas, onReply, presen
       </article>)}</div>
     </> : <>
       <p className="kw-hint" data-empty={!groups.length || undefined}>{groups.length ? "言葉を選ぶと、その言葉が出た投稿を読めます。" : "読みたい投稿に含まれる言葉を検索できます。"}</p>
+      {presentation && displayed.length > 0 && <div className="kw-colour-legend" aria-label="言葉の種類">
+        <strong>言葉の種類</strong><ul>{keywordCategories.map(category => <li key={category.id} data-category={category.id}><i aria-hidden="true"/>{category.label}</li>)}</ul>
+      </div>}
       <div className="kw-list" ref={list}>{displayed.map(group => {
         const teams = participatingTeams(group.sources);
+        const category = presentation ? classifyKeyword(group.label) : undefined;
         return <button className="kw-term" type="button" key={group.key} data-term={group.key}
-          data-team={teams.length === 1 ? teams[0] : undefined}
-          aria-label={group.label + "、" + group.sources.length + "件の投稿を表示" + (teams.length ? "、" + teams.map(t=>t+"班").join("・") : "")}
+          data-category={category?.id} data-team={!presentation && teams.length === 1 ? teams[0] : undefined}
+          aria-label={group.label + "、" + group.sources.length + "件の投稿を表示" + (category ? "、" + category.label : "") + (teams.length ? "、" + teams.map(t=>t+"班").join("・") : "")}
           onClick={() => setSelectedKey(group.key)}>
           <b>{group.label}</b><span className="kw-count">{group.sources.length}<small>件</small></span>
-          {teams.length > 0 && <span className="kw-teams" aria-hidden="true">{teams.map(t=><i key={t} data-team={t}>{t}</i>)}</span>}
+          {(category || teams.length > 0) && <span className="kw-teams" aria-hidden="true">
+            {category && <span className="kw-category-tag">{category.short}</span>}
+            {teams.map(t=><i key={t} data-team={t}>{t}</i>)}</span>}
         </button>;
       })}</div>
       {groups.length > visibleLimit && <button className="kw-more" type="button" aria-expanded={all} onClick={() => setAll(!all)}>

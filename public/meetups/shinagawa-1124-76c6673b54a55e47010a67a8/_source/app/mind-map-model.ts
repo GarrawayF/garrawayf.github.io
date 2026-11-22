@@ -1,3 +1,4 @@
+import { extractIdeaKeywords } from "./idea-keywords";
 import { roundLabels, type EventRound } from "./event-round";
 import type { PostAnalysis } from "./post-analysis";
 import { worksheetHeadline, type Worksheet } from "./worksheet";
@@ -161,4 +162,86 @@ export function relationsDiagram(width:number, focus:MapRecord, sources:readonly
   }
   neighbors(sources,true); neighbors(successors,false);
   return {width,height,boxes,wires};
+}
+
+const sharedConcepts = [
+  "雨の日","雨よけ","日よけ","屋根付き","ベンチ","休憩場所","車いす","車椅子","段差","ベビーカー",
+  "乗り換え","乗換","待ち合わせ","道案内","案内マップ","案内表示","多言語","回遊","寄り道","商店街",
+  "地元店舗","マルシェ","シェアサイクル","自転車","荷物預かり","子育て","子ども","通勤","高齢者",
+  "防災","避難","災害","空き店舗","広場","歩行者","信号待ち","日陰","横断歩道","歩道橋","電話","片手","改札",
+] as const;
+const genericTerms = new Set(["品川","品川駅","駅前","駅周辺","利用者","移動","情報","場所","地域","空間","サービス","イベント","仕組み","アイデア","課題","交通","モビリティ","まちづくり","共同","交流","イメージ","スペース","プロジェクト","コミュニティ","写真","休憩","人","場所","時間","方法","目線","案内","駅","出口","店","テスト","途中","違い","候補","安心","同じ","場合","提案","対応","確認","状態","改善","体験","現場","選択","必要","実現","東京","名前","今日","二人","一軒","初めて","利用","確か","賛成","大人"]);
+const concreteConcept = new Set<string>(sharedConcepts);
+const singleAnchor = new Set(["雨よけ","日よけ","ベンチ","車いす","車椅子","ベビーカー","案内マップ","マルシェ","シェアサイクル","横断歩道","歩道橋","電話","片手","改札","空き店舗","荷物預かり","避難","段差"]);
+const normalize = (text:string)=>text.normalize("NFKC").toLowerCase();
+export type RelatedIdea = { entry:MapRecord; kind:"in" | "out" | "suggested"; evidence:string[]; strength:number };
+function authoredText(entry:MapRecord) {
+  // Analysis-derived titles and summaries, dates/team metadata and bylines are not evidence.
+  const { row }=entry;
+  return [row.enteredText ?? row.text, entry.kind==="idea"?entry.row.context:"",
+    ...Object.entries(row.worksheet || {}).filter(([key])=>key!=="recorder").map(([,value])=>value),
+  ].filter(Boolean).join("\n").replace(/https?:\/\/[^\s]+/gu, " ");
+}
+export function buildContentMap(graph:IdeaMap, visible:readonly MapRecord[]) {
+  const keyset=new Set(visible.map(entry=>entry.key));
+  const docs=new Map<string,Map<string,string>>();
+  const index=new Map<string,string[]>();
+  for(const entry of visible){
+    const raw=authoredText(entry), text=normalize(raw);
+    const phrases=new Map<string,string>();
+    for(const label of [...extractIdeaKeywords(raw),...sharedConcepts.filter(value=>text.includes(normalize(value)))]){
+      const key=normalize(label);
+      if(genericTerms.has(key) || key.length<2 || !text.includes(key)) continue;
+      phrases.set(key,label);
+    }
+    docs.set(entry.key,phrases);
+    for(const key of phrases.keys()) {
+      if(!index.has(key)) index.set(key,[]);
+      index.get(key)!.push(entry.key);
+    }
+  }
+  const result=new Map<string,RelatedIdea[]>();
+  for(const entry of visible){
+    const explicit:RelatedIdea[]=[];
+    for(const [kind,neighbors] of [["in",graph.sources.get(entry.key)],["out",graph.successors.get(entry.key)]] as const) {
+      for(const next of neighbors || []) if(keyset.has(next.key) && !explicit.some(edge=>edge.entry.key===next.key)) explicit.push({entry:next,kind,evidence:[],strength:8});
+    }
+    const phrases=docs.get(entry.key)!;
+    const possible=new Map<string,string[]>();
+    for(const phrase of phrases.keys()){
+      const members=index.get(phrase)!;
+      if(members.length>Math.max(3,Math.ceil(visible.length*.34))) continue;
+      for(const key of members){
+        if(key===entry.key || explicit.some(edge=>edge.entry.key===key)) continue;
+        if(!possible.has(key)) possible.set(key,[]);
+        possible.get(key)!.push(phrase);
+      }
+    }
+    const suggested:RelatedIdea[]=[];
+    for(const [key,overlap] of possible){
+      const themes=overlap.sort((a,b)=>Number(singleAnchor.has(b))-Number(singleAnchor.has(a)) || b.length-a.length)
+        .filter((phrase,i,array)=>!array.slice(0,i).some(previous=>previous.includes(phrase)||phrase.includes(previous)));
+      const distinctive=themes.some(term=>singleAnchor.has(term)||/^[\p{Script=Han}々]{4,}$|^[\p{Script=Katakana}ー]{5,}$/u.test(term));
+      const independent=themes.filter(term=>term.length>=2);
+      const controlled=themes.filter(term=>concreteConcept.has(term)).length;
+      if(independent.length<2 || (!distinctive && controlled===0)) continue;
+      const evidence=themes.slice(0,2).map(phrase=>phrases.get(phrase)!);
+      suggested.push({entry:graph.byKey.get(key)!,kind:"suggested",evidence,strength:Number(distinctive)*3+evidence.length+controlled*2});
+    }
+    const order=(a:RelatedIdea,b:RelatedIdea)=>b.strength-a.strength || a.entry.key.localeCompare(b.entry.key);
+    suggested.sort(order);
+    // If both types exist, make the distinction visible on the first screen.
+    result.set(entry.key,[...explicit.slice(0,2),...suggested.slice(0,2),...explicit.slice(2),...suggested.slice(2)]);
+  }
+  return result;
+}
+export function defaultContentFocus(visible:readonly MapRecord[], relations:ReadonlyMap<string,readonly RelatedIdea[]>) {
+  const weight=(entry:MapRecord)=>{
+    const links=(relations.get(entry.key)||[]).slice(0,5);
+    const inferred=links.filter(link=>link.kind==="suggested");
+    const recorded=links.some(link=>link.kind!=="suggested");
+    return (recorded&&inferred.length?30:0)+(inferred[0]?.strength||0)*5+(inferred.some(link=>link.entry.row.team!==entry.row.team)?9:0)
+      +links.length*3+new Set(links.map(link=>link.entry.row.team)).size;
+  };
+  return visible.reduce<MapRecord|undefined>((chosen,next)=>!chosen||weight(next)>weight(chosen)?next:chosen,undefined);
 }

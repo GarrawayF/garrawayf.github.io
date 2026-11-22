@@ -7,7 +7,7 @@ import { selectGalleryKeywords } from "./gallery-keywords";
 import { WorksheetReadout } from "./worksheet-fields";
 import { ReactionButtons } from "./reactions";
 import { PostComments } from "./post-comments";
-import { buildIdeaMap, defaultFocus, groupDiagram, groupLabel, kindLabel, locationLabel, mapGroups, relationsDiagram, type Diagram, type IdeaMap, type MapGroup, type MapIdea, type MapRecord, type MapTheme } from "./mind-map-model";
+import { buildContentMap, buildIdeaMap, defaultContentFocus, defaultFocus, groupDiagram, groupLabel, kindLabel, locationLabel, mapGroups, relationsDiagram, type Diagram, type IdeaMap, type MapGroup, type MapIdea, type MapRecord, type MapTheme, type RelatedIdea } from "./mind-map-model";
 import "./mind-map.css";
 
 type CitationProps = { onCite?: (idea: MapIdea) => void; citedIds?: readonly string[] };
@@ -94,17 +94,36 @@ function MapDrawing({diagram,onOpen,label,team,keywords}:{diagram:Diagram;onOpen
   </div>;
 }
 
-function Pages({start,total,change,label}:{start:number;total:number;change:(n:number)=>void;label:string}) {
-  if(total<=pageSize) return null;
-  return <div className="mm-pages"><span>{label} {start+1}〜{Math.min(total,start+pageSize)} / {total}件</span>
-    <button type="button" disabled={!start} aria-label={label+"を前に戻す"} onClick={()=>change(start-pageSize)}><ChevronLeft size={18}/></button>
-    <button type="button" disabled={start+pageSize>=total} aria-label={label+"の続きを見る"} onClick={()=>change(start+pageSize)}><ChevronRight size={18}/></button></div>;
+function Pages({start,total,change,label,size=pageSize}:{start:number;total:number;change:(n:number)=>void;label:string;size?:number}) {
+  if(total<=size) return null;
+  return <div className="mm-pages"><span>{label} {start+1}〜{Math.min(total,start+size)} / {total}件</span>
+    <button type="button" disabled={!start} aria-label={label+"を前に戻す"} onClick={()=>change(start-size)}><ChevronLeft size={18}/></button>
+    <button type="button" disabled={start+size>=total} aria-label={label+"の続きを見る"} onClick={()=>change(start+size)}><ChevronRight size={18}/></button></div>;
+}
+
+function ContentDrawing({entry,edges,keywords,onOpen,onFocus}:{entry:MapRecord;edges:readonly RelatedIdea[];keywords:ReadonlyMap<string,string>;onOpen:(key:string)=>void;onFocus:(key:string)=>void}) {
+  const card=(item:MapRecord)=><><small>{groupLabel(item.row.team)} · {kindLabel(item)}</small><strong>{keywords.get(item.key)||item.title}</strong></>;
+  return <div className="mm-related-map" role="group" aria-label="内容がつながるアイデア">
+    <div className="mm-related-center"><span>中心の案</span><button type="button" className="mm-related-node" data-map-team={entry.row.team} data-center="true" title={entry.title} aria-label={"中心の案を読む："+entry.title} onClick={()=>onOpen(entry.key)}>{card(entry)}</button></div>
+    {edges.length ? <ul className="mm-related-branches">{edges.map(link=>{
+      const relation=link.kind==="in"?"この案が引用・返信した元の案":link.kind==="out"?"この案を引用・返信した投稿":"共通点："+link.evidence.map(phrase=>"「"+phrase+"」").join(" ");
+      return <li key={link.entry.key} data-edge={link.kind}>
+        <span className="mm-edge-line" aria-hidden="true"/>
+        <div className="mm-related-card">
+          <span className="mm-edge-reason">{relation}</span>
+          <div className="mm-related-card-actions"><button type="button" className="mm-related-node" data-map-team={link.entry.row.team} title={link.entry.title} aria-label={"案を読む："+link.entry.title} onClick={()=>onOpen(link.entry.key)}>{card(link.entry)}</button>
+          <button className="mm-focus-link" type="button" aria-label={"この案を中心にする："+link.entry.title} title="この案を中心にする" onClick={()=>onFocus(link.entry.key)}><GitBranch size={17} aria-hidden="true"/></button></div>
+        </div>
+      </li>;
+    })}</ul>:<p className="mm-unlinked">この絞り込みでは、内容の共通点や引用・返信が確認できる案はありません。</p>}
+  </div>;
 }
 
 export default function MindMap({ ideas, themes=initialThemes, teamFilter, roundFilter, hasLoaded, themesLoaded=true, loadError=false, presentation, onWrite, onReply, onCite, citedIds }:Props) {
   const graph=useMemo(()=>buildIdeaMap(ideas,themes),[ideas,themes]);
   const keywords=useMemo(()=>selectGalleryKeywords(graph.records),[graph]);
   const visible=useMemo(()=>graph.records.filter(e=>(!teamFilter||e.row.team===teamFilter)&&(!roundFilter||e.row.round===roundFilter)),[graph,teamFilter,roundFilter]);
+  const content=useMemo(()=>presentation?buildContentMap(graph,visible):new Map<string,RelatedIdea[]>(),[presentation,graph,visible]);
   const groups=mapGroups.filter(g=>visible.some(e=>e.row.team===g));
   const [viewChoice,setView]=useState<View|null>(null);
   const [groupChoice,setGroup]=useState<MapGroup|null>(null);
@@ -123,16 +142,20 @@ export default function MindMap({ ideas, themes=initialThemes, teamFilter, round
     const observer=new ResizeObserver(measure);observer.observe(host);return ()=>observer.disconnect();
   },[hasItems]);
   const filterKey=teamFilter+"/"+roundFilter;
-  const defaultEntry=defaultFocus(visible,graph);
+  const defaultEntry=presentation?defaultContentFocus(visible,content):defaultFocus(visible,graph);
   const entry=(focusChoice?.filter===filterKey&&graph.byKey.get(focusChoice.key)) || defaultEntry;
   const hasRealLinks=!!defaultEntry&&(graph.sources.has(defaultEntry.key)||graph.successors.has(defaultEntry.key));
-  const view=viewChoice || (hasRealLinks?"links":"groups");
+  const view=viewChoice || ((presentation||hasRealLinks)?"links":"groups");
   const group=groupChoice&&groups.includes(groupChoice)?groupChoice:groups[0];
   const grouped=visible.filter(e=>e.row.team===group).sort(orderByRound);
   const successors=entry?graph.successors.get(entry.key)||[]:[];
   const pageKey=view==="groups"?"group:"+group+":"+roundFilter:"links:"+entry?.key;
-  const total=view==="groups"?grouped.length:successors.length;
-  const start=Math.min(pages[pageKey]||0,Math.max(0,Math.floor((total-1)/pageSize)*pageSize));
+  const related=entry?content.get(entry.key)||[]:[];
+  const contentView=Boolean(presentation&&view==="links");
+  const contentPageSize=4;
+  const size=contentView?contentPageSize:pageSize;
+  const total=view==="groups"?grouped.length:contentView?related.length:successors.length;
+  const start=Math.min(pages[pageKey]||0,Math.max(0,Math.floor((total-1)/size)*size));
   const setPage=(next:number)=>setPages(prev=>({...prev,[pageKey]:next}));
   const compact=Boolean(presentation && width>=960);
   const diagram = entry && group
@@ -140,6 +163,7 @@ export default function MindMap({ ideas, themes=initialThemes, teamFilter, round
       ? groupDiagram(width, group, grouped.slice(start, start + pageSize), grouped.length, compact)
       : relationsDiagram(width, entry, graph.sources.get(entry.key) || [], successors.slice(start, start + pageSize), compact)
     : null;
+  const focusSelector=useRef<HTMLSelectElement>(null);
   const current=graph.byKey.get(history[history.length-1]);
   const focusOn=(key:string)=>{setFocus({key,filter:filterKey});setView("links");setHistory([]);};
   const wait=!hasLoaded||!themesLoaded;
@@ -149,21 +173,24 @@ export default function MindMap({ ideas, themes=initialThemes, teamFilter, round
     {!wait&&!loadError&&onWrite&&<button type="button" className="mm-action" onClick={onWrite}>個人の案を書く</button>}</div>;
   const options=visible.some(e=>e.key===entry.key)?visible:[entry,...visible];
   return <section className={"mind-map"+(presentation?" mm-project":"")} aria-labelledby={headerId} data-map-compact={compact || undefined}>
-    <div className="mm-controls"><div className="mm-mode" role="group" aria-label="マップの表示"><button type="button" aria-pressed={view==="groups"} onClick={()=>setView("groups")}><Layers size={15} aria-hidden="true"/>班・講演から</button><button type="button" aria-pressed={view==="links"} onClick={()=>setView("links")}><GitBranch size={15} aria-hidden="true"/>案のつながり</button></div>
+    <div className="mm-controls"><div className="mm-mode" role="group" aria-label="マップの表示"><button type="button" aria-pressed={view==="groups"} onClick={()=>setView("groups")}><Layers size={15} aria-hidden="true"/>班・講演から</button><button type="button" aria-pressed={view==="links"} onClick={()=>setView("links")}><GitBranch size={15} aria-hidden="true"/>{presentation?"内容がつながる案":"案のつながり"}</button></div>
       {view==="groups"?<div className="mm-team-tabs" role="group" aria-label="表示する班">
         {groups.map(g=><button key={g} type="button" aria-pressed={g===group} data-map-team={g} onClick={()=>setGroup(g)}>
           {groupLabel(g)}<small>{visible.filter(n=>n.row.team===g).length}</small></button>)}
       </div>:
-      <label className="mm-select">中心にする案<select value={entry.key} onChange={e=>focusOn(e.target.value)}>{options.map(n=><option key={n.key} value={n.key}>{groupLabel(n.row.team)} · {kindLabel(n)} · {Array.from(n.title).slice(0,36).join("")}</option>)}</select></label>}</div>
+      <label className="mm-select">中心にする案<select ref={focusSelector} value={entry.key} onChange={e=>focusOn(e.target.value)}>{options.map(n=><option key={n.key} value={n.key}>{groupLabel(n.row.team)} · {kindLabel(n)} · {Array.from(n.title).slice(0,36).join("")}</option>)}</select></label>}</div>
     <div className="mm-chart">
       <header className="mm-chart-head">
-        <h3 id={headerId}>{view==="groups"?groupLabel(group)+"の案とテーマ":"発想のつながり"}</h3>
-        <span className="mm-legend"><i data-wire={view==="groups"?"classification":"citation"} aria-hidden="true"/>{view==="groups"?"点線：班・講演の分類":"矢印：元の案から派生した案へ"}</span>
+        <h3 id={headerId}>{view==="groups"?groupLabel(group)+"の案とテーマ":contentView?"関係するアイデア":"発想のつながり"}</h3>
+        {contentView?<div className="mm-related-legend">
+          <span className="mm-legend"><i data-wire="citation" aria-hidden="true"/>記録された引用・返信</span>
+          <span className="mm-legend"><i data-wire="classification" aria-hidden="true"/>投稿原文の共通語（参考）</span>
+        </div>:<span className="mm-legend"><i data-wire={view==="groups"?"classification":"citation"} aria-hidden="true"/>{view==="groups"?"点線：班・講演の分類":"矢印：元の案から派生した案へ"}</span>}
       </header>
-      <div ref={resize} className="mm-space"><MapDrawing diagram={diagram} onOpen={key=>setHistory([key])}
-        team={view==="groups"?group:undefined} keywords={keywords} label={view==="groups"?"班から講演、個人案・テーマへの分類図":"元の個人案と、そこから生まれた投稿・テーマの関係図"}/></div>
-      {view==="links"&&!graph.sources.has(entry.key)&&!successors.length&&<p className="mm-unlinked">この案には、まだ元の案や派生した投稿が結び付いていません。</p>}
-      <Pages start={start} total={total} change={setPage} label={view==="groups"?"案":"派生した投稿・テーマ"}/>
+      <div ref={resize} className="mm-space">{contentView?<ContentDrawing entry={entry} edges={related.slice(start,start+size)} keywords={keywords} onOpen={key=>setHistory([key])} onFocus={key=>{focusOn(key);focusSelector.current?.focus({preventScroll:true});}}/>:<MapDrawing diagram={diagram} onOpen={key=>setHistory([key])}
+        team={view==="groups"?group:undefined} keywords={keywords} label={view==="groups"?"班から講演、個人案・テーマへの分類図":"元の個人案と、そこから生まれた投稿・テーマの関係図"}/>}</div>
+      {view==="links"&&!contentView&&!graph.sources.has(entry.key)&&!successors.length&&<p className="mm-unlinked">この案には、まだ元の案や派生した投稿が結び付いていません。</p>}
+      <Pages start={start} total={total} size={size} change={setPage} label={view==="groups"?"案":contentView?"関連する案":"派生した投稿・テーマ"}/>
     </div>
     {(loadError||wait)&&<p className="mm-unlinked" role="status">{loadError?"一部のデータに接続できません。接続が戻ると更新します。":"残りのデータを読み込み中…"}</p>}
     {current&&<Detail entry={current} graph={graph} canBack={history.length>1} onBack={()=>setHistory(prev=>prev.slice(0,-1))} onClose={()=>setHistory([])} onOpen={key=>setHistory(prev=>[...prev,key])} onFocus={()=>focusOn(current.key)} onReply={onReply} onCite={onCite} citedIds={citedIds}/>}

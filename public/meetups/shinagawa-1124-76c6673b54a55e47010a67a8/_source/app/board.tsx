@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
 import { BookOpen, Check, ChevronDown, ChevronRight, CircleAlert, CornerDownRight, Link2, Monitor, Pencil, QrCode, Send, X, NotebookPen, Presentation, Users } from "lucide-react";
-import { boardViewOf, isDemoRoom, pageLink, roomApi, roomStorageKey } from "./board-room";
+import { boardViewOf, isDemoRoom, pageLink, publicBoardUrl, roomApi, roomStorageKey } from "./board-room";
 import { assetUrl } from "./asset-url";
 import MaterialsPanel from "./materials-panel";
 import PersonalNotes from "./personal-notes";
@@ -487,6 +487,9 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
             <h1>{(team ? team + "班" : "全体") + "のアウトプット"}</h1>
             <span className="projection-count"><b>{feedReady ? totalShown : "—"}</b>件</span>
             <div className="projection-tools">
+              <a className="projection-room-link" href={pageLink(publicBoardUrl, { view: "screen", room: isDemoRoom(sourceHref) ? "" : "demo" })}>
+                {isDemoRoom(sourceHref) ? "本番の発表へ戻る" : "テストデータを見る"}
+              </a>
               <button type="button" onClick={() => setTool("slides")}><Presentation size={16}/>スライド</button>
               <button type="button" onClick={() => setTool("guide")}><BookOpen size={16}/>進め方</button>
             </div>

@@ -138,7 +138,10 @@
 }
 .projection-count { display: inline-flex; align-items: baseline; gap: .2rem; color: var(--wall-muted); font-size: .85rem; }
 .projection-count b { font-size: clamp(1.5rem,2.75vw,2.8rem); font-weight: 820; line-height: 1; color: var(--rose); font-variant-numeric: tabular-nums; }
-.projection-tools { display: flex; align-items: center; margin-inline-start: auto; }
+.projection-tools { display: flex; align-items: center; flex-wrap: wrap; margin-inline-start: auto; }
+.projection-room-link { display: inline-flex; align-items: center; min-height: 34px; padding: .25rem .55rem; margin-inline-end: .25rem;
+  border: 1px solid color-mix(in srgb, var(--rose) 65%, transparent); border-radius: 5px; color: var(--wall-text); text-decoration: none; font-size: .82rem; }
+.projection-room-link:hover, .projection-room-link:focus-visible { background: var(--wall-panel); outline: 2px solid var(--rose); outline-offset: 2px; }
 .projection-tools button { display:inline-flex; align-items:center; gap:.3rem; padding:.35rem .55rem; color:var(--wall-muted); font-size:.84rem; }
 .screen-mode .projection-controls { border-block: 1px solid var(--wall-line); padding:.28rem 0; margin-bottom:.38rem; }
 .screen-mode .projection-controls .team-outputs { display:flex; margin:0; }
@@ -160,6 +163,7 @@
 @media (max-width:670px) {
   .screen-mode .projection-title { padding:.6rem 0; }
   .projection-tools button { font-size:.78rem; padding:.5rem .25rem; }
+  .projection-room-link { min-height: 44px; font-size: .78rem; }
   .screen-mode .projection-controls { gap:.25rem .35rem; }
   .screen-mode .projection-controls .team-outputs { flex:1 1 auto; }
   .screen-mode .projection-controls .outputs-links { width:100%; }

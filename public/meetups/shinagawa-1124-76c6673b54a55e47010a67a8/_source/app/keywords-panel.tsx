@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, ChevronDown, ChevronUp, CornerDownRight } from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronUp, CornerDownRight, Search } from "lucide-react";
 import { collectIdeaKeywords, searchIdeaSources } from "./idea-keywords";
 import { WorksheetReadout } from "./worksheet-fields";
 import { type Worksheet, worksheetHeadline } from "./worksheet";
@@ -28,6 +28,8 @@ type Props<T extends Source> = {
 };
 
 const visibleLimit = 12;
+const teamOrder = ["A","B","C","D","E"];
+const participatingTeams = (sources: readonly Source[]) => teamOrder.filter(t => sources.some(s => s.team === t));
 
 export default function KeywordsPanel<T extends Source>({ ideas, onReply, presentation = false }: Props<T>) {
   const groups = useMemo(() => collectIdeaKeywords(ideas), [ideas]);
@@ -60,9 +62,12 @@ export default function KeywordsPanel<T extends Source>({ ideas, onReply, presen
   </section>;
 
   return <section className={"kw-panel" + (presentation ? " kw-projection" : "")} aria-label="投稿のキーワード">
-    {!selected && <label className="kw-search">投稿の言葉を探す
-      <input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="気になる言葉を入力" />
-    </label>}
+    {!selected && <div className="kw-entry">
+      <header className="kw-head"><div><p>KEYWORDS</p><h3>投稿に出てきた言葉</h3></div><span><b>{groups.length}</b>語</span></header>
+      <label className="kw-search"><span>投稿の言葉を探す</span><span className="kw-search-field"><Search size={17} aria-hidden="true"/>
+        <input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="気になる言葉を入力" /></span>
+      </label>
+    </div>}
     {selected || searching ? <>
       {selected && <button className="kw-back" type="button" onClick={() => {
         restore.current = selected.key;
@@ -72,24 +77,27 @@ export default function KeywordsPanel<T extends Source>({ ideas, onReply, presen
         <h3 ref={heading} tabIndex={-1}>{selected ? selected.label : "検索結果"}</h3>
         <span aria-live="polite">{(selected?.sources || matches).length}件の投稿</span>
       </div>
-      <div className="kw-sources">{(selected?.sources || matches).map(idea => <article className="kw-source" key={idea.id}>
+      <div className="kw-sources">{(selected?.sources || matches).map(idea => <article className="kw-source" data-team={idea.team} key={idea.id}>
         <div className="kw-meta"><span>{idea.team}班</span><span>{roundLabels[idea.round]}</span>{idea.name && <span>{idea.name}</span>}</div>
         {((idea.enteredText ?? idea.text) || !idea.context) && <p className="kw-source-text">{worksheetHeadline(idea.enteredText ?? idea.text, idea.worksheet)}</p>}
         {idea.context && <p className="kw-context"><b>きっかけ・共感した理由</b>{idea.context}</p>}
         <WorksheetReadout mode="personal" values={idea.worksheet || {}} />
         <ReactionButtons targetType="idea" targetId={idea.id} />
-        <PostComments targetType="idea" targetId={idea.id} tone={presentation ? "dark" : "light"}/>
+        <PostComments targetType="idea" targetId={idea.id} tone="light"/>
         {onReply && <button className="kw-reply" type="button" onClick={() => onReply(idea)}><CornerDownRight size={14} aria-hidden="true" />この案から発想</button>}
       </article>)}</div>
     </> : <>
-      <header className="kw-head"><h3>投稿に出てきた言葉</h3><span>{groups.length}語</span></header>
       <p className="kw-hint">{groups.length ? "言葉を選ぶと、その言葉が出た投稿を読めます。" : "読みたい投稿に含まれる言葉を検索できます。"}</p>
-      <div className="kw-list" ref={list}>{displayed.map(group =>
-        <button className="kw-term" type="button" key={group.key} data-term={group.key}
-          aria-label={group.label + "、" + group.sources.length + "件の投稿を表示"}
+      <div className="kw-list" ref={list}>{displayed.map(group => {
+        const teams = participatingTeams(group.sources);
+        return <button className="kw-term" type="button" key={group.key} data-term={group.key}
+          data-team={teams.length === 1 ? teams[0] : undefined}
+          aria-label={group.label + "、" + group.sources.length + "件の投稿を表示" + (teams.length ? "、" + teams.map(t=>t+"班").join("・") : "")}
           onClick={() => setSelectedKey(group.key)}>
-          <b>{group.label}</b><span>{group.sources.length}<small>件</small></span>
-        </button>)}</div>
+          <b>{group.label}</b><span className="kw-count">{group.sources.length}<small>件</small></span>
+          {teams.length > 0 && <span className="kw-teams" aria-hidden="true">{teams.map(t=><i key={t} data-team={t}>{t}</i>)}</span>}
+        </button>;
+      })}</div>
       {groups.length > visibleLimit && <button className="kw-more" type="button" aria-expanded={all} onClick={() => setAll(!all)}>
         {all ? <ChevronUp size={15} aria-hidden="true" /> : <ChevronDown size={15} aria-hidden="true" />}
         {all ? "表示を減らす" : "すべての" + groups.length + "語を見る"}

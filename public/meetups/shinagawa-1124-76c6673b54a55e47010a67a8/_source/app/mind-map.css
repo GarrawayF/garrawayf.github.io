@@ -69,3 +69,87 @@ button.mm-box:hover,.mm-pages button:hover:not(:disabled),.mm-detail-link:hover 
 }
 .mm-project .mm-box span { font-size:clamp(1rem,1.3vw,1.26rem); }
 .mm-project .mm-box small { font-size:clamp(.78rem,.93vw,.93rem); }
+
+/* Shinagawa's map uses the same team colours, ink outline and rounded wording as the board. */
+.board-app .mind-map,
+.board-app .mm-empty,
+.board-app .mm-detail {
+  color-scheme:light;
+  --mm-active:#792748;--mm-dim:#624454;--mm-line:#ad8597;--mm-bg:#fff6fa;--mm-surface:#fff;
+  --mm-ink:#291823;--mm-outline:#4a283b;--mm-keyword:var(--sh-keyword,"M PLUS Rounded 1c","Hiragino Maru Gothic ProN",sans-serif);
+  color:var(--mm-ink);
+}
+.board-app .mind-map:not(.mm-project),.board-app.screen-mode .mind-map.mm-project {
+  padding:clamp(7px,1.15vw,15px);border:2px solid var(--mm-outline);border-radius:12px;
+  background:#fbeaF2;box-shadow:2px 3px 0 var(--mm-outline);
+}
+.mind-map [data-map-team="A"] {--mm-team:#a8c481}
+.mind-map [data-map-team="B"] {--mm-team:#edba76}
+.mind-map [data-map-team="C"] {--mm-team:#93c6d7}
+.mind-map [data-map-team="D"] {--mm-team:#f1a6bd}
+.mind-map [data-map-team="E"] {--mm-team:#bea9e0}
+.mind-map [data-map-team="all"] {--mm-team:#f9dfeb}
+.board-app .mind-map .mm-controls {align-items:center;gap:7px 13px;margin:0 0 8px}
+.board-app .mind-map .mm-mode {background:white;border:1.5px solid var(--mm-outline);border-radius:999px}
+.board-app .mind-map .mm-mode button {min-height:36px;border-radius:999px;font-weight:800;white-space:nowrap}
+.board-app .mind-map .mm-mode button[aria-pressed=true] {background:var(--mm-active);color:white}
+.board-app .mind-map .mm-mode button:not([aria-pressed=true]):hover {background:#f5dbe5}
+.board-app .mind-map .mm-select {display:flex;align-items:center;gap:6px;max-width:min(100%,420px);flex:1 1 270px}
+.board-app .mind-map .mm-select select {min-height:38px;border:1.5px solid var(--mm-outline);background:white;font-size:.85rem}
+.board-app .mind-map .mm-team-tabs {display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+.board-app .mind-map .mm-team-tabs button {display:flex;gap:4px;align-items:baseline;white-space:nowrap;min-height:37px;padding:5px 8px;
+  background:color-mix(in srgb,var(--mm-team,#f9dfeb) 44%,white);color:var(--mm-ink);
+  border:1.5px solid #866479;border-radius:999px;font-size:.76rem;font-weight:830;
+}
+.board-app .mind-map .mm-team-tabs button[aria-pressed=true] {background:var(--mm-team,#f9dfeb);border-color:var(--mm-outline);box-shadow:1px 2px var(--mm-outline)}
+.board-app .mind-map .mm-team-tabs small {color:#533943;font-size:.66rem;font-variant-numeric:tabular-nums}
+.board-app.screen-mode .mind-map.mm-project .mm-chart,.board-app .mind-map .mm-chart {
+  padding:clamp(7px,1.2vw,13px);border:1.5px solid #ba92a5;border-radius:8px;background:#fffafd;
+}
+.board-app .mind-map .mm-chart-head {display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:3px 12px;margin:0 0 3px}
+.board-app .mind-map .mm-chart-head h3 {color:#672545;font:900 clamp(1rem,2.5cqw,1.32rem)/1.25 var(--mm-keyword)}
+.board-app .mind-map .mm-legend {display:flex;align-items:center;gap:6px;color:var(--mm-dim);font-size:.72rem;font-weight:750}
+.board-app .mind-map .mm-legend i {position:relative;width:20px;display:block;height:0;border-top:2px solid var(--mm-active)}
+.board-app .mind-map .mm-legend i[data-wire=classification] {border-top:2px dashed var(--mm-line)}
+.board-app .mind-map .mm-legend i[data-wire=citation]::after {
+  content:"";position:absolute;right:0;top:-4px;width:6px;height:6px;border-top:2px solid var(--mm-active);border-right:2px solid var(--mm-active);transform:rotate(45deg);
+}
+.board-app .mind-map .mm-canvas {background-image:radial-gradient(circle,#a5708d29 .75px,transparent 1.05px)}
+.board-app .mind-map .mm-attribution {stroke-width:2.5}
+.board-app .mind-map .mm-classification {stroke-width:1.6}
+.board-app .mind-map .mm-box {
+  gap:2px;padding:5px 9px;border:1.5px solid var(--mm-outline);border-radius:8px;
+  background:color-mix(in srgb,var(--mm-team,#f9dfeb) 16%,white);
+  box-shadow:2px 2px var(--mm-outline);
+}
+.board-app .mind-map button.mm-box {border-inline-start:5px solid var(--mm-team,#f9dfeb)}
+.board-app .mind-map .mm-box:not(.mm-box-idea,.mm-box-theme) {background:color-mix(in srgb,var(--mm-team,#f9dfeb) 49%,white)}
+.board-app .mind-map .mm-box-group {align-items:center;border-radius:15px}
+.board-app .mind-map .mm-box small {color:var(--mm-dim);font-size:clamp(.64rem,1.5cqw,.78rem);font-weight:760;line-height:1.15}
+.board-app .mind-map .mm-box span {font-family:var(--mm-keyword);font-size:clamp(.88rem,2.45cqw,1.22rem);font-weight:900;line-height:1.15}
+.board-app .mind-map .mm-box-stage span {font-size:clamp(.75rem,1.95cqw,.97rem)}
+.board-app .mind-map .mm-box-focus {background:color-mix(in srgb,var(--mm-team,#f9dfeb) 53%,white);outline:2px solid var(--mm-active);outline-offset:2px}
+.board-app .mind-map button.mm-box:hover,.board-app .mm-detail .mm-detail-link:hover,.board-app .mind-map .mm-pages button:hover:not(:disabled) {background:#f8dce8}
+.board-app .mind-map .mm-pages {margin-top:5px}
+.board-app .mind-map .mm-pages button {min-height:36px;border-color:var(--mm-outline)}
+.board-app .mm-empty {background:#fff7fb;border:1.5px solid #ad8597;border-radius:10px}
+.board-app .mm-empty .mm-action,.board-app .mm-detail .mm-cite button {background:var(--mm-active);color:white}
+.board-app .mm-detail {
+  background:var(--mm-bg);border:2px solid var(--mm-outline);box-shadow:3px 4px 0 var(--mm-outline);
+}
+.board-app .mm-detail h3 {font-family:var(--mm-keyword);font-weight:900;line-height:1.32}
+.board-app .mm-detail .mm-detail-section {border-color:#ddbecd}
+.board-app .mm-detail .mm-cite button:disabled {background:#f5dbe6;color:#75606b}
+.board-app .mm-detail .post-comments {
+  --comment-fg:#291823;--comment-muted:#624454;--comment-edge:#a87e93;
+  --comment-bg:#fff;--comment-input:#fffafd;--comment-accent:#792748;--comment-on-accent:#fff;--comment-alert:#922d30;
+}
+@container (max-width:560px) {
+  .board-app .mind-map .mm-controls {display:grid;justify-content:stretch;gap:6px}
+  .board-app .mind-map .mm-mode {display:grid;grid-template-columns:1fr 1fr}
+  .board-app .mind-map .mm-mode button {padding-inline:5px;min-height:44px;font-size:.78rem}
+  .board-app .mind-map .mm-select {display:grid;max-width:none}
+  .board-app .mind-map .mm-select select {min-height:44px;font-size:16px}
+  .board-app .mind-map .mm-team-tabs button,.board-app .mind-map .mm-pages button {min-height:44px}
+  .board-app .mind-map .mm-box {padding-inline:7px}
+}

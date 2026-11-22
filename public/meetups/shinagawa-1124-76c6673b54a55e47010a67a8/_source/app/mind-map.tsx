@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import { ArrowLeft, ChevronLeft, ChevronRight, CornerDownRight, GitBranch, Quote, X } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, CornerDownRight, GitBranch, Layers, Quote, X } from "lucide-react";
 import { type EventRound } from "./event-round";
+import { selectGalleryKeywords } from "./gallery-keywords";
 import { WorksheetReadout } from "./worksheet-fields";
 import { ReactionButtons } from "./reactions";
 import { PostComments } from "./post-comments";
@@ -33,7 +34,12 @@ function Detail({entry,graph,canBack,onBack,onOpen,onClose,onFocus,onReply,onCit
     onClose();
     onCite(entry.row);
   }
-  useEffect(()=>{const dialog=ref.current; if(!dialog) return; dialog.showModal(); return ()=>{if(dialog.open)dialog.close()};},[]);
+  useEffect(()=>{
+    const dialog=ref.current, opener=document.activeElement;
+    if(!dialog) return;
+    dialog.showModal();
+    return ()=>{if(dialog.open)dialog.close(); if(opener instanceof HTMLElement && opener.isConnected) opener.focus({preventScroll:true});};
+  },[]);
   useEffect(()=>{ref.current?.scrollTo(0,0);heading.current?.focus({preventScroll:true});},[entry.key]);
   const raw=(entry.row.enteredText ?? entry.row.text).trim();
   const ctx=entry.kind==="idea"?entry.row.context.trim():"";
@@ -68,7 +74,7 @@ function Detail({entry,graph,canBack,onBack,onOpen,onClose,onFocus,onReply,onCit
   </dialog>;
 }
 
-function MapDrawing({diagram,onOpen,label}:{diagram:Diagram;onOpen:(key:string)=>void;label:string}) {
+function MapDrawing({diagram,onOpen,label,team,keywords}:{diagram:Diagram;onOpen:(key:string)=>void;label:string;team?:MapGroup;keywords:ReadonlyMap<string,string>}) {
   const arrow=useId().replaceAll(":","");
   return <div className="mm-canvas" aria-label={label} role="group" style={{height:diagram.height}}>
     <svg aria-hidden="true" className="mm-lines" width="100%" height="100%" viewBox={`0 0 ${diagram.width} ${diagram.height}`} preserveAspectRatio="none">
@@ -78,9 +84,12 @@ function MapDrawing({diagram,onOpen,label}:{diagram:Diagram;onOpen:(key:string)=
     {diagram.boxes.map((b,i)=>{
       const style={left:(b.x/diagram.width*100)+"%",top:b.y,width:(b.width/diagram.width*100)+"%",height:b.height};
       const className="mm-box mm-box-"+b.style+(b.focus?" mm-box-focus":"");
-      const contents=<>{b.meta&&<small>{b.meta}</small>}<span>{b.label}</span></>;
-      return b.entry ? <button key={b.id+i} type="button" style={style} className={className} title={b.label} onClick={()=>onOpen(b.id)}>{contents}</button>:
-        <div key={b.id} style={style} className={className}>{contents}</div>;
+      const shade=b.entry?.row.team || team;
+      const word=b.entry ? (keywords.get(b.id) || b.label) : b.label;
+      const contents=<>{b.meta&&<small>{b.meta}</small>}<span>{word}</span></>;
+      return b.entry ? <button key={b.id+i} type="button" style={style} className={className} data-map-team={shade}
+        aria-label={b.meta ? b.meta+"： "+b.label : b.label} title={b.label} onClick={()=>onOpen(b.id)}>{contents}</button>:
+        <div key={b.id} style={style} className={className} data-map-team={shade}>{contents}</div>;
     })}
   </div>;
 }
@@ -94,6 +103,7 @@ function Pages({start,total,change,label}:{start:number;total:number;change:(n:n
 
 export default function MindMap({ ideas, themes=initialThemes, teamFilter, roundFilter, hasLoaded, themesLoaded=true, loadError=false, presentation, onWrite, onReply, onCite, citedIds }:Props) {
   const graph=useMemo(()=>buildIdeaMap(ideas,themes),[ideas,themes]);
+  const keywords=useMemo(()=>selectGalleryKeywords(graph.records),[graph]);
   const visible=useMemo(()=>graph.records.filter(e=>(!teamFilter||e.row.team===teamFilter)&&(!roundFilter||e.row.round===roundFilter)),[graph,teamFilter,roundFilter]);
   const groups=mapGroups.filter(g=>visible.some(e=>e.row.team===g));
   const [viewChoice,setView]=useState<View|null>(null);
@@ -109,6 +119,7 @@ export default function MindMap({ ideas, themes=initialThemes, teamFilter, round
     const host=resize.current;if(!host) return;
     const measure=()=>{const value=Math.floor(host.getBoundingClientRect().width);if(value>0)setWidth(value);};
     measure();
+    if (typeof ResizeObserver !== "function") { window.addEventListener("resize",measure); return () => window.removeEventListener("resize",measure); }
     const observer=new ResizeObserver(measure);observer.observe(host);return ()=>observer.disconnect();
   },[hasItems]);
   const filterKey=teamFilter+"/"+roundFilter;
@@ -123,10 +134,11 @@ export default function MindMap({ ideas, themes=initialThemes, teamFilter, round
   const total=view==="groups"?grouped.length:successors.length;
   const start=Math.min(pages[pageKey]||0,Math.max(0,Math.floor((total-1)/pageSize)*pageSize));
   const setPage=(next:number)=>setPages(prev=>({...prev,[pageKey]:next}));
+  const compact=Boolean(presentation && width>=960);
   const diagram = entry && group
     ? view === "groups"
-      ? groupDiagram(width, group, grouped.slice(start, start + pageSize), grouped.length)
-      : relationsDiagram(width, entry, graph.sources.get(entry.key) || [], successors.slice(start, start + pageSize))
+      ? groupDiagram(width, group, grouped.slice(start, start + pageSize), grouped.length, compact)
+      : relationsDiagram(width, entry, graph.sources.get(entry.key) || [], successors.slice(start, start + pageSize), compact)
     : null;
   const current=graph.byKey.get(history[history.length-1]);
   const focusOn=(key:string)=>{setFocus({key,filter:filterKey});setView("links");setHistory([]);};
@@ -136,13 +148,20 @@ export default function MindMap({ ideas, themes=initialThemes, teamFilter, round
     <span>{loadError?"接続が戻ると、案とつながりを表示します。":wait?"個人案とテーマを集めています。":graph.records.length?"ほかの班や回を選ぶと、その案が見られます。":"個人案が一つ届くと、班と講演の枝に表示されます。返信や元の案を選んだテーマは矢印でつながります。"}</span>
     {!wait&&!loadError&&onWrite&&<button type="button" className="mm-action" onClick={onWrite}>個人の案を書く</button>}</div>;
   const options=visible.some(e=>e.key===entry.key)?visible:[entry,...visible];
-  return <section className={"mind-map"+(presentation?" mm-project":"")} aria-labelledby={headerId}>
-    <div className="mm-controls"><div className="mm-mode" role="group" aria-label="マップの表示"><button type="button" aria-pressed={view==="groups"} onClick={()=>setView("groups")}>班・講演から見る</button><button type="button" aria-pressed={view==="links"} onClick={()=>setView("links")}>案のつながりを見る</button></div>
-      {view==="groups"?<label className="mm-select">表示する班<select value={group} onChange={e=>setGroup(e.target.value as MapGroup)}>{groups.map(g=><option key={g} value={g}>{groupLabel(g)}（{visible.filter(n=>n.row.team===g).length}件）</option>)}</select></label>:
+  return <section className={"mind-map"+(presentation?" mm-project":"")} aria-labelledby={headerId} data-map-compact={compact || undefined}>
+    <div className="mm-controls"><div className="mm-mode" role="group" aria-label="マップの表示"><button type="button" aria-pressed={view==="groups"} onClick={()=>setView("groups")}><Layers size={15} aria-hidden="true"/>班・講演から</button><button type="button" aria-pressed={view==="links"} onClick={()=>setView("links")}><GitBranch size={15} aria-hidden="true"/>案のつながり</button></div>
+      {view==="groups"?<div className="mm-team-tabs" role="group" aria-label="表示する班">
+        {groups.map(g=><button key={g} type="button" aria-pressed={g===group} data-map-team={g} onClick={()=>setGroup(g)}>
+          {groupLabel(g)}<small>{visible.filter(n=>n.row.team===g).length}</small></button>)}
+      </div>:
       <label className="mm-select">中心にする案<select value={entry.key} onChange={e=>focusOn(e.target.value)}>{options.map(n=><option key={n.key} value={n.key}>{groupLabel(n.row.team)} · {kindLabel(n)} · {Array.from(n.title).slice(0,36).join("")}</option>)}</select></label>}</div>
     <div className="mm-chart">
-      <header><h3 id={headerId}>{view==="groups"?groupLabel(group)+"の案とテーマ":"発想のつながり"}</h3><p>{view==="groups"?"点線は班・講演による分類です。案を選ぶと原文が開きます。":"矢印は元の個人案から、そこから生まれた投稿やテーマへ向かいます。案を選ぶと原文が開きます。"}</p></header>
-      <div ref={resize} className="mm-space"><MapDrawing diagram={diagram} onOpen={key=>setHistory([key])} label={view==="groups"?"班から講演、個人案・テーマへの分類図":"元の個人案と、そこから生まれた投稿・テーマの関係図"}/></div>
+      <header className="mm-chart-head">
+        <h3 id={headerId}>{view==="groups"?groupLabel(group)+"の案とテーマ":"発想のつながり"}</h3>
+        <span className="mm-legend"><i data-wire={view==="groups"?"classification":"citation"} aria-hidden="true"/>{view==="groups"?"点線：班・講演の分類":"矢印：元の案から派生した案へ"}</span>
+      </header>
+      <div ref={resize} className="mm-space"><MapDrawing diagram={diagram} onOpen={key=>setHistory([key])}
+        team={view==="groups"?group:undefined} keywords={keywords} label={view==="groups"?"班から講演、個人案・テーマへの分類図":"元の個人案と、そこから生まれた投稿・テーマの関係図"}/></div>
       {view==="links"&&!graph.sources.has(entry.key)&&!successors.length&&<p className="mm-unlinked">この案には、まだ元の案や派生した投稿が結び付いていません。</p>}
       <Pages start={start} total={total} change={setPage} label={view==="groups"?"案":"派生した投稿・テーマ"}/>
     </div>

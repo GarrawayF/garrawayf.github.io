@@ -56,8 +56,8 @@ const gap = 15;
 const margin = 8;
 const wrapPoint = 540;
 const box = (x:number, y:number, width:number, height:number, label:string, id:string, style:MapBox["style"], meta?:string, entry?:MapRecord):MapBox => ({x,y,width,height,label,id,style,meta,entry});
-function recordBox(entry:MapRecord, x:number, y:number, width:number, meta:string) {
-  return box(x,y,width,recordHeight,entry.title,entry.key,entry.kind,meta,entry);
+function recordBox(entry:MapRecord, x:number, y:number, width:number, meta:string, height=recordHeight) {
+  return box(x,y,width,height,entry.title,entry.key,entry.kind,meta,entry);
 }
 function wire(from:MapBox, to:MapBox, path:string, classification:boolean):Wire {
   return {from:from.id,to:to.id,path,classification};
@@ -71,8 +71,11 @@ function bentDown(from:MapBox, to:MapBox, distance:number):Wire {
   return wire(from,to,`M ${x} ${y1} V ${y2-8} Q ${x} ${y2}, ${x+8} ${y2} H ${to.x}`,true);
 }
 
-export function groupDiagram(width:number, group:MapGroup, records: MapRecord[], count:number): Diagram {
+export function groupDiagram(width:number, group:MapGroup, records: MapRecord[], count:number, compact=false): Diagram {
   const small=width<wrapPoint;
+  const nodeHeight=compact && !small ? 61 : recordHeight;
+  const stage=compact && !small ? 41 : stageHeight;
+  const space=compact && !small ? 9 : gap;
   const boxes:MapBox[]=[], wires:Wire[]=[];
   const stageEntries = Array.from(new Set(records.map(entry=>entry.row.round))).sort((a,b)=>a-b);
   const groupW = small ? Math.min(155,width-margin*2) : Math.min(124,width*.17);
@@ -80,25 +83,25 @@ export function groupDiagram(width:number, group:MapGroup, records: MapRecord[],
   const stageW = small ? Math.min(220,width-stageX-margin) : Math.min(175,width*.23);
   const leafX=small ? 64 : stageX+stageW+width*.07;
   const leafW=width-leafX-margin;
-  const root=box(small ? 24 : margin,margin+stageHeight+gap,groupW,stageHeight,groupLabel(group),"group:"+group,"group",count+"件");
+  const root=box(small ? 24 : margin,margin+stage+space,groupW,stage,groupLabel(group),"group:"+group,"group",count+"件");
   boxes.push(root);
-  let y=small?root.y+root.height+gap:margin+stageHeight+gap;
+  let y=small?root.y+root.height+space:margin+stage+space;
   const categories:MapBox[]=[];
   for (const round of stageEntries) {
-    const stage=box(stageX,y,stageW,stageHeight,stageLabel(round),"round:"+round,"stage");
-    boxes.push(stage); categories.push(stage);
-    if (small) y+=stage.height+gap;
+    const category=box(stageX,y,stageW,stage,stageLabel(round),"round:"+round,"stage");
+    boxes.push(category); categories.push(category);
+    if (small) y+=category.height+space;
     const top=y;
     for (const entry of records.filter(r=>r.row.round===round)) {
-      const leaf=recordBox(entry,leafX,y,leafW,kindLabel(entry));
-      boxes.push(leaf); y+=leaf.height+gap;
+      const leaf=recordBox(entry,leafX,y,leafW,kindLabel(entry),nodeHeight);
+      boxes.push(leaf); y+=leaf.height+space;
     }
-    if (!small) stage.y=(top+y-gap-stage.height)/2;
-    for (const target of boxes.filter(b=>b.entry?.row.round===round)) wires.push(small ? bentDown(stage,target,10) : across(stage,target,true));
-    y+=gap;
+    if (!small) category.y=(top+y-space-category.height)/2;
+    for (const target of boxes.filter(b=>b.entry?.row.round===round)) wires.push(small ? bentDown(category,target,10) : across(category,target,true));
+    y+=space;
   }
-  if (!small) root.y=(y-gap+margin+stageHeight+gap-root.height)/2;
-  const event=box(margin,small ? margin : root.y-stageHeight-gap,groupW,stageHeight,"品川","event","group","議論の対象");
+  if (!small) root.y=(y-space+margin+stage+space-root.height)/2;
+  const event=box(margin,small ? margin : root.y-stage-space,groupW,stage,"品川","event","group","議論の対象");
   boxes.unshift(event);
   if (small) wires.push(bentDown(event,root,8));
   else {
@@ -109,8 +112,10 @@ export function groupDiagram(width:number, group:MapGroup, records: MapRecord[],
   return {width, height:y, boxes,wires};
 }
 
-export function relationsDiagram(width:number, focus:MapRecord, sources:readonly MapRecord[], successors:readonly MapRecord[]):Diagram {
+export function relationsDiagram(width:number, focus:MapRecord, sources:readonly MapRecord[], successors:readonly MapRecord[], compact=false):Diagram {
   const small=width<wrapPoint;
+  const nodeHeight=compact && !small ? 61 : recordHeight;
+  const space=compact && !small ? 10 : gap;
   const boxes:MapBox[]=[], wires:Wire[]=[];
   if (small) {
     const x=Math.min(27,width*.09), w=width-x-margin, railGap=16;
@@ -143,14 +148,14 @@ export function relationsDiagram(width:number, focus:MapRecord, sources:readonly
   const cols=1+Number(hasSources)+Number(hasNext);
   const laneGap=Math.min(65,width*.063), w=Math.min(325,(width-margin*2-(cols-1)*laneGap)/cols);
   const start=(width-(w*cols+laneGap*(cols-1)))/2, cx=start+(hasSources ? w+laneGap : 0);
-  const n=Math.max(1,sources.length,successors.length), height=n*(recordHeight+gap)-gap+2*margin;
-  const center=recordBox(focus,cx,(height-recordHeight)/2,w,groupLabel(focus.row.team)+" · "+kindLabel(focus));
+  const n=Math.max(1,sources.length,successors.length), height=n*(nodeHeight+space)-space+2*margin;
+  const center=recordBox(focus,cx,(height-nodeHeight)/2,w,groupLabel(focus.row.team)+" · "+kindLabel(focus),nodeHeight);
   center.focus=true; boxes.push(center);
   function neighbors(entries:readonly MapRecord[], before:boolean) {
-    const top=(height-(entries.length*(recordHeight+gap)-gap))/2;
+    const top=(height-(entries.length*(nodeHeight+space)-space))/2;
     entries.forEach((entry,index)=>{
       const meta=groupLabel(entry.row.team)+" · "+(before ? "元の個人案" : entry.kind==="idea" ? "この案からの投稿" : kindLabel(entry));
-      const item=recordBox(entry,before?start:cx+w+laneGap,top+index*(recordHeight+gap),w,meta);
+      const item=recordBox(entry,before?start:cx+w+laneGap,top+index*(nodeHeight+space),w,meta,nodeHeight);
       boxes.push(item); wires.push(before?across(item,center,false):across(center,item,false));
     });
   }

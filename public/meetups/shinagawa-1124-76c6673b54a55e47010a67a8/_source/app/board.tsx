@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { FormEvent, ReactNode } from "react";
+import type { FormEvent, MouseEvent, ReactNode } from "react";
 import { BookOpen, Check, ChevronDown, ChevronRight, CircleAlert, CornerDownRight, Link2, Monitor, Pencil, QrCode, Send, X, NotebookPen, Presentation, Users } from "lucide-react";
 import { boardViewOf, isDemoRoom, pageLink, publicBoardUrl, roomApi, roomStorageKey } from "./board-room";
 import { assetUrl } from "./asset-url";
@@ -225,6 +225,42 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
       catch { if (window.location.protocol === "file:") window.location.replace(next); }
     }
   }, [hydrated, screen, boardView, team, round]);
+
+  const keywordReturn = useRef("");
+  useEffect(() => {
+    if (!hydrated || !screen) return;
+    const restore = () => {
+      const url = new URL(window.location.href);
+      if (boardViewOf(url.searchParams.get("view"),url.searchParams.get("write"),url.hash)!=="screen") return;
+      const tab=url.searchParams.get("tab");
+      setBoardView(tab==="words"||tab==="map"?tab:"list");
+      setTeam(teams.find(t=>t===url.searchParams.get("team"))||"");
+      const nextRound=Number(url.searchParams.get("round"));
+      setRound(Object.hasOwn(projectionRounds,nextRound)?nextRound as ProjectionRound:0);
+    };
+    window.addEventListener("popstate",restore);
+    return ()=>window.removeEventListener("popstate",restore);
+  },[hydrated,screen]);
+
+  useEffect(() => {
+    if(boardView!=="words"||!keywordReturn.current) return;
+    const frame=requestAnimationFrame(()=>{
+      Array.from(document.querySelectorAll<HTMLElement>(".kw-term")).find(term=>term.dataset.term===keywordReturn.current)?.focus({preventScroll:true});
+    });
+    return ()=>cancelAnimationFrame(frame);
+  },[boardView,hasLoaded]);
+
+  function openKeywordSearch(event: MouseEvent<HTMLElement>, keyword: string) {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey ||
+        !(event.currentTarget instanceof HTMLAnchorElement) || window.location.protocol === "file:") return;
+    const target=new URL(event.currentTarget.href);
+    if(target.origin!==window.location.origin || target.pathname!==window.location.pathname) return;
+    try { window.history.pushState(null,"",target.href); }
+    catch { return; } // Native href still works if history is unavailable.
+    event.preventDefault();
+    keywordReturn.current=keyword;
+    setBoardView("list");
+  }
 
   const refresh = useCallback(async () => {
     if (inflight.current || document.hidden) return;
@@ -512,7 +548,15 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
           <IdeaVisualProvider ideas={ideas} themes={themeFeed.themes}>
             {boardView === "map" ? <MindMap ideas={ideas} themes={themeFeed.themes} themesLoaded={themeFeed.loaded} loadError={feedError}
               teamFilter={team} roundFilter={round} hasLoaded={hasLoaded} presentation onReply={reply}/>
-              : boardView === "words" ? <KeywordsPanel ideas={filteredIdeas} onReply={reply} presentation/>
+              : boardView === "words" ? <KeywordsPanel ideas={filteredIdeas} onReply={reply} presentation onSearchLink={openKeywordSearch} searchHref={keyword => {
+                  const path = boardLocation(sourceHref, true, { tab:"list", team, round });
+                  const url = new URL(path, publicBoardUrl);
+                  url.searchParams.delete("idea");
+                  url.searchParams.delete("thread");
+                  if (url.hash.startsWith("#theme-")) url.hash="";
+                  url.searchParams.set("q",keyword);
+                  return sourceHref && !sourceHref.startsWith("?") ? url.href : url.search;
+                }}/>
               : <PresentationGallery ideas={filteredIdeas} themes={visibleThemes} allIdeas={ideas} allThemes={themeFeed.themes} source={sourceHref} projectorGroups={!team} loaded={feedReady} loadError={feedError}/>}
           </IdeaVisualProvider>
         </section>}

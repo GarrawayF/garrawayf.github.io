@@ -296,6 +296,21 @@ export default function PresentationGallery({ ideas, themes, allIdeas = ideas, a
   const [category, setCategory] = useState<KindFilter>("all");
   const [input, setInput] = useState("");
   const [search, setSearch] = useState("");
+  useEffect(() => {
+    const restore = () => {
+      const query = new URL(window.location.href).searchParams.get("q")?.slice(0,180) || "";
+      setInput(query);setSearch(query);
+    };
+    restore();
+    window.addEventListener("popstate",restore);
+    return () => window.removeEventListener("popstate",restore);
+  },[]);
+  function commitSearch(value:string) {
+    setSearch(value);
+    const url=new URL(window.location.href);
+    if(value.trim())url.searchParams.set("q",value);else url.searchParams.delete("q");
+    if(url.href!==window.location.href) try { window.history.replaceState(window.history.state,"",url.href); } catch { /* Local history may be unavailable. */ }
+  }
   const [target, setTarget] = useState<RouteTarget | null>(null);
   const [lastKey, setLastKey] = useState("");
   const [previousIsDetail, setPreviousIsDetail] = useState(false);
@@ -405,7 +420,7 @@ export default function PresentationGallery({ ideas, themes, allIdeas = ideas, a
   },[onSelect]);
   const inputChanged = (event: ChangeEvent<HTMLInputElement>) => {
     setInput(event.target.value);
-    if (!composing.current) setSearch(event.target.value);
+    if (!composing.current) commitSearch(event.target.value);
   };
   function moveInGrid(event: KeyboardEvent<HTMLDivElement>) {
     if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || event.nativeEvent.isComposing) return;
@@ -452,9 +467,9 @@ export default function PresentationGallery({ ideas, themes, allIdeas = ideas, a
       </div>
       <div className="pg-search">
         <Search size={16} aria-hidden="true"/><label className="pg-sr" htmlFor={queryId}>タイトル・言葉・班・名前で検索</label>
-        <input id={queryId} type="search" value={input} placeholder="タイトル・言葉・班・名前で検索" onChange={inputChanged}
-          onCompositionStart={()=>{composing.current=true;}} onCompositionEnd={event=>{composing.current=false;setSearch(event.currentTarget.value);}}/>
-        {input && <button type="button" aria-label="検索を消す" onClick={()=>{setInput("");setSearch("");}}><X size={14}/></button>}
+        <input id={queryId} type="search" maxLength={180} value={input} placeholder="タイトル・言葉・班・名前で検索" onChange={inputChanged}
+          onCompositionStart={()=>{composing.current=true;}} onCompositionEnd={event=>{composing.current=false;commitSearch(event.currentTarget.value);}}/>
+        {input && <button type="button" aria-label="検索を消す" onClick={()=>{setInput("");commitSearch("");}}><X size={14}/></button>}
       </div>
       <label className="pg-order" title="人気順は、いいねとLOVEの合計順">
         <span className="pg-sr">投稿の並び順</span>
@@ -482,7 +497,7 @@ export default function PresentationGallery({ ideas, themes, allIdeas = ideas, a
       }) : renderRows(rows)}
     </div> : <div className="pg-empty">{!loaded ? loadError ? "接続が戻ると、発表する案を再度読み込みます。" : "発表する案を読み込み中…" :
       category !== "all" || deferredSearch.trim() ? "この条件に一致する投稿はありません。" : "この範囲の投稿はまだありません。"}
-      {(category !== "all" || input) && <button type="button" onClick={()=>{setCategory("all");setSearch("");setInput("");}}>種類・検索をリセット</button>}</div>}
+      {(category !== "all" || input) && <button type="button" onClick={()=>{setCategory("all");commitSearch("");setInput("");}}>種類・検索をリセット</button>}</div>}
     {current && <Detail item={current} source={source} keyword={focusLabels.get(current.key)?.word} previous={index>0 ? rows[index-1] : undefined}
       next={index>=0 && index+1<rows.length ? rows[index+1] : undefined} position={index>=0 ? (index+1)+" / "+rows.length : "元の投稿"}
       all={pool} onOpen={open} onClose={close} previousIsDetail={previousIsDetail} restoreScroll={restoreScroll}/>}

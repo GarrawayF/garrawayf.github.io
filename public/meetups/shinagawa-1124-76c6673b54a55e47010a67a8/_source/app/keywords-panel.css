@@ -186,3 +186,5 @@
   .board-app.screen-mode .kw-projection .kw-term > b {font-size:clamp(15px,4.35vw,18px);}
   .kw-projection .kw-term .kw-teams {gap:2px;}
 }
+.kw-projection a.kw-term {text-decoration:none;cursor:pointer;}
+.kw-projection a.kw-term:focus-visible {outline:3px solid var(--kw-berry);outline-offset:3px;}

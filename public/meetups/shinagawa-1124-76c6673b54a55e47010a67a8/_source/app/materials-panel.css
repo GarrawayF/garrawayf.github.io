@@ -58,3 +58,8 @@
   .materials-footer { gap: 5px; }
   .materials-header h2 { font-size: 1.18rem; }
 }
+
+/* Default projection shows the whole slide and its controls; explicit zoom keeps scrolling. */
+@media(min-width:900px) and (min-height:540px) and (min-aspect-ratio:4/3){
+  .screen-mode .materials-preview:not(.is-zoomed) img{max-height:calc(100dvh - 235px);object-fit:contain}
+}

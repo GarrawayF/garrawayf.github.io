@@ -38,6 +38,16 @@ const participatingTeams = (sources: readonly Source[]) => teamOrder.filter(t =>
 export default function KeywordsPanel<T extends Source>({ ideas, onReply, presentation = false, searchHref, onSearchLink }: Props<T>) {
   const groups = useMemo(() => collectIdeaKeywords(ideas), [ideas]);
   const [all, setAll] = useState(false);
+  const [page,setPage] = useState(0);
+  const [projectionViewport,setProjectionViewport] = useState(false);
+  const [pageFocus,setPageFocus]=useState(false);
+  useEffect(() => {
+    if(!presentation || typeof window.matchMedia!=="function")return;
+    const mq=window.matchMedia("(min-width: 1000px) and (min-aspect-ratio: 4/3)");
+    const sync=()=>setProjectionViewport(mq.matches);
+    sync();mq.addEventListener("change",sync);
+    return ()=>mq.removeEventListener("change",sync);
+  },[presentation]);
   const [selectedKey, setSelectedKey] = useState("");
   const [query, setQuery] = useState("");
   const matches = useMemo(() => searchIdeaSources(ideas, query), [ideas, query]);
@@ -48,7 +58,15 @@ export default function KeywordsPanel<T extends Source>({ ideas, onReply, presen
   const list = useRef<HTMLDivElement>(null);
   const restore = useRef("");
   const visibleLimit = presentation ? projectionVisibleLimit : standardVisibleLimit;
-  const displayed = all ? groups : groups.slice(0, visibleLimit);
+  const paged=presentation&&projectionViewport;
+  const pageCount=Math.max(1,Math.ceil(groups.length/visibleLimit));
+  const currentPage=Math.min(page,pageCount-1);
+  const displayed = paged ? groups.slice(currentPage*visibleLimit,(currentPage+1)*visibleLimit) : all ? groups : groups.slice(0,visibleLimit);
+  useEffect(()=>{
+    if(!pageFocus)return;
+    list.current?.querySelector<HTMLElement>(".kw-term")?.focus({preventScroll:true});
+    setPageFocus(false);
+  },[currentPage,pageFocus]);
 
   useEffect(() => {
     if (hasSelection) {
@@ -96,6 +114,11 @@ export default function KeywordsPanel<T extends Source>({ ideas, onReply, presen
       {presentation && displayed.length > 0 && <div className="kw-colour-legend" aria-label="言葉の種類">
         <strong>言葉の種類</strong><ul>{keywordCategories.map(category => <li key={category.id} data-category={category.id}><i aria-hidden="true"/>{category.label}</li>)}</ul>
       </div>}
+      {paged&&pageCount>1&&<nav className="kw-projection-nav" aria-label="キーワード表示範囲">
+        <button type="button" disabled={currentPage===0} onClick={()=>{setPage(currentPage-1);setPageFocus(true);}}>前のページ</button>
+        <span aria-live="polite">{currentPage+1} / {pageCount} ページ · {currentPage*visibleLimit+1}–{currentPage*visibleLimit+displayed.length}語</span>
+        <button type="button" disabled={currentPage>=pageCount-1} onClick={()=>{setPage(currentPage+1);setPageFocus(true);}}>次のページ</button>
+      </nav>}
       <div className="kw-list" ref={list}>{displayed.map(group => {
         const teams = participatingTeams(group.sources);
         const category = presentation ? classifyKeyword(group.label) : undefined;
@@ -110,7 +133,7 @@ export default function KeywordsPanel<T extends Source>({ ideas, onReply, presen
             {teams.map(t=><i key={t} data-team={t}>{t}</i>)}</span>}
         </Control>;
       })}</div>
-      {groups.length > visibleLimit && <button className="kw-more" type="button" aria-expanded={all} onClick={() => setAll(!all)}>
+      {!paged && groups.length > visibleLimit && <button className="kw-more" type="button" aria-expanded={all} onClick={() => setAll(!all)}>
         {all ? <ChevronUp size={15} aria-hidden="true" /> : <ChevronDown size={15} aria-hidden="true" />}
         {all ? "表示を減らす" : "すべての" + groups.length + "語を見る"}
       </button>}

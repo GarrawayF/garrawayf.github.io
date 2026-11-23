@@ -601,7 +601,7 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
                   url.searchParams.set("q",keyword);
                   return sourceHref && !sourceHref.startsWith("?") ? url.href : url.search;
                 }}/>
-              : <PresentationGallery ideas={filteredIdeas} themes={visibleThemes} allIdeas={ideas} allThemes={themeFeed.themes} source={sourceHref} projectorGroups={!team} loaded={feedReady} loadError={feedError}/>}
+              : <PresentationGallery ideas={filteredIdeas} themes={visibleThemes} allIdeas={ideas} allThemes={themeFeed.themes} source={sourceHref} projectorGroups loaded={feedReady} loadError={feedError}/>}
           </IdeaVisualProvider>
         </section>}
       </div>

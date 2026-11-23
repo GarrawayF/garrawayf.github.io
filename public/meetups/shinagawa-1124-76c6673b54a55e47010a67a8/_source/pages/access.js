@@ -16,7 +16,7 @@
   const remember=value=>{try{if(value) sessionStorage.setItem(key,value); else sessionStorage.removeItem(key);}catch{}};
   function api(path,init={},proof=token) {
     const url=new URL(path,origin);
-    if(url.origin!==origin||!(permitted.has(url.pathname)||/^\/api\/asset\/slides\/(?:event|worksheet)-[1-9][0-9]?\.webp$/u.test(url.pathname))) return Promise.reject(new Error('Unsupported API address'));
+    if(url.origin!==origin||!(permitted.has(url.pathname)||(init.method==="PATCH"&&/^\/api\/ideas\/[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/iu.test(url.pathname))||/^\/api\/asset\/slides\/(?:event|worksheet)-[1-9][0-9]?\.webp$/u.test(url.pathname))) return Promise.reject(new Error('Unsupported API address'));
     const headers=new Headers(init.headers);
     if(proof) headers.set('Authorization','Bearer '+proof);
     else headers.delete('Authorization');

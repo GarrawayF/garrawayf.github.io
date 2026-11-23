@@ -267,3 +267,16 @@
  .board-app .write-switch nav a {min-height:42px;padding-inline:10px;}
  .board-app .write-switch-owner {font-size:.71rem;}
 }
+
+.own-ideas{margin:1rem auto;max-width:48rem;padding:1rem;border:1px solid var(--line,#ccc);border-radius:1rem}
+.own-ideas h2{font-size:1.2rem;margin:0 0 .5rem}
+.own-ideas ul{list-style:none;margin:0;padding:0}
+.own-ideas li{display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.4rem 0}
+.own-ideas li>span{min-width:0;overflow-wrap:anywhere}
+.own-ideas button,.own-edit-dialog button{min-height:44px;min-width:44px;padding:.5rem .75rem}
+.own-edit-dialog{width:min(calc(100% - 1rem),44rem);max-height:90dvh;border:1px solid var(--line,#ccc);border-radius:1rem;padding:1rem;overflow:auto}
+.own-edit-dialog::backdrop{background:#0009}
+.own-edit-dialog fieldset{border:0;padding:0;margin:0;min-width:0}
+.own-edit-dialog header,.own-edit-dialog footer{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
+.own-edit-dialog h2{margin:0}
+.own-edit-dialog footer{margin-top:1rem}

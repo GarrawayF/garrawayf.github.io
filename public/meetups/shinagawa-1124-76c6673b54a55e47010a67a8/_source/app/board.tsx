@@ -34,7 +34,7 @@ const storageKey = "shinagawa:20261124:draft";
 const apiURL = () => roomApi("/api/ideas");
 type Idea = {
   id: string; team: Team; round: Round; text: string; context: string; name: string;
-  parentId: string | null; createdAt: string; enteredText?: string; worksheet?: Worksheet; analysis?: PostAnalysis;
+  parentId: string | null; createdAt: string; revision?: number; enteredText?: string; worksheet?: Worksheet; analysis?: PostAnalysis;
 };
 type Draft = {
   id: string; team: Team | ""; round: Round; text: string; context: string; name: string;
@@ -80,6 +80,30 @@ function createId(): string {
   bytes[8] = (bytes[8] & 0x3f) | 0x80;
   const hex = Array.from(bytes, n => n.toString(16).padStart(2, "0")).join("");
   return [hex.slice(0, 8), hex.slice(8, 12), hex.slice(12, 16), hex.slice(16, 20), hex.slice(20)].join("-");
+}
+
+const ownEditKey = (id: string) => roomStorageKey("shinagawa:20261124:edit:" + id);
+const pendingEditKey = () => roomStorageKey("shinagawa:20261124:edit-pending");
+const validEditToken = (value: unknown): value is string => typeof value === "string" && /^[A-Za-z0-9_-]{43}$/.test(value);
+function storedEditToken(id: string): string {
+  try { const token = localStorage.getItem(ownEditKey(id)); return validEditToken(token) ? token : ""; } catch { return ""; }
+}
+function pendingEditToken(id: string): string {
+  try { const pending = JSON.parse(localStorage.getItem(pendingEditKey()) || "null"); if (pending?.id === id && validEditToken(pending.token)) return pending.token; } catch {}
+  return "";
+}
+function savePendingEdit(id: string, token: string) {
+  try { localStorage.setItem(pendingEditKey(), JSON.stringify({ id, token })); } catch {}
+}
+function confirmEditToken(id: string, token: string): boolean {
+  try {
+    localStorage.setItem(ownEditKey(id), token);
+    if (pendingEditToken(id) === token) localStorage.removeItem(pendingEditKey());
+    return storedEditToken(id) === token;
+  } catch { return false; }
+}
+function createEditToken() {
+  return btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
 function storeDraft(draft: Draft) {
@@ -146,6 +170,14 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
   const [sourceHref, setSourceHref] = useState(initialSource || (initialRoom === "demo" ? "?room=demo" : ""));
   const [copied, setCopied] = useState(false);
   const [sending, setSending] = useState(false);
+  const [editing, setEditing] = useState<{ idea: Idea; text: string; context: string; worksheet: Worksheet } | null>(null);
+  const [editError, setEditError] = useState("");
+  const [editBusy, setEditBusy] = useState(false);
+  const [editStale, setEditStale] = useState(false);
+  const editDialog = useRef<HTMLDialogElement>(null);
+  const editButton = useRef<HTMLElement | null>(null);
+  const editGuard = useRef(false);
+  const pendingToken = useRef<{ id: string; token: string } | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState<{ message: string; ideaId?: string } | null>(null);
   const [replyId, setReplyId] = useState("");
@@ -368,10 +400,13 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
     const controller = new AbortController();
     const timeout = window.setTimeout(() => controller.abort(), 14000);
     try {
+      const editToken = (pendingToken.current?.id === id && pendingToken.current.token) || pendingEditToken(id) || createEditToken();
+      pendingToken.current = { id, token: editToken };
+      savePendingEdit(id, editToken);
       const { team: inputTeam, round: inputRound, text, context, name, parentId, worksheet } = submitted;
       const response = await roomFetch(apiURL(), {
         method: "POST", headers: { "Content-Type": "application/json" }, signal: controller.signal,
-        body: JSON.stringify({ id, team: inputTeam, round: inputRound, text: text.trim(), context: context.trim(), name: name.trim(), parentId, worksheet: cleanWorksheet(worksheet) }),
+        body: JSON.stringify({ id, team: inputTeam, round: inputRound, text: text.trim(), context: context.trim(), name: name.trim(), parentId, worksheet: cleanWorksheet(worksheet), editToken }),
       });
       if (!response.ok) {
         if (response.status === 429) throw new Error("少し時間をおいて、もう一度投稿してください。");
@@ -382,6 +417,8 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
       if (data.idea?.id !== id) throw new Error("投稿の受け付けを確認できませんでした。入力を残しています。もう一度投稿してください。");
       syncSeq.current++; entityTag.current = "";
       const created = data.idea;
+      const savedKey = Number.isSafeInteger(created.revision) && confirmEditToken(id, editToken);
+      if (pendingToken.current?.id === id) pendingToken.current = null;
       lastPost.current = created;
       setIdeas(previous => [created, ...previous.filter(item => item.id !== id)]);
       setSync("live");
@@ -389,13 +426,72 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
         replaceDraft(alignDraftRound({ ...emptyDraft, team: submitted.team, round: submitted.round, name: submitted.name, manualRoundSlot: submitted.manualRoundSlot }));
         setExtras(false);
       }
-      setNotice({ message: "アイデアを投稿しました", ideaId: id });
+      setNotice({ message: savedKey ? "アイデアを投稿しました" : "投稿しました。このブラウザでは編集できません。", ideaId: id });
       void refresh();
     } catch (e) {
       const message = e instanceof Error && e.message.endsWith("。") ? e.message : "通信が途切れました。入力を残しています。もう一度投稿してください。";
       if (currentDraft.current.id === id) setError(message);
       else setNotice({ message: "直前の投稿結果を確認できません。みんなの案を確認してください。" });
     } finally { clearTimeout(timeout); setSending(false); submitGuard.current = false; }
+  };
+
+  const ownedIdeas = hydrated ? ideas.filter(idea => Number.isSafeInteger(idea.revision) && Boolean(storedEditToken(idea.id))) : [];
+  useEffect(() => {
+    if (editing && !editDialog.current?.open) editDialog.current?.showModal();
+    if (!editing && editDialog.current?.open) editDialog.current?.close();
+  }, [Boolean(editing)]);
+
+  const closeEdit = () => {
+    if (editGuard.current) return;
+    setEditing(null);
+    setEditError("");
+    setEditStale(false);
+    requestAnimationFrame(() => editButton.current?.focus());
+  };
+  const startEdit = (idea: Idea, button: HTMLElement) => {
+    if (!storedEditToken(idea.id) || !Number.isSafeInteger(idea.revision)) return;
+    editButton.current = button;
+    setEditError(""); setEditStale(false);
+    setEditing({ idea, text: idea.enteredText ?? idea.text, context: idea.context || "", worksheet: cleanWorksheet(idea.worksheet) });
+  };
+  const saveEdit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!editing || editGuard.current || editStale) return;
+    const { idea, text, context, worksheet } = editing;
+    const problem = contentIssue({ ...emptyDraft, text, context, worksheet });
+    if (problem) { setEditError(problem); return; }
+    const editToken = storedEditToken(idea.id);
+    if (!editToken) { setEditError("このブラウザに編集情報がありません。"); return; }
+    editGuard.current = true; setEditBusy(true); setEditError("");
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 14000);
+    let done = false;
+    try {
+      const response = await roomFetch(roomApi("/api/ideas/" + encodeURIComponent(idea.id)), {
+        method: "PATCH", headers: { "Content-Type": "application/json" }, signal: controller.signal,
+        body: JSON.stringify({ editToken, revision: idea.revision, text: text.trim(), context: context.trim(), worksheet: cleanWorksheet(worksheet) }),
+      });
+      if (response.status === 409) {
+        setEditStale(true);
+        setEditError("投稿が更新されました。入力をコピーしてから閉じ、最新の投稿を開き直してください。");
+        entityTag.current = ""; void refresh(); return;
+      }
+      if (response.status === 403 || response.status === 404) throw new Error("この投稿はこのブラウザでは編集できません。");
+      if (response.status === 400 || response.status === 413) throw new Error("内容と文字数を確認してください。");
+      if (!response.ok) throw new Error("保存できませんでした。もう一度お試しください。");
+      const { idea: saved } = await response.json() as { idea?: Idea };
+      if (!saved || saved.id !== idea.id || !Number.isSafeInteger(saved.revision) || saved.revision! <= idea.revision!) throw new Error("保存を確認できませんでした。");
+      syncSeq.current++; entityTag.current = "";
+      if (lastPost.current?.id === saved.id) lastPost.current = null;
+      setIdeas(previous => previous.map(row => row.id === saved.id ? saved : row));
+      setNotice({ message: "投稿を更新しました", ideaId: saved.id });
+      done = true; void refresh();
+    } catch (e) {
+      setEditError(e instanceof Error && e.message.endsWith("。") ? e.message : "通信が途切れました。入力を残しています。");
+    } finally {
+      clearTimeout(timeout); editGuard.current = false; setEditBusy(false);
+      if (done) closeEdit();
+    }
   };
 
   const focusComposer = (field?: "context" | keyof Worksheet) => requestAnimationFrame(() => {
@@ -605,7 +701,23 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
           </IdeaVisualProvider>
         </section>}
       </div>
+      {personal && ownedIdeas.length > 0 && <section className="own-ideas" aria-label="自分の投稿">
+        <h2>自分の投稿</h2>
+        <ul>{ownedIdeas.map(idea => <li key={idea.id}><span>{idea.text}</span><button type="button" onClick={event => startEdit(idea, event.currentTarget)}>編集</button></li>)}</ul>
+      </section>}
     </main>
+    <dialog ref={editDialog} className="own-edit-dialog" aria-labelledby="own-edit-title" onCancel={event => { event.preventDefault(); closeEdit(); }}>
+      {editing && <form onSubmit={saveEdit}>
+        <header><h2 id="own-edit-title">投稿を編集</h2><button type="button" onClick={closeEdit} disabled={editBusy} aria-label="閉じる"><X size={18}/></button></header>
+        <fieldset disabled={editBusy}>
+          <IdeaWorksheet values={editing.worksheet} text={editing.text} isReply={Boolean(editing.idea.parentId)} onTextChange={text => setEditing(previous => previous && ({ ...previous, text }))}
+            onChange={worksheet => setEditing(previous => previous && ({ ...previous, worksheet }))}/>
+          <label className="field"><span>きっかけ・共感した理由</span><textarea rows={2} maxLength={400} value={editing.context} onChange={event => { const context = event.target.value; setEditing(previous => previous && ({ ...previous, context })); }}/></label>
+        </fieldset>
+        {editError && <p role="alert">{editError}</p>}
+        <footer><button type="button" onClick={closeEdit} disabled={editBusy}>キャンセル</button><button className="post-button" type="submit" disabled={editBusy || editStale}>{editBusy ? "保存中…" : "保存"}</button></footer>
+      </form>}
+    </dialog>
     {tool === "slides" && <MaterialsPanel onClose={() => setTool(null)} onStartIdea={personal ? startFromSheet : undefined} onStartNote={personal ? () => setTool("notes") : undefined}/>}
     <DiscussionGuide open={tool === "guide"} onClose={() => setTool(null)}
       onOpenMemo={personal ? () => setTool("notes") : undefined}

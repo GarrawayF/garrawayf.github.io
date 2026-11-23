@@ -1,28 +1,37 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Component, lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent, MouseEvent, ReactNode } from "react";
 import { BookOpen, Check, ChevronDown, ChevronRight, CircleAlert, CornerDownRight, Link2, Monitor, Pencil, QrCode, Send, X, NotebookPen, Presentation, Users } from "lucide-react";
 import { roomFetch, boardApiUrl, boardViewOf, isDemoRoom, pageLink, publicBoardUrl, roomApi, roomStorageKey } from "./board-room";
 import { assetUrl } from "./asset-url";
-import MaterialsPanel from "./materials-panel";
 import FullscreenToggle from "./fullscreen-toggle";
-import PersonalNotes from "./personal-notes";
-import DiscussionGuide from "./discussion-guide";
 import IdeaWorksheet from "./idea-worksheet";
-import MindMap from "./mind-map";
 import TeamOutputs, { boardLocation, joinTeamUrl } from "./team-outputs";
 import TeamThemes, { type ThemeFeed } from "./team-themes";
-import TeamSummaryWorkspace from "./team-summary-workspace";
-import KeywordsPanel from "./keywords-panel";
 import { alignDraftRound, eventRoundAt, hasDraftWork, roundLabels as rounds } from "./event-round";
 import { cleanWorksheet, hasWorksheetContent, WORKSHEET_FIELD_LIMIT, WORKSHEET_KEYS, type Worksheet } from "./worksheet";
-import PresentationGallery from "./presentation-gallery";
 import { IdeaVisualProvider } from "./idea-visual";
 import { CommentProvider } from "./post-comments";
 import type { PostAnalysis } from "./post-analysis";
 import { ReactionProvider } from "./reactions";
 import "./board-controls.css";
+
+const MaterialsPanel = lazy(() => import("./materials-panel"));
+const PersonalNotes = lazy(() => import("./personal-notes"));
+const DiscussionGuide = lazy(() => import("./discussion-guide"));
+const MindMap = lazy(() => import("./mind-map"));
+const KeywordsPanel = lazy(() => import("./keywords-panel"));
+const TeamSummaryWorkspace = lazy(() => import("./team-summary-workspace"));
+const PresentationGallery = lazy(() => import("./presentation-gallery"));
+class FeatureBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  render() {
+    if (this.state.failed) return <p role="alert">画面を読み込めませんでした。<button type="button" onClick={() => window.location.reload()}>再読み込み</button></p>;
+    return <Suspense fallback={<p className="submit-hint" role="status">読み込み中…</p>}>{this.props.children}</Suspense>;
+  }
+}
 
 const teams = ["A", "B", "C", "D", "E"] as const;
 type Team = (typeof teams)[number];
@@ -137,7 +146,7 @@ type BoardInitialView = {
 };
 
 export default function DiscussionBoard(props: BoardInitialView = {}) {
-  return <ReactionProvider><CommentProvider><BoardContents {...props} /></CommentProvider></ReactionProvider>;
+  return <BoardContents {...props} />;
 }
 
 function BoardContents({ initialRoom, initialSource, initialView, initialWrite, initialTeam, initialTab, initialRound }: BoardInitialView) {
@@ -337,7 +346,7 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
 
   useEffect(() => {
     void refresh();
-    const timer = window.setInterval(refresh, 3000);
+    const timer = window.setInterval(refresh, personal ? 12000 : 3000);
     const offline = () => setSync("offline");
     document.addEventListener("visibilitychange", refresh);
     window.addEventListener("online", refresh);
@@ -348,7 +357,7 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
       window.removeEventListener("online", refresh);
       window.removeEventListener("offline", offline);
     };
-  }, [refresh]);
+  }, [refresh, personal]);
 
   useEffect(() => {
     if (!notice) return;
@@ -550,8 +559,8 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
   if (!submitHint && !draft.team) submitHint = "投稿するには、自分の班を選んでください。";
   if (sync === "offline") submitHint = "接続が戻ると投稿できます。入力内容はこの端末に残ります。";
 
-  const filteredIdeas = ideas.filter(i => (!team || i.team === team) && (!round || i.round === round));
-  const visibleThemes = themeFeed.themes.filter(row => (!team || row.team === team) && (!round || row.round === round));
+  const filteredIdeas = useMemo(() => screen ? ideas.filter(i => (!team || i.team === team) && (!round || i.round === round)) : [], [screen, ideas, team, round]);
+  const visibleThemes = useMemo(() => screen ? themeFeed.themes.filter(row => (!team || row.team === team) && (!round || row.round === round)) : [], [screen, themeFeed.themes, team, round]);
   const totalShown = filteredIdeas.length + visibleThemes.length;
   const feedReady = hasLoaded && themeFeed.loaded;
   const feedError = themeFeed.unavailable || sync === "error" || sync === "offline";
@@ -574,7 +583,7 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
     setView(next);
   }
 
-  return <div className={screen ? "board-app screen-mode" : personal ? "board-app personal-mode" : "board-app summary-mode"}>
+  return <ReactionProvider enabled={!personal}><CommentProvider enabled={!personal}><div className={screen ? "board-app screen-mode" : personal ? "board-app personal-mode" : "board-app summary-mode"}>
     <header className="topbar board-header"><div className="shell nav-inner">
       <Brand source={sourceHref} />
       <nav aria-label="表示・共有・マニュアル">
@@ -648,8 +657,8 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
           </div>
         </form>}
         {view === "summary" && <>
-          <TeamSummaryWorkspace ideas={ideas} hasLoaded={hasLoaded} loadError={sync === "error" || sync === "offline"}
-            initialTeam={draft.team || undefined} initialRound={draft.round} source={sourceHref} onScopeChange={onSummaryScope} onBusyChange={setSummaryBusy} />
+          <FeatureBoundary><TeamSummaryWorkspace ideas={ideas} hasLoaded={hasLoaded} loadError={sync === "error" || sync === "offline"}
+            initialTeam={draft.team || undefined} initialRound={draft.round} source={sourceHref} onScopeChange={onSummaryScope} onBusyChange={setSummaryBusy} /></FeatureBoundary>
           <div className="personal-resources sw-resources" role="group" aria-label="班の参考資料">
             <button type="button" onClick={() => setTool("slides")}><Presentation size={16} />スライド・記入シート</button>
             <button type="button" onClick={() => setTool("guide")}><BookOpen size={16} />今日の進め方</button>
@@ -679,7 +688,7 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
             </div>
           </div>
           <TeamThemes team={team || "all"} round={round || undefined} projection ideas={ideas} feedOnly onFeedChange={setThemeFeed} />
-          <IdeaVisualProvider ideas={ideas} themes={themeFeed.themes}>
+          <IdeaVisualProvider ideas={ideas} themes={themeFeed.themes}><FeatureBoundary key={boardView}>
             {boardView === "map" ? <>
               <MindMap ideas={ideas} themes={themeFeed.themes} themesLoaded={themeFeed.loaded} loadError={feedError}
                 teamFilter={team} roundFilter={round} hasLoaded={hasLoaded} presentation onReply={reply}
@@ -698,7 +707,7 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
                   return sourceHref && !sourceHref.startsWith("?") ? url.href : url.search;
                 }}/>
               : <PresentationGallery ideas={filteredIdeas} themes={visibleThemes} allIdeas={ideas} allThemes={themeFeed.themes} source={sourceHref} projectorGroups loaded={feedReady} loadError={feedError}/>}
-          </IdeaVisualProvider>
+          </FeatureBoundary></IdeaVisualProvider>
         </section>}
       </div>
       {personal && ownedIdeas.length > 0 && <section className="own-ideas" aria-label="自分の投稿">
@@ -718,18 +727,18 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
         <footer><button type="button" onClick={closeEdit} disabled={editBusy}>キャンセル</button><button className="post-button" type="submit" disabled={editBusy || editStale}>{editBusy ? "保存中…" : "保存"}</button></footer>
       </form>}
     </dialog>
-    {tool === "slides" && <MaterialsPanel onClose={() => setTool(null)} onStartIdea={personal ? startFromSheet : undefined} onStartNote={personal ? () => setTool("notes") : undefined}/>}
-    <DiscussionGuide open={tool === "guide"} onClose={() => setTool(null)}
+    {tool === "slides" && <FeatureBoundary><MaterialsPanel onClose={() => setTool(null)} onStartIdea={personal ? startFromSheet : undefined} onStartNote={personal ? () => setTool("notes") : undefined}/></FeatureBoundary>}
+    {tool === "guide" && <FeatureBoundary><DiscussionGuide open onClose={() => setTool(null)}
       onOpenMemo={personal ? () => setTool("notes") : undefined}
       onWrite={!personal ? undefined : () => requestAnimationFrame(() => {
         input.current?.focus({ preventScroll: true });
         input.current?.scrollIntoView({ block: "center", behavior: "smooth" });
-      })} />
-    {tool === "notes" && <PersonalNotes initialRound={draft.round} onCopyToComposer={receiveNote} onClose={() => setTool(null)} />}
+      })} /></FeatureBoundary>}
+    {tool === "notes" && <FeatureBoundary><PersonalNotes initialRound={draft.round} onCopyToComposer={receiveNote} onClose={() => setTool(null)} /></FeatureBoundary>}
     {personal && offerMemoJump && !tool && !share && <button className="memo-shortcut" type="button" onClick={() => setTool("notes")}><NotebookPen size={15}/>個人メモ</button>}
     <div className="toast-region" role="status">{notice && <div className="toast"><Check size={16}/><span>{notice.message}</span>{notice.ideaId && <a href={pageLink(sourceHref, { view: "screen", idea: notice.ideaId })}>見る</a>}</div>}</div>
     <dialog className="share-dialog" ref={shareDialog} onCancel={() => setShare(false)} onClose={() => setShare(false)} onClick={e => { if (e.target === e.currentTarget) setShare(false); }} aria-labelledby="qr-title">
       <div className="dialog-body"><button type="button" className="dialog-close" aria-label="閉じる" onClick={() => setShare(false)}><X size={19} /></button><h2 id="qr-title">{sharingTeam ? sharingTeam + "班で参加する" : "ボードに参加する"}</h2><p>スマホで読み取ると投稿画面が開きます。</p><img className="join-qr" src={assetUrl(qrAsset)} alt="参加用QRコード" width={220} height={220}/><input className="share-url" aria-label="参加用URL" value={shareUrl} readOnly onFocus={e => e.target.select()}/><button type="button" className="copy-url" onClick={shareLink}>{copied ? <Check size={16}/> : <Link2 size={16}/>} {copied ? "コピーしました" : "リンクをコピー"}</button></div>
     </dialog>
-  </div>;
+  </div></CommentProvider></ReactionProvider>;
 }

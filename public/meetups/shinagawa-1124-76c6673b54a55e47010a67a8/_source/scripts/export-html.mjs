@@ -97,15 +97,48 @@ if (values.pages) {
       await copyFile(file, target);
     }
   }
-  await writeFile(join(assets, "app.js"), js);
-  await writeFile(join(assets, "app.css"), css);
+  const split = await build({
+    stdin: { contents: staticEntry, resolveDir: root, loader: "tsx" },
+    entryNames: "app", chunkNames: "chunks/[name]-[hash]", assetNames: "chunks/[name]-[hash]",
+    outdir: assets, bundle: true, splitting: true, metafile: true, write: false, minify: true,
+    jsx: "automatic", target: ["es2022"], platform: "browser", format: "esm",
+    define: { "process.env.NODE_ENV": '"production"' }, legalComments: "none",
+  });
+  const appJs = split.outputFiles.find(file => file.path === join(assets, "app.js"));
+  const appCss = split.outputFiles.find(file => file.path === join(assets, "app.css"));
+  if (!appJs || !appCss) throw Error("Expected board JS/CSS entry not built");
+  for (const file of split.outputFiles) {
+    // esbuild also emits per-feature CSS; app.css includes all reachable CSS.
+    if (file.path.endsWith(".css") && file.path !== appCss.path) continue;
+    await mkdir(dirname(file.path), { recursive: true });
+    await writeFile(file.path, file.contents);
+  }
+  const staticDeps = new Set();
+  const collectStatic = outputPath => {
+    for (const [path, entry] of Object.entries(split.metafile.outputs)) {
+      if (resolve(path) !== outputPath) continue;
+      for (const item of entry.imports || []) {
+        if (item.kind !== "import-statement" || item.external) continue;
+        const target = resolve(item.path);
+        if (staticDeps.has(target)) continue;
+        staticDeps.add(target);
+        collectStatic(target);
+      }
+    }
+  };
+  collectStatic(appJs.path);
+  const preloads = [...staticDeps].map(file => {
+    const url = relative(assets, file).split(sep).join("/");
+    if (!/^chunks\/[A-Za-z0-9_-]+\.js$/.test(url)) throw Error("Unexpected static module " + url);
+    return `<link rel="modulepreload" href="./assets/${url}">`;
+  }).join("");
   const html = documentHtml(
     `<meta name="x-meetup-asset-base" content="./assets/">
-<link rel="icon" href="./assets/favicon.svg"><link rel="stylesheet" href="./assets/app.css?v=${version(css)}">`,
-    `<script defer src="./assets/app.js?v=${version(js)}"></script>`
+<link rel="icon" href="./assets/favicon.svg"><link rel="stylesheet" href="./assets/app.css?v=${version(appCss.text)}">`,
+    `${preloads}<script type="module" src="./assets/app.js?v=${version(appJs.text)}"></script>`
   );
   await writeFile(join(pages, "index.html"), html);
-  console.log(JSON.stringify({ pages, visualAssets: visualFiles.length, jsBytes: Buffer.byteLength(js), cssBytes: Buffer.byteLength(css) }));
+  console.log(JSON.stringify({ pages, visualAssets: visualFiles.length, jsBytes: appJs.contents.length, cssBytes: appCss.contents.length, moduleCount: split.outputFiles.filter(file => file.path.endsWith(".js")).length, staticPreloads: staticDeps.size }));
   if (values.source) await exportSource(resolve(values.source), pages);
 }
 

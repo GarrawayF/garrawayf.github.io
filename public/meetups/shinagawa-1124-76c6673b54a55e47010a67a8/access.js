@@ -54,6 +54,7 @@
     content.replaceWith(fragment);
     for(const script of scripts){
       const executable=document.createElement('script');
+      if(script.type==='module')executable.type='module';
       if(script.src){executable.src=script.getAttribute('src');executable.async=false;}
       else executable.text=script.textContent;
       document.body.append(executable);

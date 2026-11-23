@@ -67,7 +67,7 @@ function validCounts(input: unknown): input is Counts {
     typeof value.myLike === "boolean" && typeof value.myLove === "boolean";
 }
 
-export function ReactionProvider({ children }: { children: ReactNode }) {
+export function ReactionProvider({ children, enabled = true }: { children: ReactNode; enabled?: boolean }) {
   const [values, setValues] = useState(new Map<string, Counts>());
   const [busy, setBusy] = useState(new Set<string>());
   const [order, setOrder] = useState<Order>("recent");
@@ -103,6 +103,7 @@ export function ReactionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    if (!enabled) return;
     mounted.current = true;
     actor.current = getActor();
     void refresh();
@@ -141,7 +142,7 @@ export function ReactionProvider({ children }: { children: ReactNode }) {
       broadcast.current?.close();
       broadcast.current = null;
     };
-  }, [refresh]);
+  }, [enabled, refresh]);
 
   async function toggle(type: TargetType, id: string, kind: Kind) {
     const key = targetKey(type, id);

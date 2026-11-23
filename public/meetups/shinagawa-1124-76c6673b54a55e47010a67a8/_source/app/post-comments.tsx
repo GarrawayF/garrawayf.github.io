@@ -85,7 +85,7 @@ function newCommentId() {
   return [value.slice(0, 8), value.slice(8, 12), value.slice(12, 16), value.slice(16, 20), value.slice(20)].join("-");
 }
 
-export function CommentProvider({ children }: { children: ReactNode }) {
+export function CommentProvider({ children, enabled = true }: { children: ReactNode; enabled?: boolean }) {
   const [threads, setThreads] = useState<ReadonlyMap<string, readonly Comment[]>>(new Map());
   const [drafts, setDrafts] = useState<ReadonlyMap<string, Draft>>(new Map());
   const [notices, setNotices] = useState<ReadonlyMap<string, Notice>>(new Map());
@@ -153,6 +153,7 @@ export function CommentProvider({ children }: { children: ReactNode }) {
   }, [putDraft, say]);
 
   useEffect(() => {
+    if (!enabled) return;
     live.current = true;
     currentDrafts.current = restoreDrafts();
     setDrafts(currentDrafts.current);
@@ -182,7 +183,7 @@ export function CommentProvider({ children }: { children: ReactNode }) {
       channel.current?.close();
       channel.current = null;
     };
-  }, [refresh]);
+  }, [enabled, refresh]);
 
   function edit(key: string, field: "text" | "name", value: string) {
     if (pending.current.has(key)) return;

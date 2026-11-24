@@ -221,11 +221,171 @@ jobs:
           done
           echo "::error::The uploaded Pages artifact did not become visible. Deployment was skipped."
           exit 1
-      - name: Deploy website
+      - name: Deploy website by verified artifact ID
         id: deployment
-        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e
-        with:
-          artifact_name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
+        timeout-minutes: 11
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARTIFACT_NAME: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
+          ARTIFACT_ID: ${{ steps.pages_upload.outputs.artifact_id }}
+        shell: bash
+        run: |
+          python3 -u - <<'PY'
+          import json
+          import os
+          import re
+          import signal
+          import time
+          from urllib.error import HTTPError, URLError
+          from urllib.parse import quote, urlsplit
+          from urllib.request import Request, urlopen
+          
+          # The public Actions REST API confirms this exact artifact. deploy-pages v4/v5
+          # then uses a different, runtime-scoped artifact listing which has returned zero
+          # for the same existing artifact. The documented Pages REST API accepts its ID.
+          class ApiError(RuntimeError):
+              def __init__(self, status, request_id):
+                  self.status = status
+                  super().__init__(f"HTTP {status}; request ID: {request_id}")
+          
+          def request_json(url, token, method="GET", payload=None, github_api=True):
+              headers = {"Authorization": "Bearer " + token,
+                         "Accept": "application/vnd.github+json" if github_api else "application/json"}
+              if github_api:
+                  headers["X-GitHub-Api-Version"] = "2022-11-28"
+              if payload is not None:
+                  headers["Content-Type"] = "application/json"
+              req = Request(url, headers=headers, method=method,
+                            data=json.dumps(payload).encode() if payload is not None else None)
+              try:
+                  with urlopen(req, timeout=20) as response:
+                      body = response.read(2 * 1024 * 1024 + 1)
+                      if len(body) > 2 * 1024 * 1024:
+                          raise RuntimeError("API response too large")
+                      return json.loads(body) if body else {}
+              except HTTPError as exc:
+                  request_id = exc.headers.get("x-github-request-id", "unknown")
+                  status = exc.code
+                  exc.close()
+                  # Never print response bodies, authorization headers, or OIDC tokens.
+                  raise ApiError(status, request_id) from None
+              except (URLError, TimeoutError, OSError):
+                  raise RuntimeError("API transport failed; request outcome may be unknown") from None
+          
+          def validate_artifact(artifact, expected_id, expected_name, run_id, sha, repo_id):
+              run = artifact.get("workflow_run") or {}
+              if not (
+                  str(artifact.get("id")) == expected_id and artifact.get("name") == expected_name
+                  and artifact.get("expired") is False
+                  and 0 < artifact.get("size_in_bytes", 0) <= 1024 ** 3
+                  and str(run.get("id")) == run_id and run.get("head_sha") == sha
+                  and str(run.get("repository_id")) == repo_id
+                  and str(run.get("head_repository_id")) == repo_id
+                  and run.get("head_branch") == "main"
+              ):
+                  raise RuntimeError("Artifact identity, ownership, size, or revision mismatch; refusing deployment")
+          
+          def stop(signum, frame):
+              raise InterruptedError("Deployment interrupted")
+          
+          def main():
+              repo = os.environ["GITHUB_REPOSITORY"]
+              sha = os.environ["GITHUB_SHA"]
+              run_id = os.environ["GITHUB_RUN_ID"]
+              repo_id = os.environ["GITHUB_REPOSITORY_ID"]
+              artifact_id = os.environ["ARTIFACT_ID"]
+              name = os.environ["ARTIFACT_NAME"]
+              if not re.fullmatch(r"[0-9]+", artifact_id) or not re.fullmatch(r"[a-f0-9]{40}", sha):
+                  raise RuntimeError("Invalid artifact ID or commit SHA")
+              if os.environ["GITHUB_REF"] != "refs/heads/main":
+                  raise RuntimeError("Only main may publish")
+              if name != "github-pages-" + run_id + "-" + os.environ["GITHUB_RUN_ATTEMPT"]:
+                  raise RuntimeError("Unexpected artifact name")
+              api = os.environ["GITHUB_API_URL"].rstrip("/") + "/repos/" + repo
+              token = os.environ["GH_TOKEN"]
+              artifact = request_json(api + "/actions/artifacts/" + artifact_id, token)
+              validate_artifact(artifact, artifact_id, name, run_id, sha, repo_id)
+              print(f"Verified exact artifact ID {artifact_id} for {sha}", flush=True)
+              oidc_url = os.environ["ACTIONS_ID_TOKEN_REQUEST_URL"]
+              oidc = request_json(oidc_url, os.environ["ACTIONS_ID_TOKEN_REQUEST_TOKEN"], github_api=False).get("value")
+              if not isinstance(oidc, str) or not oidc:
+                  raise RuntimeError("OIDC token missing")
+              # Do not retry this POST automatically: a lost response may still have created a deployment.
+              created = request_json(api + "/pages/deployments", token, "POST", {
+                  "artifact_id": int(artifact_id), "pages_build_version": sha,
+                  "oidc_token": oidc, "environment": "github-pages",
+              })
+              del oidc
+              deployment_id = str(created.get("id", ""))
+              if not re.fullmatch(r"[A-Za-z0-9_-]+", deployment_id):
+                  raise RuntimeError("Pages API did not return a usable deployment ID")
+              endpoint = api + "/pages/deployments/" + quote(deployment_id, safe="")
+              print(f"Created Pages deployment {deployment_id}", flush=True)
+              pending = True
+              terminal_failures = {"deployment_failed", "deployment_content_failed",
+                                   "deployment_cancelled", "deployment_lost"}
+              signal.signal(signal.SIGTERM, stop)
+              signal.signal(signal.SIGINT, stop)
+              deadline = time.monotonic() + 540
+              delay = 5
+              try:
+                  while time.monotonic() < deadline:
+                      try:
+                          status = request_json(endpoint, token).get("status")
+                          print(f"Pages status: {status}", flush=True)
+                          if status == "succeed":
+                              pending = False
+                              page = created.get("page_url", "")
+                              parsed = urlsplit(page)
+                              if parsed.scheme == "https" and parsed.netloc and "\n" not in page and "\r" not in page:
+                                  with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as out:
+                                      out.write("page_url=" + page + "\n")
+                              print("PAGES DEPLOYMENT SUCCEEDED", flush=True)
+                              return
+                          if status in terminal_failures:
+                              pending = False
+                              raise ValueError("Pages deployment failed: " + status)
+                      except ApiError as exc:
+                          if exc.status not in (404, 429, 500, 502, 503, 504):
+                              raise
+                          print(f"Temporary status error: {exc}", flush=True)
+                      except RuntimeError as exc:
+                          if str(exc) != "API transport failed; request outcome may be unknown":
+                              raise
+                          print("Temporary status transport error", flush=True)
+                      time.sleep(min(delay, max(0, deadline - time.monotonic())))
+                      delay = min(delay * 1.5, 20)
+                  raise TimeoutError("Pages deployment did not report success within nine minutes")
+              finally:
+                  if pending:
+                      try:
+                          request_json(endpoint + "/cancel", token, "POST")
+                          print(f"Cancelled incomplete deployment {deployment_id}", flush=True)
+                      except (RuntimeError, ValueError):
+                          print(f"Could not confirm cancellation of deployment {deployment_id}", flush=True)
+          
+          if __name__ == "__main__":
+              # Fail closed on mismatched artifact identity before any live deployment.
+              fixture = {"id": 12, "name": "expected", "expired": False, "size_in_bytes": 17,
+                         "workflow_run": {"id": 34, "head_sha": "abc", "repository_id": 56,
+                                          "head_repository_id": 56, "head_branch": "main"}}
+              validate_artifact(fixture, "12", "expected", "34", "abc", "56")
+              for key, bad in (("id", 13), ("name", "wrong"), ("expired", True), ("size_in_bytes", 0)):
+                  try:
+                      validate_artifact(dict(fixture, **{key: bad}), "12", "expected", "34", "abc", "56")
+                  except RuntimeError:
+                      pass
+                  else:
+                      raise AssertionError("Artifact validation regression: " + key)
+              try:
+                  validate_artifact(fixture, "12", "expected", "99", "abc", "56")
+              except RuntimeError:
+                  pass
+              else:
+                  raise AssertionError("Cross-run artifact validation regression")
+              print("Artifact identity regression checks passed", flush=True)
+              main()
+          PY
       - name: Verify public website and RAMEN TECH match this build
         timeout-minutes: 15
         # urllib's socket timeout cannot bound a continuously trickling response.

@@ -182,13 +182,54 @@ function authoredText(entry:MapRecord) {
     ...Object.entries(row.worksheet || {}).filter(([key])=>key!=="recorder").map(([,value])=>value),
   ].filter(Boolean).join("\n").replace(/https?:\/\/[^\s]+/gu, " ");
 }
+// A named, specific scenario may establish one inferred link even when writers use different words.
+const scenarios = [
+  {key:"baggage", label:"荷物を持たずに移動", terms:["荷物配送","荷物を届け","荷物を預け","手ぶらで移動","手ぶらで列車","手ぶらで街","荷物預かり"]},
+  {key:"east-west", label:"駅の東西を横断", terms:["東西自由通路","東西をつな","東西を分断","高輪と港南","港南と高輪","線路で分断","線路を横断"]},
+  {key:"step-free", label:"段差のない動線", terms:["段差のない","段差をなく","段差解消","バリアフリー動線","車いすで通","車椅子で通"]},
+  {key:"rain-shelter", label:"雨を避けて移動・滞在", terms:["雨よけ","雨にぬれず","雨に濡れず","雨を避け","屋根の下で","屋根付きの通路"]},
+  {key:"heat-reuse", label:"余剰熱を再利用", terms:["排熱を","廃熱を","余剰熱","捨てる熱","熱回収"]},
+  {key:"station-free", label:"乗車せず駅に立ち寄る", terms:["切符がなくても","切符を買わなくても","切符なしで","改札の外に","電車に乗らない日"]},
+] as const;
+function conceptMatches(text:string) {
+  return new Map(scenarios.flatMap(s=>{
+    const term=s.terms.find(x=>text.includes(normalize(x)));
+    return term?[[s.key,{label:s.label,term}] as const]:[];
+  }));
+}
+
+export type PairLink = { from:MapRecord; to:MapRecord; edge:RelatedIdea; extended:boolean };
+export function relatedPairs(center:MapRecord, page:readonly RelatedIdea[], content:ReadonlyMap<string,readonly RelatedIdea[]>, scope:"all"|"recorded"|"suggested") {
+  const siblings=new Map(page.map(e=>[e.entry.key,e.entry]));
+  const direct=new Set((content.get(center.key)||[]).map(e=>e.entry.key));
+  const pairs:PairLink[]=[]; const seen=new Set<string>();
+  for(const {entry} of page){
+    for(const edge of content.get(entry.key)||[]){
+      const other=edge.entry;
+      if(other.key===center.key || (scope==="recorded" && edge.kind==="suggested") || (scope==="suggested" && edge.kind!=="suggested"))continue;
+      // Never duplicate a spoke. Extend only to a genuinely new record when a
+      // secondary branch isn't already drawn as a direct link with the center.
+      const extended=!siblings.has(other.key);
+      if(extended&&direct.has(other.key))continue;
+      const key=[entry.key,other.key].sort().join("|");
+      if(seen.has(key))continue;
+      seen.add(key);
+      const [from,to]=edge.kind==="in"?[other,entry]:[entry,other];
+      pairs.push({from,to,edge,extended});
+    }
+  }
+  return pairs.sort((a,b)=>Number(a.extended)-Number(b.extended)||Number(a.edge.kind==="suggested")-Number(b.edge.kind==="suggested")||b.edge.strength-a.edge.strength);
+}
+
 export function buildContentMap(graph:IdeaMap, visible:readonly MapRecord[]) {
   const keyset=new Set(visible.map(entry=>entry.key));
   const docs=new Map<string,Map<string,string>>();
   const index=new Map<string,string[]>();
+  const conceptDocs=new Map<string,ReturnType<typeof conceptMatches>>();
   for(const entry of visible){
     const raw=authoredText(entry), text=normalize(raw);
     const phrases=new Map<string,string>();
+    conceptDocs.set(entry.key,conceptMatches(text));
     for(const label of [...extractIdeaKeywords(raw),...sharedConcepts.filter(value=>text.includes(normalize(value)))]){
       const key=normalize(label);
       if(genericTerms.has(key) || key.length<2 || !text.includes(key)) continue;
@@ -227,6 +268,17 @@ export function buildContentMap(graph:IdeaMap, visible:readonly MapRecord[]) {
       if(independent.length<2 || (!distinctive && controlled===0)) continue;
       const evidence=themes.slice(0,2).map(phrase=>phrases.get(phrase)!);
       suggested.push({entry:graph.byKey.get(key)!,kind:"suggested",evidence,strength:Number(distinctive)*3+evidence.length+controlled*2});
+    }
+    const present=new Set([...explicit,...suggested].map(edge=>edge.entry.key));
+    const concepts=conceptDocs.get(entry.key)!;
+    for(const other of visible){
+      if(other.key===entry.key || present.has(other.key))continue;
+      const their=conceptDocs.get(other.key)!;
+      const links=[...concepts].flatMap(([kind,a])=>{
+        const b=their.get(kind);
+        return b?[a.label+"："+a.term+(a.term===b.term?"":"／"+b.term)]:[];
+      });
+      if(links.length)suggested.push({entry:other,kind:"suggested",evidence:links.slice(0,2),strength:Math.min(6,3+links.length)});
     }
     const order=(a:RelatedIdea,b:RelatedIdea)=>b.strength-a.strength || a.entry.key.localeCompare(b.entry.key);
     suggested.sort(order);

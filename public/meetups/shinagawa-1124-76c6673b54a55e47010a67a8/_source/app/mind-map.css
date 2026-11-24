@@ -275,3 +275,24 @@ button.mm-box:hover,.mm-pages button:hover:not(:disabled),.mm-detail-link:hover 
  .mm-project .mm-search,.mm-project .mm-focus-select,.mm-project .mm-trail button,.mm-project .mm-relation-filter button,.mm-project .mm-reset-links {min-height:44px;}
  .mm-project .mm-search input,.mm-project .mm-focus-select select {font-size:16px;}
 }
+
+/* One neighboring connection is always shown. More expand without crowding the branches. */
+.mm-project .mm-pairs {border-top:1px solid #e6c7d6;margin:8px 0 0;padding:5px 0 0;min-width:0;}
+.mm-project .mm-pairs h4 {display:flex;align-items:center;gap:6px;margin:0 0 3px;font-size:.84rem;line-height:1.2;}
+.mm-project .mm-pairs h4 small,.mm-project .mm-pair-why small {font-size:.72rem;color:var(--mm-dim);font-weight:700;}
+.mm-project .mm-pairs ul {margin:0;padding:0;list-style:none;}
+.mm-project .mm-pair {min-width:0;padding:3px 1px;display:grid;grid-template-columns:minmax(8rem,32%) minmax(0,1fr);align-items:center;gap:4px 8px;}
+.mm-project .mm-pair-why {display:flex;flex-wrap:wrap;align-items:center;gap:3px;color:var(--mm-ink);font-size:.72rem;overflow-wrap:anywhere;}
+.mm-project .mm-pair-why strong {border:1px solid var(--mm-outline);border-radius:5px;background:#fff;padding:0 4px;color:var(--mm-active);}
+.mm-project .mm-pair-track {display:grid;grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr);align-items:center;min-width:0;}
+.mm-project .mm-pair-node {min-width:0;min-height:35px;display:flex;align-items:center;gap:5px;text-align:left;padding:3px 5px;border:1px solid var(--mm-outline);border-radius:6px;background:var(--mm-team-bg,#fff7fa);color:var(--mm-ink);font:inherit;}
+.mm-project .mm-pair-node small {flex:none;font-size:.67rem;line-height:1.1;}
+.mm-project .mm-pair-node strong {min-width:0;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;font-size:.82rem;line-height:1.12;overflow-wrap:anywhere;}
+.mm-project .mm-pair-wire {min-width:0;height:1em;text-align:center;color:var(--mm-active);font-weight:900;line-height:1;}
+.mm-project [data-edge="suggested"]>.mm-pair-track .mm-pair-wire {height:0;border-top:2px dashed #99718a;}
+.mm-project .mm-pairs summary {display:list-item;width:max-content;max-width:100%;min-height:30px;box-sizing:border-box;padding:5px;color:var(--mm-active);font-size:.75rem;font-weight:800;cursor:pointer;}
+@container(max-width:560px) {
+ .mm-project .mm-pair {grid-template-columns:minmax(0,1fr);padding-block:4px;}
+ .mm-project .mm-pair-node,.mm-project .mm-pairs summary {min-height:44px;}
+ .mm-project .mm-pair-track {grid-template-columns:minmax(0,1fr) 17px minmax(0,1fr);}
+}

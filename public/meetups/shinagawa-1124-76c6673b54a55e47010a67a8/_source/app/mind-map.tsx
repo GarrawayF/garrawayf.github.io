@@ -7,7 +7,7 @@ import { selectGalleryKeywords } from "./gallery-keywords";
 import { WorksheetReadout } from "./worksheet-fields";
 import { ReactionButtons } from "./reactions";
 import { PostComments } from "./post-comments";
-import { buildContentMap, buildIdeaMap, defaultContentFocus, defaultFocus, groupDiagram, groupLabel, kindLabel, locationLabel, mapGroups, relationsDiagram, type Diagram, type IdeaMap, type MapGroup, type MapIdea, type MapRecord, type MapTheme, type RelatedIdea } from "./mind-map-model";
+import { buildContentMap, buildIdeaMap, defaultContentFocus, defaultFocus, groupDiagram, groupLabel, kindLabel, locationLabel, mapGroups, relatedPairs, relationsDiagram, type Diagram, type IdeaMap, type MapGroup, type MapIdea, type MapRecord, type MapTheme, type PairLink, type RelatedIdea } from "./mind-map-model";
 import "./mind-map.css";
 
 type CitationProps = { onCite?: (idea: MapIdea) => void; citedIds?: readonly string[] };
@@ -110,7 +110,7 @@ function ContentDrawing({entry,edges,keywords,onOpen,onFocus,emptyReason,onReset
   return <div className="mm-related-map" role="group" aria-label="内容がつながるアイデア">
     <div className="mm-related-center"><span>中心の案</span><button type="button" className="mm-related-node" data-map-team={entry.row.team} data-center="true" title={entry.title} aria-label={"中心の案を読む："+entry.title} onClick={()=>onOpen(entry.key)}>{card(entry)}</button></div>
     {edges.length ? <ul className="mm-related-branches">{edges.map(link=>{
-      const relation=link.kind==="in"?"この案が引用・返信した元の案":link.kind==="out"?"この案を引用・返信した投稿":"共通点："+link.evidence.map(phrase=>"「"+phrase+"」").join(" ");
+      const relation=link.kind==="in"?"この案が引用・返信した元の案":link.kind==="out"?"この案を引用・返信した投稿":"関連候補："+link.evidence.map(phrase=>"「"+phrase+"」").join(" ");
       return <li key={link.entry.key} data-edge={link.kind}>
         <span className="mm-edge-line" aria-hidden="true"/>
         <div className="mm-related-card">
@@ -121,6 +121,25 @@ function ContentDrawing({entry,edges,keywords,onOpen,onFocus,emptyReason,onReset
       </li>;
     })}</ul>:<div className="mm-unlinked"><p>{emptyReason}</p>{onReset&&<button className="mm-reset-links" type="button" onClick={onReset}>すべてのつながりを表示</button>}</div>}
   </div>;
+}
+
+function RelationshipLinks({pairs,keywords,onFocus}:{pairs:readonly PairLink[];keywords:ReadonlyMap<string,string>;onFocus:(key:string)=>void}){
+  if(!pairs.length) return null;
+  const node=(entry:MapRecord)=><button type="button" className="mm-pair-node" data-map-team={entry.row.team}
+    aria-label={"中心にする："+entry.title} title={entry.title} onClick={()=>onFocus(entry.key)}><small>{groupLabel(entry.row.team)}</small><strong>{keywords.get(entry.key)||entry.title}</strong></button>;
+  const lines=(links:readonly PairLink[])=>links.map(({from,to,edge,extended})=>{
+    const candidate=edge.kind==="suggested";
+    const reason=candidate?edge.evidence.map(s=>"「"+s+"」").join(" "):"元の案からの引用・返信";
+    return <li className="mm-pair" data-edge={candidate?"suggested":"recorded"} key={from.key+"|"+to.key}>
+      <span className="mm-pair-why"><strong>{candidate?"関連候補":"引用・返信"}</strong>{reason}{extended&&<small>一つ先の案</small>}</span>
+      <div className="mm-pair-track">{node(from)}<span className="mm-pair-wire" aria-hidden="true">{candidate?"":"→"}</span>{node(to)}</div>
+    </li>;
+  });
+  return <section className="mm-pairs" aria-label="案どうしのつながり">
+    <h4>案どうしのつながり <small>{pairs.length}件</small></h4>
+    <ul>{lines(pairs.slice(0,1))}</ul>
+    {pairs.length>1&&<details><summary>ほかのつながり（{pairs.length-1}件）</summary><ul>{lines(pairs.slice(1))}</ul></details>}
+  </section>;
 }
 
 export default function MindMap({ ideas, themes=initialThemes, teamFilter, roundFilter, hasLoaded, themesLoaded=true, loadError=false, presentation, onWrite, onOpenWorksheet, onReply, onCite, citedIds }:Props) {
@@ -171,6 +190,8 @@ export default function MindMap({ ideas, themes=initialThemes, teamFilter, round
   const total=view==="groups"?grouped.length:contentView?filteredRelated.length:successors.length;
   const start=Math.min(pages[pageKey]||0,Math.max(0,Math.floor((total-1)/size)*size));
   const setPage=(next:number)=>setPages(prev=>({...prev,[pageKey]:next}));
+  const visibleLinks=contentView?filteredRelated.slice(start,start+size):[];
+  const crosslinks=entry&&contentView?relatedPairs(entry,visibleLinks,content,linkFilter):[];
   const compact=Boolean(presentation && width>=960);
   const diagram = entry && group
     ? view === "groups"
@@ -226,9 +247,10 @@ export default function MindMap({ ideas, themes=initialThemes, teamFilter, round
           <span className="mm-sr">共通点は投稿原文をもとにした参考表示です。</span>
         </div>:<span className="mm-legend"><i data-wire={view==="groups"?"classification":"citation"} aria-hidden="true"/>{view==="groups"?"点線：班・講演の分類":"矢印：元の案から派生した案へ"}</span>}
       </header>
-      <div ref={resize} className="mm-space">{contentView?<ContentDrawing entry={entry} edges={filteredRelated.slice(start,start+size)} emptyReason={related.length?"この種類のつながりはありません。":"この案には、同じ班・回の絞り込み内で表示できるつながりはありません。ほかの案を検索して探せます。"} onReset={related.length&&linkFilter!=="all"?()=>setLinkFilter("all"):undefined} keywords={keywords} onOpen={openRecord} onFocus={key=>{focusOn(key);focusSelector.current?.focus({preventScroll:true});}}/>:<MapDrawing diagram={diagram} onOpen={openRecord}
+      <div ref={resize} className="mm-space">{contentView?<ContentDrawing entry={entry} edges={visibleLinks} emptyReason={related.length?"この種類のつながりはありません。":"この案には、同じ班・回の絞り込み内で表示できるつながりはありません。ほかの案を検索して探せます。"} onReset={related.length&&linkFilter!=="all"?()=>setLinkFilter("all"):undefined} keywords={keywords} onOpen={openRecord} onFocus={key=>{focusOn(key);focusSelector.current?.focus({preventScroll:true});}}/>:<MapDrawing diagram={diagram} onOpen={openRecord}
         team={view==="groups"?group:undefined} keywords={keywords} label={view==="groups"?"班から講演、個人案・テーマへの分類図":"元の個人案と、そこから生まれた投稿・テーマの関係図"}/>}</div>
       {view==="links"&&!contentView&&!graph.sources.has(entry.key)&&!successors.length&&<p className="mm-unlinked">この案には、まだ元の案や派生した投稿が結び付いていません。</p>}
+      {contentView&&<RelationshipLinks pairs={crosslinks} keywords={keywords} onFocus={key=>{focusOn(key);focusSelector.current?.focus({preventScroll:true});}}/>}
       <Pages start={start} total={total} size={size} change={setPage} label={view==="groups"?"案":contentView?"関連する案":"派生した投稿・テーマ"}/>
     </div>
     {(loadError||wait)&&<p className="mm-unlinked" role="status">{loadError?"一部のデータに接続できません。接続が戻ると更新します。":"残りのデータを読み込み中…"}</p>}

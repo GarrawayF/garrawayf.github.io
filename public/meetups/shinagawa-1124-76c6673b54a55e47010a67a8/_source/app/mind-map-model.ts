@@ -221,6 +221,33 @@ export function relatedPairs(center:MapRecord, page:readonly RelatedIdea[], cont
   return pairs.sort((a,b)=>Number(a.extended)-Number(b.extended)||Number(a.edge.kind==="suggested")-Number(b.edge.kind==="suggested")||b.edge.strength-a.edge.strength);
 }
 
+const contentTopics = [
+  {key:"journey",title:"乗り換え・移動のしやすさ", terms:["乗り換え","乗換","駅間","バス停","改札","運行","乗降","タクシー","バスに乗","列車に乗","自転車","シェアサイクル"]},
+  {key:"walk",title:"東西をつなぐ歩行空間", terms:["東西自由通路","東西をつな","東西を分断","高輪と港南","横断歩道","歩道橋","線路で分断","通り抜け","回遊","歩行者","歩行空間"]},
+  {key:"place",title:"待ち合わせ・滞在・居場所", terms:["待ち合わせ","ベンチ","広場","座れる","座って","腰掛け","休憩場所","居場所","ラウンジ","滞在","電車に乗らない日"]},
+  {key:"access",title:"雨・段差・移動のバリア", terms:["雨の日","雨よけ","屋根付き","ベビーカー","車いす","車椅子","バリアフリー","段差","日よけ","暑さ","高齢者"]},
+  {key:"shops",title:"地域のお店・食・交流", terms:["地域商店","地元の店","地元店舗","商店街","地元の商店","マルシェ","飲食","食事","出店","市場","商い"]},
+  {key:"information",title:"道案内・情報・サイン", terms:["道案内","案内マップ","案内板","多言語","観光案内","地図","目印","迷わず","現在地","案内サイン","デジタルサイネージ"]},
+  {key:"freight",title:"荷物・配送・手ぶら移動", terms:["荷物を届け","荷物を預け","荷物配送","荷物預かり","手ぶら","ロッカー","物流","集荷","配送"]},
+  {key:"resilience",title:"防災・エネルギー・環境", terms:["防災","避難","災害","排熱","余剰熱","熱回収","捨てる熱","給電","再生可能","脱炭素","非常用"]},
+] as const;
+export function groupIdeasByTopic(entries:readonly MapRecord[]) {
+  const groups = new Map<string,{key:string;title:string;items:MapRecord[]}>();
+  for(const t of contentTopics) groups.set(t.key,{key:t.key,title:t.title,items:[]});
+  groups.set("other",{key:"other",title:"その他・分類前の案",items:[]});
+  for(const entry of entries){
+    const authored=normalize(authoredText(entry));
+    let winner:string="other", best=0;
+    for(const topic of contentTopics){
+      const match=topic.terms.filter(term=>authored.includes(normalize(term)));
+      const score=match.reduce((n,term)=>n+Math.min(term.length,6),0);
+      if(score>best){best=score;winner=topic.key;}
+    }
+    groups.get(winner)!.items.push(entry);
+  }
+  return [...groups.values()].filter(g=>g.items.length).sort((a,b)=>Number(a.key==="other")-Number(b.key==="other")||b.items.length-a.items.length);
+}
+
 export function buildContentMap(graph:IdeaMap, visible:readonly MapRecord[]) {
   const keyset=new Set(visible.map(entry=>entry.key));
   const docs=new Map<string,Map<string,string>>();

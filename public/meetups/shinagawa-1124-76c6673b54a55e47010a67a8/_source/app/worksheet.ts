@@ -1,4 +1,5 @@
 export const WORKSHEET_FIELD_LIMIT = 800;
+export const HEADLINE_LIMIT = 80;
 
 export const WORKSHEET_KEYS = [
   "person", "scene", "gain", "perspective", "voice", "partners", "round1", "round2", "round3",
@@ -6,7 +7,7 @@ export const WORKSHEET_KEYS = [
 ] as const;
 
 export type WorksheetKey = (typeof WORKSHEET_KEYS)[number];
-export type Worksheet = Partial<Record<WorksheetKey, string>>;
+export type Worksheet = Partial<Record<WorksheetKey, string>> & { headline?: string };
 export type WorksheetMode = "personal" | "work" | "summary" | "plenary";
 
 type Field = { label: string; hint?: string };
@@ -47,6 +48,7 @@ export function cleanWorksheet(input: unknown): Worksheet {
     const value = data[key];
     if (typeof value === "string" && value.trim()) result[key] = value.trim();
   }
+  if (typeof data.headline === "string" && data.headline.trim()) result.headline = data.headline.trim().slice(0, HEADLINE_LIMIT);
   return result;
 }
 

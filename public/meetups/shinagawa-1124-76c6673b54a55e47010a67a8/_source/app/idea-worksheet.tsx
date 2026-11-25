@@ -1,7 +1,7 @@
 "use client";
 import { useId } from "react";
 import type { RefObject } from "react";
-import { WORKSHEET_FIELD_LIMIT, type Worksheet, type WorksheetKey } from "./worksheet";
+import { HEADLINE_LIMIT, WORKSHEET_FIELD_LIMIT, type Worksheet, type WorksheetKey } from "./worksheet";
 import "./idea-worksheet.css";
 
 type Props = {
@@ -12,6 +12,7 @@ type Props = {
   inputRef?: RefObject<HTMLTextAreaElement | null>;
   label?: string; placeholder?: string; help?: string; disabled?: boolean;
   isReply?: boolean;
+  editableHeadline?: boolean;
 };
 
 const fields: readonly { key: WorksheetKey; label: string; hint: string }[] = [
@@ -21,10 +22,16 @@ const fields: readonly { key: WorksheetKey; label: string; hint: string }[] = [
   { key: "perspective", label: "ほかの立場から見ると？", hint: "別の人や場面を思い浮かべてください。" },
 ];
 
-export default function IdeaWorksheet({ values, text, onTextChange, onChange, inputRef, isReply = false, label, placeholder, help, disabled = false }: Props) {
+export default function IdeaWorksheet({ values, text, onTextChange, onChange, inputRef, isReply = false, label, placeholder, help, disabled = false, editableHeadline = false }: Props) {
   const id = useId();
   const filled = fields.filter(({ key }) => values[key]?.trim()).length;
   return <div className="idea-worksheet">
+    {editableHeadline && <label className="field idea-headline-field">
+      <span>見出し（任意）</span>
+      <input type="text" name="headline" autoComplete="off" maxLength={HEADLINE_LIMIT}
+        disabled={disabled} value={values.headline ?? ""} placeholder="空欄なら本文から自動で作成"
+        onChange={event => onChange({ ...values, headline: event.target.value })} />
+    </label>}
     <div className="idea-cell idea-cell-main">
       <h1><label htmlFor={id + "-text"}>{label || (isReply ? "共感した理由・付け足したいこと" : "品川で試してみたいこと")}</label></h1>
       <textarea id={id + "-text"} ref={inputRef} data-worksheet-key="text" rows={3}

@@ -1,4 +1,4 @@
-import type { Worksheet, WorksheetKey } from "./worksheet";
+import { HEADLINE_LIMIT, type Worksheet, type WorksheetKey } from "./worksheet";
 
 export type AnalysisInput = {
   text: string;
@@ -10,7 +10,7 @@ export type AnalysisInput = {
 };
 export type PostAnalysis = { title: string; summary: string };
 
-type Field = Exclude<WorksheetKey, "recorder"> | "text" | "context";
+type Field = Exclude<WorksheetKey, "recorder" | "headline"> | "text" | "context";
 type Passage = { field: Field; text: string; key: string; index: number; weight: number };
 type PostKind = "idea" | "theme";
 
@@ -243,8 +243,9 @@ function makeTitle(text: string): string {
 }
 
 export function analyzePost(entry: AnalysisInput, kind: PostKind): PostAnalysis {
+  const headline = kind === "idea" ? entry.worksheet?.headline?.trim().slice(0, HEADLINE_LIMIT) : undefined;
   const items = passages(entry, kind);
-  if (!items.length) return { title: "", summary: "" };
+  if (!items.length) return { title: headline || "", summary: "" };
   const ranked = [...items].sort((a, b) => b.weight - a.weight);
   const main = ranked[0];
   const options = items.filter(item => item !== main && !duplicate(item, main) && !filler.test(item.text))
@@ -273,5 +274,5 @@ export function analyzePost(entry: AnalysisInput, kind: PostKind): PostAnalysis 
   } else if (neighbor && !together && dependsOnPrevious.test(support.text) && explicitCaveat.test(support.text)) {
     titleSource = finish(terse(lead)) + terse(support.text);
   }
-  return { title: makeTitle(titleSource), summary };
+  return { title: headline || makeTitle(titleSource), summary };
 }

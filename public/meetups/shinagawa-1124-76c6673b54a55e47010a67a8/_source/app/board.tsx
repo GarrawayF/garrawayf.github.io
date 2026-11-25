@@ -179,7 +179,7 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
   const [sourceHref, setSourceHref] = useState(initialSource || (initialRoom === "demo" ? "?room=demo" : ""));
   const [copied, setCopied] = useState(false);
   const [sending, setSending] = useState(false);
-  const [editing, setEditing] = useState<{ idea: Idea; text: string; context: string; worksheet: Worksheet } | null>(null);
+  const [editing, setEditing] = useState<{ idea: Idea; text: string; context: string; worksheet: Worksheet; headlineOnly: boolean } | null>(null);
   const [editError, setEditError] = useState("");
   const [editBusy, setEditBusy] = useState(false);
   const [editStale, setEditStale] = useState(false);
@@ -457,18 +457,18 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
     setEditStale(false);
     requestAnimationFrame(() => editButton.current?.focus());
   };
-  const startEdit = (idea: Idea, button: HTMLElement) => {
+  const startEdit = (idea: Idea, button: HTMLElement, headlineOnly = false) => {
     if (!storedEditToken(idea.id) || !Number.isSafeInteger(idea.revision)) return;
     editButton.current = button;
     setEditError(""); setEditStale(false);
-    setEditing({ idea, text: idea.enteredText ?? idea.text, context: idea.context || "", worksheet: cleanWorksheet(idea.worksheet) });
+    setEditing({ idea, text: idea.enteredText ?? idea.text, context: idea.context || "", worksheet: cleanWorksheet(idea.worksheet), headlineOnly });
   };
   const saveEdit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!editing || editGuard.current || editStale) return;
-    const { idea, text, context, worksheet } = editing;
+    const { idea, text, context, worksheet, headlineOnly } = editing;
     const problem = contentIssue({ ...emptyDraft, text, context, worksheet });
-    if (problem) { setEditError(problem); return; }
+    if (problem && !headlineOnly) { setEditError(problem); return; }
     const editToken = storedEditToken(idea.id);
     if (!editToken) { setEditError("このブラウザに編集情報がありません。"); return; }
     editGuard.current = true; setEditBusy(true); setEditError("");
@@ -478,7 +478,7 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
     try {
       const response = await roomFetch(roomApi("/api/ideas/" + encodeURIComponent(idea.id)), {
         method: "PATCH", headers: { "Content-Type": "application/json" }, signal: controller.signal,
-        body: JSON.stringify({ editToken, revision: idea.revision, text: text.trim(), context: context.trim(), worksheet: cleanWorksheet(worksheet) }),
+        body: JSON.stringify(headlineOnly ? { editToken, revision: idea.revision, headline: worksheet.headline?.trim() ?? "" } : { editToken, revision: idea.revision, text: text.trim(), context: context.trim(), worksheet: { ...cleanWorksheet(worksheet), headline: worksheet.headline?.trim() ?? "" } }),
       });
       if (response.status === 409) {
         setEditStale(true);
@@ -638,7 +638,7 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
               </SelectField>
             </div>
             </div>
-            <IdeaWorksheet values={draft.worksheet} text={draft.text} onTextChange={text => update({ text })}
+            <IdeaWorksheet editableHeadline values={draft.worksheet} text={draft.text} onTextChange={text => update({ text })}
               onChange={worksheet => update({ worksheet })} inputRef={input} isReply={Boolean(draft.parentId)} />
             <button className="extras-trigger" type="button" aria-expanded={extras} aria-controls="personal-sheet-fields" onClick={() => setExtras(!extras)}><ChevronRight className={extras ? "turn" : ""} size={16} />名前・共感した理由を添える <span>任意</span></button>
             {extras && <div id="personal-sheet-fields" className="extras-panel">
@@ -712,16 +712,21 @@ function BoardContents({ initialRoom, initialSource, initialView, initialWrite, 
       </div>
       {personal && ownedIdeas.length > 0 && <section className="own-ideas" aria-label="自分の投稿">
         <h2>自分の投稿</h2>
-        <ul>{ownedIdeas.map(idea => <li key={idea.id}><span>{idea.text}</span><button type="button" onClick={event => startEdit(idea, event.currentTarget)}>編集</button></li>)}</ul>
+        <ul>{ownedIdeas.map(idea => <li key={idea.id}><span>{idea.worksheet?.headline || idea.analysis?.title || idea.text}</span><button type="button" onClick={event => startEdit(idea, event.currentTarget)}>編集</button><button type="button" onClick={event => startEdit(idea, event.currentTarget, true)}>見出しを編集</button></li>)}</ul>
       </section>}
     </main>
     <dialog ref={editDialog} className="own-edit-dialog" aria-labelledby="own-edit-title" onCancel={event => { event.preventDefault(); closeEdit(); }}>
       {editing && <form onSubmit={saveEdit}>
-        <header><h2 id="own-edit-title">投稿を編集</h2><button type="button" onClick={closeEdit} disabled={editBusy} aria-label="閉じる"><X size={18}/></button></header>
+        <header><h2 id="own-edit-title">{editing.headlineOnly ? "見出しを編集" : "投稿を編集"}</h2><button type="button" onClick={closeEdit} disabled={editBusy} aria-label="閉じる"><X size={18}/></button></header>
         <fieldset disabled={editBusy}>
-          <IdeaWorksheet values={editing.worksheet} text={editing.text} isReply={Boolean(editing.idea.parentId)} onTextChange={text => setEditing(previous => previous && ({ ...previous, text }))}
+          {editing.headlineOnly ? <label className="field"><span>見出し（空欄で自動に戻す）</span><input maxLength={80} value={editing.worksheet.headline || ""} onChange={event => {
+            const headline = event.target.value;
+            setEditing(previous => previous && ({ ...previous, worksheet: { ...previous.worksheet, headline } }));
+          }}/></label> : <>
+          <IdeaWorksheet editableHeadline values={editing.worksheet} text={editing.text} isReply={Boolean(editing.idea.parentId)} onTextChange={text => setEditing(previous => previous && ({ ...previous, text }))}
             onChange={worksheet => setEditing(previous => previous && ({ ...previous, worksheet }))}/>
           <label className="field"><span>きっかけ・共感した理由</span><textarea rows={2} maxLength={400} value={editing.context} onChange={event => { const context = event.target.value; setEditing(previous => previous && ({ ...previous, context })); }}/></label>
+          </>}
         </fieldset>
         {editError && <p role="alert">{editError}</p>}
         <footer><button type="button" onClick={closeEdit} disabled={editBusy}>キャンセル</button><button className="post-button" type="submit" disabled={editBusy || editStale}>{editBusy ? "保存中…" : "保存"}</button></footer>

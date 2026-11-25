@@ -652,3 +652,71 @@ h1 { font-size: clamp(32px, 3.55vw, 57px); font-weight: 780; line-height: 1.25; 
   .board-app .pg-detail .pg-page-buttons {justify-self:end;gap:3px}
   .board-app .pg-detail .pg-detail-bar :is(.pg-manual-link,.fs-toggle,.pg-page-buttons button) {min-width:44px;min-height:44px}
 }
+
+/* Keep touch interfaces in document flow, including short landscape viewports. */
+@media (max-width: 760px), (max-height: 500px) and (pointer: coarse) {
+  .board-app .board-header {position:relative;top:auto}
+  .board-app:is(.personal-mode,.summary-mode) .memo-shortcut {display:none}
+  .board-app :is(.composer,.sw-editor,.pg-detail-body) :is(textarea,input,select) {scroll-margin-block:14px}
+  .board-app .board-header .page-mode-nav {position:static;transform:none;flex-wrap:wrap}
+  .board-app .page-mode-nav .x-fullscreen-topbar {margin-inline-start:0;justify-self:end}
+  .board-app .page-mode-nav .x-fullscreen-button {min-width:44px;min-height:44px;padding-inline:6px}
+  .board-app .x-fullscreen-topbar .x-fullscreen-button span,
+  .board-app .x-fullscreen-detail .x-fullscreen-button span {display:none}
+  .board-app .page-mode-nav:has(.x-fullscreen-notice:not(:empty)) {display:flex}
+  .board-app .x-fullscreen:has(.x-fullscreen-notice:not(:empty)) {display:contents}
+  .board-app .x-fullscreen-notice:not(:empty) {
+    position:static;order:10;flex:1 1 100%;width:auto;max-width:100%;margin:0;
+    box-shadow:none;overflow-wrap:anywhere;
+  }
+  .board-app .pg-detail .pg-detail-bar {
+    display:flex;flex-wrap:wrap;gap:5px;padding:5px max(8px,env(safe-area-inset-right)) 5px max(8px,env(safe-area-inset-left));
+  }
+  .board-app .pg-detail .pg-detail-bar :is(.pg-back,.pg-diagram-jump,.pg-manual-link,.x-fullscreen-button,.pg-page-buttons button) {
+    min-height:44px;min-width:44px;margin:0;
+  }
+  .board-app .pg-detail .pg-back {padding-inline:7px;min-width:0;flex:1 1 auto;justify-self:auto}
+  .board-app .pg-detail .pg-where {margin-inline-start:0;white-space:normal;overflow-wrap:anywhere}
+  .board-app .pg-detail .pg-fit-warning {flex:1 1 100%;order:9}
+  .board-app .pg-detail .pg-page-buttons {gap:4px;margin-inline-start:auto}
+  .board-app .pg-detail .pg-sheet-attribution {max-width:100%;align-items:flex-start;text-align:start}
+  .board-app .pg-detail .pg-sheet-attribution .pg-original-meta,
+  .board-app .pg-detail .pg-sheet-called-name {justify-content:flex-start}
+  .board-app .pg-detail .pg-sheet-title,.board-app .pg-detail .pg-sheet-keyword {
+    line-height:1.24;letter-spacing:-.025em;overflow-wrap:anywhere;
+  }
+  .board-app .pg-detail .pg-sheet-grid :is(dt,dd,.pg-sheet-cell-answer),
+  .board-app .pg-detail .pg-parent span {min-inline-size:0;overflow-wrap:anywhere}
+  .board-app .pg-detail .pg-sheet-grid .pg-sheet-cell-keyword {line-height:1.3}
+  .board-app.screen-mode .pg-grid .pg-choice {height:auto;min-block-size:68px}
+  .board-app.screen-mode .pg-grid :is(.pg-focus-word,.pg-choice-title) {
+    display:block;overflow:visible;white-space:normal;overflow-wrap:anywhere;line-height:1.28;text-wrap:wrap;
+  }
+  .board-app.screen-mode .pg-grid .pg-focus-word {font-size:clamp(1rem,5.8vw,1.52rem)}
+  .board-app.screen-mode .pg-grid .pg-choice-title {font-size:.84rem}
+  .board-app.screen-mode .pg-tools :is(.pg-kinds button,.pg-search,.pg-order) {min-width:0;overflow-wrap:anywhere}
+  .board-app.screen-mode .pg-kinds button {min-height:44px;white-space:normal;flex-wrap:wrap;line-height:1.2}
+  .board-app .iv-toolbar {
+    position:static;align-items:flex-start;flex-wrap:wrap;
+    padding-inline:max(9px,env(safe-area-inset-left)) max(9px,env(safe-area-inset-right));
+  }
+  .board-app .iv-toolbar > div {min-width:0;flex-wrap:wrap}
+  .board-app .iv-content {padding-inline:max(13px,env(safe-area-inset-left)) max(13px,env(safe-area-inset-right))}
+  .board-app .iv-branches {grid-template-columns:minmax(0,1fr);row-gap:16px}
+}
+@media (max-width: 470px) {
+  .board-app .pg-detail .pg-detail-bar {
+    display:grid;grid-template-columns:minmax(0,1fr) auto auto auto auto;align-items:center;
+  }
+  .board-app .pg-detail .pg-back {grid-column:1/4;grid-row:1;justify-self:start}
+  .board-app .pg-detail .pg-where {grid-column:4/-1;grid-row:1;justify-self:end}
+  .board-app .pg-detail .pg-diagram-jump {grid-column:1/3;grid-row:2;justify-self:start;white-space:normal;line-height:1.2}
+  .board-app .pg-detail .x-fullscreen-button {grid-column:3;grid-row:2}
+  .board-app .pg-detail .x-fullscreen-detail:not(:has(.x-fullscreen-notice:not(:empty))) {grid-column:3;grid-row:2}
+  .board-app .pg-detail .pg-manual-link {grid-column:4;grid-row:2}
+  .board-app .pg-detail .pg-page-buttons {grid-column:5;grid-row:2}
+  .board-app .pg-detail .pg-fit-warning {grid-row:3;grid-column:1/-1}
+  .board-app .pg-detail .x-fullscreen-notice:not(:empty) {grid-row:4;grid-column:1/-1}
+  .board-app.screen-mode .projection-controls .outputs-links {grid-template-columns:repeat(6,minmax(0,1fr))}
+  .board-app.screen-mode .projection-controls .outputs-links a {min-width:0;padding:4px 2px;overflow-wrap:anywhere;line-height:1.2}
+}

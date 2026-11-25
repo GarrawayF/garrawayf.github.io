@@ -179,7 +179,7 @@ function authoredText(entry:MapRecord) {
   // Analysis-derived titles and summaries, dates/team metadata and bylines are not evidence.
   const { row }=entry;
   return [row.enteredText ?? row.text, entry.kind==="idea"?entry.row.context:"",
-    ...Object.entries(row.worksheet || {}).filter(([key])=>key!=="recorder").map(([,value])=>value),
+    ...Object.entries(row.worksheet || {}).filter(([key])=>key!=="recorder"&&key!=="headline").map(([,value])=>value),
   ].filter(Boolean).join("\n").replace(/https?:\/\/[^\s]+/gu, " ");
 }
 // A named, specific scenario may establish one inferred link even when writers use different words.

@@ -147,7 +147,7 @@ export function extractIdeaKeywords(input: string): string[] {
 
 function getSourceText(idea: KeywordSource) {
   const content = Object.entries(cleanWorksheet(idea.worksheet))
-    .filter(([key]) => key !== "recorder")
+    .filter(([key]) => key !== "recorder" && key !== "headline")
     .map(([, value]) => value);
   return [idea.text, idea.context, ...content].filter(Boolean).join("\n");
 }

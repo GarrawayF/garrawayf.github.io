@@ -127,7 +127,7 @@ class PublicEventPreviewTests(unittest.TestCase):
 
     def test_homepage_entry_and_separate_application_remain(self):
         homepage = (ROOT / 'app/page.tsx').read_text()
-        self.assertIn('/event-management-demo/concierge.html', homepage)
+        self.assertNotIn('/event-management-demo/concierge.html', homepage)
         self.assertIn('イベントを申し込む／デモ版', homepage)
         self.assertNotIn('/event-management-demo/staff.html', homepage)
         self.assertNotIn('/event-management-demo/application.html', homepage)

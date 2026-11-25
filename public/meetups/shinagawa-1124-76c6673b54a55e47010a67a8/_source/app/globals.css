@@ -720,3 +720,16 @@ h1 { font-size: clamp(32px, 3.55vw, 57px); font-weight: 780; line-height: 1.25; 
   .board-app.screen-mode .projection-controls .outputs-links {grid-template-columns:repeat(6,minmax(0,1fr))}
   .board-app.screen-mode .projection-controls .outputs-links a {min-width:0;padding:4px 2px;overflow-wrap:anywhere;line-height:1.2}
 }
+@media (max-width: 760px), (max-height: 500px) and (pointer: coarse) {
+  .board-app .write-switch-title {color:var(--sh-ink)}
+}
+@media (max-width: 560px) {
+  .board-app .page-mode-nav:has(.x-fullscreen-notice:not(:empty)) {display:grid;border-radius:16px}
+  .board-app .page-mode-nav .x-fullscreen-topbar .x-fullscreen-button {
+    grid-row:1;grid-column:4;justify-self:center;
+  }
+  .board-app.screen-mode .page-mode-nav .board-projection-manual {grid-row:1;grid-column:5}
+  .board-app .page-mode-nav .x-fullscreen-notice:not(:empty) {
+    grid-row:2;grid-column:1/-1;justify-self:stretch;
+  }
+}

@@ -595,7 +595,7 @@ export default function Home() {
           <a href={SITE_LINKS.note} target="_blank" rel="noreferrer">note ↗</a>
           <a href={withBasePath("/serendipity/")} style={{ gridColumn: "1 / -1" }}>運営会社｜株式会社Serendipity →</a>
         </nav>
-        <small>FUKUOKA / TENJIN CLASS 3F<br />事業者：トヨタ自動車株式会社<br />運営会社：株式会社Serendipity<br />© GARRAWAY F</small>
+        <small>FUKUOKA / TENJIN CLASS 3F<br />事業主体：トヨタ自動車株式会社<br />運営会社：株式会社Serendipity<br />© GARRAWAY F</small>
       </footer>
     </main>
   );

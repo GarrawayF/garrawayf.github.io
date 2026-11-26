@@ -30,6 +30,23 @@
 .event-manual-annotation{position:absolute;display:block}
 .event-manual-annotation:focus-visible{outline:3px solid #762546;outline-offset:1px}
 </style>
+<script data-entry="cover-live-only">
+(() => {
+  const url = new URL(location.href);
+  const fromTest = url.searchParams.getAll('room').includes('demo');
+  if (fromTest) url.searchParams.delete('room');
+  const hasBoardTarget = ['post','screen','summary','personal'].includes(url.searchParams.get('view'))
+    || ['join','team','round','tab','write','idea','reply','thread','themeId','manual'].some(key => url.searchParams.has(key))
+    || /^#(?:compose|round-summary-sheet|theme-[0-9a-f-]+)$/i.test(url.hash);
+  if (!hasBoardTarget) {
+    const cover = url.pathname.endsWith('/board') ? new URL('./', url) : new URL('../', url);
+    location.replace(cover.href);
+  } else if (fromTest) {
+    history.replaceState(history.state, '', url.href);
+  }
+})();
+</script>
+<style>.projection-room-link,.demo-room-label{display:none!important}</style>
 </head>
 <body data-event-page="board"><main class="event-access" id="event-access"><div class="event-access-card">
 <p class="event-access-kicker">X-MEETUP / SHINAGAWA</p><h1>X-meetup 品川</h1>

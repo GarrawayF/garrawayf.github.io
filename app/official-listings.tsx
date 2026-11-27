@@ -10,6 +10,7 @@ type Props = {
   notices: readonly SiteNotice[];
   events: readonly SiteEvent[];
   initialNow: number;
+  revision?: number;
   compact?: boolean;
 };
 
@@ -62,16 +63,16 @@ function CommunityChats({ events, ended = false }: { events: SiteEvent[]; ended?
 
 const LIVE_LISTINGS = "https://garrawayf.github.io/events/feed.json";
 
-export default function OfficialListings({ notices: builtNotices, events: builtEvents, initialNow, compact = false }: Props) {
+export default function OfficialListings({ notices: builtNotices, events: builtEvents, initialNow, revision = 0, compact = false }: Props) {
   const [live, setLive] = useState<SiteUpdates | null>(null);
   useEffect(() => {
     const controller = new AbortController();
     const timer = window.setTimeout(() => controller.abort(), 5000);
-    void fetch(LIVE_LISTINGS, { signal: controller.signal, credentials: "omit", redirect: "error" })
+    void fetch(LIVE_LISTINGS, { signal: controller.signal, credentials: "omit", cache: "no-cache", redirect: "error" })
       .then((response) => response.ok ? response.json() : null)
       .then((raw: unknown) => {
         const parsed = siteUpdatesSchema.safeParse(raw);
-        if (parsed.success && !controller.signal.aborted) setLive(parsed.data);
+        if (parsed.success && (parsed.data.revision ?? 0) >= revision && !controller.signal.aborted) setLive(parsed.data);
       })
       .catch(() => { /* Keep the last bundled, validated public catalogue. */ })
       .finally(() => window.clearTimeout(timer));
@@ -79,7 +80,7 @@ export default function OfficialListings({ notices: builtNotices, events: builtE
       window.clearTimeout(timer);
       controller.abort();
     };
-  }, []);
+  }, [revision]);
   const notices = live?.notices ?? builtNotices;
   const events = live?.events ?? builtEvents;
   const schedule = useMemo(() => [

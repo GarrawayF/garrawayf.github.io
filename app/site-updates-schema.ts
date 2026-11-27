@@ -49,7 +49,7 @@ const eventSchema = z.strictObject({
   message: "終了時刻を使う場合は開始時刻も入力し、終了は開始以降にしてください",
 });
 
-export const siteUpdatesSchema = z.strictObject({ notices: z.array(noticeSchema), events: z.array(eventSchema) })
+export const siteUpdatesSchema = z.strictObject({ revision: z.number().int().positive().optional(), notices: z.array(noticeSchema), events: z.array(eventSchema) })
   .refine(({ notices, events }) => {
     const entries = [...notices, ...events];
     return new Set(entries.map(({ id }) => id)).size === entries.length;

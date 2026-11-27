@@ -303,12 +303,25 @@ jobs:
                   raise RuntimeError("Unexpected artifact name")
               api = os.environ["GITHUB_API_URL"].rstrip("/") + "/repos/" + repo
               token = os.environ["GH_TOKEN"]
-              # Reuse the run-scoped listing; the per-ID endpoint can return a transient 404.
-              listing = request_json(api + "/actions/runs/" + run_id + "/artifacts?per_page=2&name=" + quote(name, safe=""), token)
-              candidates = listing.get("artifacts")
-              if listing.get("total_count") != 1 or not isinstance(candidates, list) or len(candidates) != 1:
-                  raise RuntimeError("The expected run-scoped Pages artifact is missing or ambiguous")
-              artifact = candidates[0]
+              # GitHub artifact reads can be temporarily inconsistent across requests.
+              # Retry only the read, then enforce exact run, attempt, id and commit identity.
+              artifact = None
+              for attempt in range(8):
+                  try:
+                      listing = request_json(api + "/actions/runs/" + run_id + "/artifacts?per_page=2&name=" + quote(name, safe=""), token)
+                      candidates = listing.get("artifacts")
+                      if isinstance(candidates, list) and len(candidates) > 1:
+                          raise ValueError("Multiple Pages artifacts share this attempt's name")
+                      if listing.get("total_count") == 1 and isinstance(candidates, list) and len(candidates) == 1:
+                          artifact = candidates[0]
+                          break
+                  except ApiError as exc:
+                      if exc.status not in (404, 429, 500, 502, 503, 504):
+                          raise
+                  if attempt < 7:
+                      time.sleep(5)
+              if artifact is None:
+                  raise RuntimeError("Unverified Pages artifact; no deployment attempted")
               validate_artifact(artifact, artifact_id, name, run_id, sha, repo_id)
               print(f"Verified exact artifact ID {artifact_id} for {sha}", flush=True)
               oidc_url = os.environ["ACTIONS_ID_TOKEN_REQUEST_URL"]

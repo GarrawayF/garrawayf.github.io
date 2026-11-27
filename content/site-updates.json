@@ -1,5 +1,5 @@
 {
-  "revision": 2026112701,
+  "revision": 2026112702,
   "notices": [],
   "events": [
     {
@@ -390,13 +390,17 @@
       "id": "fb-1751381639297447",
       "date": "2026-11-27",
       "title": "第518回ギャラ談",
-      "url": "https://www.facebook.com/events/1751381639297447/"
+      "url": "https://www.facebook.com/events/1751381639297447/",
+      "start_time": "2026-11-27T17:00:00+09:00",
+      "end_time": "2026-11-27T18:00:00+09:00"
     },
     {
       "id": "fb-2183216805563111",
       "date": "2026-11-27",
       "title": "第517回ギャラ談",
-      "url": "https://www.facebook.com/events/2183216805563111/"
+      "url": "https://www.facebook.com/events/2183216805563111/",
+      "start_time": "2026-11-27T14:00:00+09:00",
+      "end_time": "2026-11-27T15:00:00+09:00"
     },
     {
       "id": "fb-1830153171638286",

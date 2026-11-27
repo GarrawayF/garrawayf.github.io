@@ -20,26 +20,28 @@ export default function EventsPage() {
         <div>
           <p><span /> EVENTS / NEWS</p>
           <h1><Phrase parts={["ここから、"]} /><br /><em><Phrase parts={["次の挑戦が", "始まる。"]} /></em></h1>
-          <a className="eventHeroJump" href="#upcoming-events">開催予定 <b>↓</b></a>
-          {" "}
-          <a className="eventHeroJump" href="#past-events">開催アーカイブ <b>↓</b></a>
+          <a className="eventHeroJump" href={SITE_LINKS.facebookEvents} target="_blank" rel="noreferrer">公式Facebookでイベントを見る <b aria-hidden="true">↗</b></a>
+          <nav className={styles.eventJumps} aria-label="このページに掲載しているイベント">
+            <a href="#upcoming-events">開催予定</a>
+            <a href="#past-events">開催アーカイブ</a>
+          </nav>
         </div>
         <aside>
           <strong>EVENTS</strong>
-          <p>開催予定とアーカイブを、ひと目で。気になる企画から詳細へ進めます。</p>
+          <p>最新の告知は、Garraway Fの公式Facebookイベントへ。このページでは、公式HPに掲載している開催予定とアーカイブを確認できます。</p>
         </aside>
       </section>
       <section className="eventIndexSection" aria-labelledby="event-index-title">
         <header className="eventIndexHead">
           <p className="sectionTag">EVENT INFORMATION</p>
           <h2 id="event-index-title"><Phrase parts={["開催情報"]} /></h2>
+          <p>このページの掲載一覧です。最新情報や変更は主催者の案内をご確認ください。</p>
         </header>
         <div className="eventIndexLayout">
           <OfficialListings {...siteUpdates} initialNow={listingBuildTime} />
           <aside className={styles.aside} aria-labelledby="event-social-links">
             <h3 className={styles.listTitle} id="event-social-links">公式SNS</h3>
             <ul>
-              <li><a className={styles.detailLink} href={SITE_LINKS.facebookEvents} target="_blank" rel="noreferrer">Facebookイベント ↗</a></li>
               <li><a className={styles.detailLink} href={SITE_LINKS.instagram} target="_blank" rel="noreferrer">Instagram ↗</a></li>
               <li><Link className={styles.detailLink} href="/#social-links">公式SNS一覧 →</Link></li>
             </ul>

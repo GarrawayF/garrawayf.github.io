@@ -138,3 +138,18 @@
     grid-column: 1;
   }
 }
+
+.eventJumps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 22px;
+  margin-top: 14px;
+}
+.eventJumps a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-weight: 850;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}

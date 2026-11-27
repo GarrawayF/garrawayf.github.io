@@ -42,6 +42,24 @@ function EventRow({ event, ended }: { event: SiteEvent; ended: boolean }) {
   );
 }
 
+const isCommunityChat = (event: SiteEvent) => /^第\d+回\s*ギャラ談$/.test(event.title);
+
+function CommunityChats({ events, ended = false }: { events: SiteEvent[]; ended?: boolean }) {
+  if (!events.length) return null;
+  const next = events[0];
+  return (
+    <details className={styles.communityChats}>
+      <summary>
+        <strong>{ended ? "ギャラ談の開催記録" : "定例交流会「ギャラ談」"}（{events.length}件）</strong>
+        {!ended && <span>次回 {formatEventDate(next)} {formatEventHours(next)}</span>}
+      </summary>
+      <div className="eventIndexBoard">
+        {events.map((event) => <EventRow event={event} ended={ended} key={event.id} />)}
+      </div>
+    </details>
+  );
+}
+
 const LIVE_LISTINGS = "https://garrawayf.github.io/events/feed.json";
 
 export default function OfficialListings({ notices: builtNotices, events: builtEvents, initialNow, compact = false }: Props) {
@@ -77,6 +95,10 @@ export default function OfficialListings({ notices: builtNotices, events: builtE
   const upcoming = current.filter((event) => event.status !== "cancelled");
   const cancelled = current.filter((event) => event.status === "cancelled");
   const archive = orderedEvents.filter((event) => getEventState(event, now) === "ended");
+  const upcomingHighlights = upcoming.filter((event) => !isCommunityChat(event));
+  const nextChats = upcoming.filter(isCommunityChat);
+  const archiveHighlights = archive.filter((event) => !isCommunityChat(event));
+  const pastChats = archive.filter(isCommunityChat);
 
   return (
     <div className={styles.listings}>
@@ -108,17 +130,19 @@ export default function OfficialListings({ notices: builtNotices, events: builtE
       <section aria-labelledby="upcoming-events">
         <h3 className={styles.listTitle} id="upcoming-events">開催予定</h3>
         <div className="eventIndexBoard">
-          {upcoming.length > 0 ? (compact ? upcoming.slice(0, 3) : upcoming).map((event) => (
+          {upcomingHighlights.length > 0 ? (compact ? upcomingHighlights.slice(0, 3) : upcomingHighlights).map((event) => (
             <EventRow event={event} ended={false} key={event.id} />
-          )) : <p className={styles.empty}>このサイトでご案内している開催予定はありません。</p>}
+          )) : !nextChats.length && <p className={styles.empty}>このサイトでご案内している開催予定はありません。</p>}
         </div>
+        <CommunityChats events={compact ? nextChats.slice(0, 2) : nextChats} />
       </section>
       {!compact && (
         <section aria-labelledby="past-events">
           <h3 className={styles.listTitle} id="past-events">開催アーカイブ</h3>
           <div className="eventIndexBoard">
-            {archive.length ? archive.map((event) => <EventRow event={event} ended key={event.id} />) : <p className={styles.empty}>掲載中のアーカイブはありません。</p>}
+            {archiveHighlights.length ? archiveHighlights.map((event) => <EventRow event={event} ended key={event.id} />) : !pastChats.length && <p className={styles.empty}>掲載中のアーカイブはありません。</p>}
           </div>
+          <CommunityChats events={pastChats} ended />
         </section>
       )}
     </div>

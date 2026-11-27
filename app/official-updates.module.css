@@ -153,3 +153,24 @@
   text-decoration: underline;
   text-underline-offset: 4px;
 }
+
+.communityChats {
+  margin-top: 18px;
+  color: var(--ink);
+}
+.communityChats summary {
+  background: var(--cream);
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  cursor: pointer;
+  padding: 13px 16px;
+  line-height: 1.4;
+}
+.communityChats summary span {
+  display: inline-block;
+  margin-inline-start: .5em;
+  font-size: .9em;
+}
+.communityChats[open] summary {
+  margin-bottom: 10px;
+}

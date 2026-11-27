@@ -35,7 +35,7 @@ export default function EventsPage() {
         <header className="eventIndexHead">
           <p className="sectionTag">EVENT INFORMATION</p>
           <h2 id="event-index-title"><Phrase parts={["開催情報"]} /></h2>
-          <p>このページの掲載一覧です。最新情報や変更は主催者の案内をご確認ください。</p>
+          <p>公式Facebookや主催者の告知から、確認できたイベントを掲載しています。日時の変更や参加条件は、各イベントの詳細をご確認ください。</p>
         </header>
         <div className="eventIndexLayout">
           <OfficialListings {...siteUpdates} initialNow={listingBuildTime} />

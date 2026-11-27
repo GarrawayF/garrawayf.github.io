@@ -2,6 +2,17 @@
   "notices": [],
   "events": [
     {
+      "id": "2027-01-23-future-innovators-day2",
+      "date": "2027-01-23",
+      "start_time": "2027-01-23T13:00:00+09:00",
+      "end_time": "2027-01-23T17:00:00+09:00",
+      "title": "Future Innovators’ Course 2026｜DAY 2 アイデア創出ワーク",
+      "organizer": "キッザニア福岡・PARKS",
+      "venue": "Garraway F（天神CLASS 3F）",
+      "description": "高校生がチームで起業アイデアを練るワークショップ。全4日程に参加できる高校生が対象です。募集締切は1月6日。",
+      "url": "https://www.kidzania.jp/fukuoka/news/18726"
+    },
+    {
       "id": "2026-11-23-claude-workshop",
       "date": "2026-11-23",
       "start_time": "2026-11-23T16:00:00+09:00",
@@ -11,6 +22,28 @@
       "venue": "Garraway F（天神CLASS 3F）",
       "description": "Claudeを使ってウェブアプリを作る、初心者向けのワークショップです。",
       "url": "https://luma.com/claude-zu7g"
+    },
+    {
+      "id": "2026-11-04-kinto-ai-agents",
+      "date": "2026-11-04",
+      "start_time": "2026-11-04T19:00:00+09:00",
+      "end_time": "2026-11-04T21:30:00+09:00",
+      "title": "現場を動かすAIエージェント #2",
+      "organizer": "KINTOテクノロジーズ",
+      "venue": "Garraway F（天神CLASS 3F）",
+      "description": "組織へのAI活用と顧客の課題解決をテーマにした勉強会。",
+      "url": "https://kinto-technologies.connpass.com/event/409447/"
+    },
+    {
+      "id": "2026-10-09-next-challenge-night",
+      "date": "2026-10-09",
+      "start_time": "2026-10-09T18:00:00+09:00",
+      "end_time": "2026-10-09T20:00:00+09:00",
+      "title": "Next Challenge Night",
+      "organizer": "Garraway F",
+      "venue": "Garraway F（天神CLASS 3F）",
+      "description": "アイデアや出会いを次の挑戦につなげる交流会。",
+      "url": "https://note.com/garraway_f/n/nfee22ccea525"
     },
     {
       "id": "2026-09-05-social-entrepreneurship",

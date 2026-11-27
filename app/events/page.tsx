@@ -20,7 +20,9 @@ export default function EventsPage() {
         <div>
           <p><span /> EVENTS / NEWS</p>
           <h1><Phrase parts={["ここから、"]} /><br /><em><Phrase parts={["次の挑戦が", "始まる。"]} /></em></h1>
-          <a className="eventHeroJump" href="#event-index-title">開催情報を見る <b>↓</b></a>
+          <a className="eventHeroJump" href="#upcoming-events">開催予定 <b>↓</b></a>
+          {" "}
+          <a className="eventHeroJump" href="#past-events">開催アーカイブ <b>↓</b></a>
         </div>
         <aside>
           <strong>EVENTS</strong>

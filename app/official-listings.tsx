@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { formatEventDate, formatEventHours, getEventState, sortEvents } from "./event-schedule";
-import type { SiteEvent, SiteNotice } from "./site-updates";
+import { siteUpdatesSchema, type SiteEvent, type SiteNotice, type SiteUpdates } from "./site-updates-schema";
 import { useEventClock } from "./use-event-clock";
 import styles from "./official-updates.module.css";
 
@@ -42,7 +42,28 @@ function EventRow({ event, ended }: { event: SiteEvent; ended: boolean }) {
   );
 }
 
-export default function OfficialListings({ notices, events, initialNow, compact = false }: Props) {
+const LIVE_LISTINGS = "https://garrawayf.github.io/events/feed.json";
+
+export default function OfficialListings({ notices: builtNotices, events: builtEvents, initialNow, compact = false }: Props) {
+  const [live, setLive] = useState<SiteUpdates | null>(null);
+  useEffect(() => {
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), 5000);
+    void fetch(LIVE_LISTINGS, { signal: controller.signal, credentials: "omit", redirect: "error" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((raw: unknown) => {
+        const parsed = siteUpdatesSchema.safeParse(raw);
+        if (parsed.success && !controller.signal.aborted) setLive(parsed.data);
+      })
+      .catch(() => { /* Keep the last bundled, validated public catalogue. */ })
+      .finally(() => window.clearTimeout(timer));
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, []);
+  const notices = live?.notices ?? builtNotices;
+  const events = live?.events ?? builtEvents;
   const schedule = useMemo(() => [
     ...events,
     ...notices.filter((notice) => notice.expires_on).map((notice) => ({ date: notice.expires_on })),
@@ -92,11 +113,11 @@ export default function OfficialListings({ notices, events, initialNow, compact 
           )) : <p className={styles.empty}>このサイトでご案内している開催予定はありません。</p>}
         </div>
       </section>
-      {!compact && archive.length > 0 && (
+      {!compact && (
         <section aria-labelledby="past-events">
           <h3 className={styles.listTitle} id="past-events">開催アーカイブ</h3>
           <div className="eventIndexBoard">
-            {archive.map((event) => <EventRow event={event} ended key={event.id} />)}
+            {archive.length ? archive.map((event) => <EventRow event={event} ended key={event.id} />) : <p className={styles.empty}>掲載中のアーカイブはありません。</p>}
           </div>
         </section>
       )}
